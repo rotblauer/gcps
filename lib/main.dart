@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert'; // jsonEncode
 import 'package:english_words/english_words.dart' as ew;
 import 'package:ip_geolocation_api/ip_geolocation_api.dart';
+import 'package:geolocator/geolocator.dart';
 
 void main() {
   runApp(MyApp());
@@ -54,7 +55,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  String geolocation_text = '';
+  String geolocation_text = '<ip.somewhere>';
+  String geolocation_api_text = '<api.somewhere>';
   GeolocationData geolocationData;
 
   void _incrementCounter() {
@@ -80,6 +82,37 @@ class _MyHomePageState extends State<MyHomePage> {
         geolocation_text = geolocationData.ip;
       });
     }
+  }
+
+  /// Determine the current position of the device.
+  ///
+  /// When the location services are not enabled or permissions
+  /// are denied the `Future` will return an error.
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permantly denied, we cannot request permissions.');
+    }
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        return Future.error(
+            'Location permissions are denied (actual value: $permission).');
+      }
+    }
+
+    return await Geolocator.getCurrentPosition();
   }
 
   Widget _exampleStuff() {
@@ -110,9 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
             '$_counter',
             style: Theme.of(context).textTheme.headline4,
           ),
-          Text(
-            'Your geolocation data: ' + geolocation_text,
-          ),
+          Text('Geolocate (IP): ' + geolocation_text),
           FlatButton(
               onPressed: () {
                 this.getIp().then((value) => {
@@ -123,9 +154,37 @@ class _MyHomePageState extends State<MyHomePage> {
                                 jsonEncode(geolocationData.toJson());
                           })
                         }
+                      else
+                        {
+                          setState(() {
+                            geolocation_text =
+                                "could not get location data from IP";
+                          })
+                        }
                     });
               },
-              child: Text("toJSON"))
+              child: Text(
+                "Get location from IP",
+              )),
+          Text("Geolocate (API): " + geolocation_api_text),
+          FlatButton(
+              onPressed: () {
+                this
+                    ._determinePosition()
+                    .then((value) => {
+                          setState(() {
+                            geolocation_api_text = value.toString();
+                          })
+                        })
+                    .catchError((err) => {
+                          setState(() {
+                            geolocation_api_text = err.toString();
+                          })
+                        });
+              },
+              child: Text(
+                "Get geolocation from  API",
+              ))
         ],
       ),
     );
