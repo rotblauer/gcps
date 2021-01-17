@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert'; // jsonEncode
 import 'package:english_words/english_words.dart' as ew;
+import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 
 void main() {
   runApp(MyApp());
@@ -52,6 +54,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  String geolocation_text = '';
+  GeolocationData geolocationData;
 
   void _incrementCounter() {
     setState(() {
@@ -62,6 +66,20 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
+  }
+
+  // void initState() {
+  //   super.initState();
+  //   this.getIp();
+  // }
+
+  Future<void> getIp() async {
+    geolocationData = await GeolocationAPI.getData();
+    if (geolocationData != null) {
+      setState(() {
+        geolocation_text = geolocationData.ip;
+      });
+    }
   }
 
   Widget _exampleStuff() {
@@ -92,6 +110,22 @@ class _MyHomePageState extends State<MyHomePage> {
             '$_counter',
             style: Theme.of(context).textTheme.headline4,
           ),
+          Text(
+            'Your geolocation data: ' + geolocation_text,
+          ),
+          FlatButton(
+              onPressed: () {
+                this.getIp().then((value) => {
+                      if (geolocationData != null)
+                        {
+                          setState(() {
+                            geolocation_text =
+                                jsonEncode(geolocationData.toJson());
+                          })
+                        }
+                    });
+              },
+              child: Text("toJSON"))
         ],
       ),
     );
