@@ -1,0 +1,12 @@
+ 1973  sudo snap install flutter 
+ 1975  flutter channel dev && flutter upgrade && flutter config --enable-linux-desktop
+ 1976  flutter devices
+ 1977  flutter doctor
+ 1978  flutter config --enable-web
+ 1979  flutter devices
+ 1982  flutter create gcps
+ 1983  cd gcps
+ 1984  git init
+ 1985  gitit 'flutter create gcps'
+ 1986  flutter run -d linux
+ 1987  flutter build linux
