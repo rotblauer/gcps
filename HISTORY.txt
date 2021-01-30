@@ -1,0 +1,22 @@
+ 1262  flutter channel dev
+ 1263  flutter channel dev && flutter upgrade && flutter config --enable-linux-desktop
+ 1264  flutter devices
+ 1265  flutter doctor
+ 1266  flutter config --enable-web
+ 1267  flutter devices
+ 1270  flutter create gcps
+ 1273  gitit 'flutter create gcps'
+ 1274  flutter run -d linux
+ 1275  flutter build linux
+ 1288  flutter pub get
+ 1291  echo 'flutter pub get' >> COMMANDS.log
+ 1292  flutter pub get
+ 1294  flutter pub get
+ 1296  flutter pub get
+ 1970  mv gcps gcps-flutter
+ 1971  mv gcps-flutter flutter-gcps
+ 1972  cd flutter-gcps
+ 1973  history |grep flutter > HISTORY.txt
+
+ flutter devices
+ flutter run -d emulator-5554
