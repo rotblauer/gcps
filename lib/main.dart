@@ -99,6 +99,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.deniedForever) {
+      /*
+      Settings
+
+      In some cases it is necessary to ask the user and update their device settings. For example when the user initially permanently denied permissions to access the device's location or if the location services are not enabled (and, on Android, automatic resolution didn't work). In these cases you can use the openAppSettings or openLocationSettings methods to immediately redirect the user to the device's settings page.
+
+      On Android the openAppSettings method will redirect the user to the App specific settings where the user can update necessary permissions. The openLocationSettings method will redirect the user to the location settings where the user can enable/ disable the location services.
+
+      On iOS we are not allowed to open specific setting pages so both methods will redirect the user to the Settings App from where the user can navigate to the correct settings category to update permissions or enable/ disable the location services.
+      */
+      // await Geolocator.openAppSettings();
+      // await Geolocator.openLocationSettings();
       return Future.error(
           'Location permissions are permantly denied, we cannot request permissions.');
     }
@@ -112,7 +123,8 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    return await Geolocator.getCurrentPosition();
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best);
   }
 
   Widget _exampleStuff() {
@@ -167,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 "Get location from IP",
               )),
           Text("Geolocate (API): " + geolocation_api_text),
-          FlatButton(
+          TextButton(
               onPressed: () {
                 this
                     ._determinePosition()
