@@ -1,12 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'dart:convert'; // jsonEncode
 import 'package:english_words/english_words.dart' as ew;
 import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 import 'package:geolocator/geolocator.dart';
-
 import 'package:flutter/widgets.dart';
+import 'package:device_info/device_info.dart';
 
 import 'track.dart';
 
@@ -20,6 +21,18 @@ void main() {
 
   // Run app.
   runApp(MyApp());
+}
+
+Future<String> _getId() async {
+  var deviceInfo = DeviceInfoPlugin();
+  if (Platform.isIOS) {
+    // import 'dart:io'
+    var iosDeviceInfo = await deviceInfo.iosInfo;
+    return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+  } else {
+    var androidDeviceInfo = await deviceInfo.androidInfo;
+    return androidDeviceInfo.androidId; // unique ID on Android
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -89,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription<Position> positionStream;
 
   // Display location information
+  String _deviceUUID;
   double locLng = 0;
 
   // Display data history information
@@ -108,10 +122,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  // void initState() {
-  //   super.initState();
-  //   this.getIp();
-  // }
+  void initState() {
+    super.initState();
+    // this.getIp();
+    _getId().then((value) => {_deviceUUID = value});
+    this._startStream();
+  }
 
   Future<void> getIp() async {
     geolocationData = await GeolocationAPI.getData();
@@ -130,6 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final Map<String, dynamic> original = tracks[index].toJson();
       final Map<String, dynamic> output = {};
 
+      output['uuid'] = _deviceUUID;
       output['timestamp'] = (original['timestamp'] / 1000).floor();
       output['latitude'] = num.parse(original['latitude'].toStringAsFixed(8));
       output['longitude'] = num.parse(original['longitude'].toStringAsFixed(8));

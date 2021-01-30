@@ -34,6 +34,7 @@ dependencies:
   geolocator: ^6.1.13
   sqflite:
   path:
+  device_info:
 
 dev_dependencies:
   flutter_test:
