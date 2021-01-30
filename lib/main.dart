@@ -6,7 +6,16 @@ import 'package:english_words/english_words.dart' as ew;
 import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'package:flutter/widgets.dart';
+
+import 'track.dart';
+
 void main() {
+  // Avoid errors caused by flutter upgrade.
+  // Importing 'package:flutter/widgets.dart' is required.
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Run app.
   runApp(MyApp());
 }
 
@@ -118,6 +127,9 @@ class _MyHomePageState extends State<MyHomePage> {
           position.latitude.toString() + ', ' + position.longitude.toString();
       locLng = position.longitude.toDouble();
     });
+
+    print("saving position");
+    insertTrack(position);
   }
 
   void _startStream() {
