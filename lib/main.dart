@@ -15,6 +15,9 @@ void main() {
   // Importing 'package:flutter/widgets.dart' is required.
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Development: reset (rm -rf db) if exists.
+  resetDB();
+
   // Run app.
   runApp(MyApp());
 }
@@ -36,9 +39,8 @@ class MyApp extends StatelessWidget {
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
         primarySwatch: Colors.yellow,
-        backgroundColor: Colors.lime,
+        backgroundColor: Colors.limeAccent,
         canvasColor: Colors.deepOrange,
-        secondaryHeaderColor: Colors.greenAccent,
       ),
       home: MyHomePage(title: 'gcps'),
       showPerformanceOverlay: false,
@@ -69,7 +71,7 @@ class InfoDisplay extends StatelessWidget {
   InfoDisplay({this.keyname, this.value});
 
   final String keyname;
-  final double value;
+  final dynamic value;
 
   @override
   Widget build(BuildContext context) {
@@ -83,9 +85,17 @@ class _MyHomePageState extends State<MyHomePage> {
   String geolocation_api_text = '<api.somewhere>';
   String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
+
   StreamSubscription<Position> positionStream;
 
+  // Display location information
   double locLng = 0;
+
+  // Display data history information
+  int _countStored = 0;
+  int _countPushed = 0;
+
+  //
 
   void _incrementCounter() {
     setState(() {
@@ -112,7 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _handleStreamLocationUpdate(Position position) {
+  void _handleStreamLocationUpdate(Position position) async {
     if (position == null) {
       print("streamed position: unknown");
       setState(() {
@@ -129,7 +139,11 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     print("saving position");
-    insertTrack(position);
+    await insertTrack(position);
+    var count = await countTracks();
+    setState(() {
+      _countStored = count;
+    });
   }
 
   void _startStream() {
@@ -163,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
       On iOS we are not allowed to open specific setting pages so both methods will redirect the user to the Settings App from where the user can navigate to the correct settings category to update permissions or enable/ disable the location services.
       */
       // await Geolocator.openAppSettings();
-      // await Geolocator.openLocationSettings();
+      await Geolocator.openLocationSettings();
       return Future.error(
           'Location permissions are permantly denied, we cannot request permissions.');
     }
@@ -203,6 +217,7 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           InfoDisplay(keyname: "longitude", value: locLng),
+          InfoDisplay(keyname: "stored", value: _countStored),
           Text(
             'You done ${ew.adjectives[_counter]}ly caressed the button this many times:',
           ),

@@ -4,14 +4,16 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:geolocator/geolocator.dart';
 
+const _cDatabaseName = 'cattracks_database.db';
+const _cTableName = "cattracks";
 const dbSchemaColumns = [
   'longitude numeric',
   'latitude numeric',
   'timestamp integer',
   'accuracy numeric',
   'altitude numeric',
-  'floor integer'
-      'heading numeric',
+  'floor integer',
+  'heading numeric',
   'speed numeric',
   'speed_accuracy numeric'
 ];
@@ -28,16 +30,17 @@ Future<Database> database() async {
     // When the database is first created, create a table to store cats.
     onCreate: (db, version) {
       return db.execute(
-        "CREATE TABLE IF NOT EXISTS cattracks (id INTEGER PRIMARY KEY," +
+        // "DROP TABLE IF EXISTS $_cTableName;" +
+        'CREATE TABLE IF NOT EXISTS $_cTableName (id INTEGER PRIMARY KEY,' +
             dbSchemaColumns.join(", ") +
             ")",
       );
     },
 
-    // [onConfigure] is the first callback invoked when opening the database. It allows you to perform database initialization such as enabling foreign keys or write-ahead logging
-    onConfigure: (db) {
-      return rmrfDb();
-    },
+    // // [onConfigure] is the first callback invoked when opening the database. It allows you to perform database initialization such as enabling foreign keys or write-ahead logging
+    // onConfigure: (db) {
+    //   return rmrfDb();
+    // },
 
     // Set the version. This executes the onCreate function and provides a
     // path to perform database upgrades and downgrades.
@@ -45,9 +48,9 @@ Future<Database> database() async {
   );
 }
 
-Future<void> rmrfDb() async {
-  final Database db = await database();
-  return db.execute("DROP TABLE IF EXISTS cattracks");
+Future<void> resetDB() async {
+  var p = join(await getDatabasesPath(), _cDatabaseName);
+  if (await databaseExists(p)) return deleteDatabase(p);
 }
 
 Future<void> insertTrack(Position position) async {
@@ -64,8 +67,21 @@ Future<void> insertTrack(Position position) async {
   m.remove('is_mocked');
 
   await db.insert(
-    'cattracks',
+    _cTableName,
     m,
     conflictAlgorithm: ConflictAlgorithm.replace,
   );
+}
+
+Future<int> countTracks() async {
+  final Database db = await database();
+  return Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM $_cTableName'));
+}
+
+Future<int> lastId() async {
+  final Database db = await database();
+  var x = await db.rawQuery('SELECT id LIMIT 1 FROM $_cTableName');
+  int lastID = Sqflite.firstIntValue(x);
+  return lastID;
 }
