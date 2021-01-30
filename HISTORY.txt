@@ -20,3 +20,6 @@
 
  flutter devices
  flutter run -d emulator-5554
+
+> exhausted heap space
+ flutter clean
