@@ -26,9 +26,10 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.deepOrange,
+        primarySwatch: Colors.yellow,
         backgroundColor: Colors.lime,
-        canvasColor: Colors.yellow,
+        canvasColor: Colors.deepOrange,
+        secondaryHeaderColor: Colors.greenAccent,
       ),
       home: MyHomePage(title: 'gcps'),
       showPerformanceOverlay: false,
@@ -55,6 +56,18 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+class InfoDisplay extends StatelessWidget {
+  InfoDisplay({this.keyname, this.value});
+
+  final String keyname;
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text('Key: $keyname, Value: $value');
+  }
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String geolocation_text = '<ip.somewhere>';
@@ -62,6 +75,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
   StreamSubscription<Position> positionStream;
+
+  double locLng = 0;
 
   void _incrementCounter() {
     setState(() {
@@ -88,24 +103,27 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _handleStreamLocationUpdate(Position position) {
+    if (position == null) {
+      print("streamed position: unknown");
+      setState(() {
+        geolocation_api_stream_text = 'Unknown';
+      });
+      return;
+    }
+
+    print("streamed position: " + position.toString());
+    setState(() {
+      geolocation_api_stream_text =
+          position.latitude.toString() + ', ' + position.longitude.toString();
+      locLng = position.longitude.toDouble();
+    });
+  }
+
   void _startStream() {
     positionStream =
         Geolocator.getPositionStream(desiredAccuracy: LocationAccuracy.best)
-            .listen((Position position) {
-      if (position == null) {
-        print("streamed position: unknown");
-        setState(() {
-          geolocation_api_stream_text = 'Unknown';
-        });
-      } else {
-        print("streamed position: " + position.toString());
-        setState(() {
-          geolocation_api_stream_text = position.latitude.toString() +
-              ', ' +
-              position.longitude.toString();
-        });
-      }
-    });
+            .listen(_handleStreamLocationUpdate);
   }
 
   /// Determine the current position of the device.
@@ -172,6 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // horizontal).
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
+          InfoDisplay(keyname: "longitude", value: locLng),
           Text(
             'You done ${ew.adjectives[_counter]}ly caressed the button this many times:',
           ),
