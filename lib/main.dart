@@ -92,12 +92,18 @@ class _MyHomePageState extends State<MyHomePage> {
     positionStream =
         Geolocator.getPositionStream(desiredAccuracy: LocationAccuracy.best)
             .listen((Position position) {
-      print("streamed position: " + position.toString());
       if (position == null) {
-        geolocation_api_stream_text = 'Unknown';
+        print("streamed position: unknown");
+        setState(() {
+          geolocation_api_stream_text = 'Unknown';
+        });
       } else {
-        geolocation_api_stream_text =
-            position.latitude.toString() + ', ' + position.longitude.toString();
+        print("streamed position: " + position.toString());
+        setState(() {
+          geolocation_api_stream_text = position.latitude.toString() +
+              ', ' +
+              position.longitude.toString();
+        });
       }
     });
   }
