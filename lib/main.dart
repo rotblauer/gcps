@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'dart:convert'; // jsonEncode
 import 'package:english_words/english_words.dart' as ew;
@@ -57,7 +59,9 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String geolocation_text = '<ip.somewhere>';
   String geolocation_api_text = '<api.somewhere>';
+  String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
+  StreamSubscription<Position> positionStream;
 
   void _incrementCounter() {
     setState(() {
@@ -82,6 +86,20 @@ class _MyHomePageState extends State<MyHomePage> {
         geolocation_text = geolocationData.ip;
       });
     }
+  }
+
+  void _startStream() {
+    positionStream =
+        Geolocator.getPositionStream(desiredAccuracy: LocationAccuracy.best)
+            .listen((Position position) {
+      print("streamed position: " + position.toString());
+      if (position == null) {
+        geolocation_api_stream_text = 'Unknown';
+      } else {
+        geolocation_api_stream_text =
+            position.latitude.toString() + ', ' + position.longitude.toString();
+      }
+    });
   }
 
   /// Determine the current position of the device.
@@ -156,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
             style: Theme.of(context).textTheme.headline4,
           ),
           Text('Geolocate (IP): ' + geolocation_text),
-          FlatButton(
+          TextButton(
               onPressed: () {
                 this.getIp().then((value) => {
                       if (geolocationData != null)
@@ -196,6 +214,14 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: Text(
                 "Get geolocation from  API",
+              )),
+          Text("Geolocate Stream (API): " + geolocation_api_stream_text),
+          TextButton(
+              onPressed: () {
+                this._startStream();
+              },
+              child: Text(
+                "Get streaming geolocation from API",
               ))
         ],
       ),
