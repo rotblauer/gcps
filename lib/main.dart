@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:convert'; // jsonEncode
 import 'package:english_words/english_words.dart' as ew;
+import 'package:gcps/secrets.dart';
 import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/widgets.dart';
 import 'package:device_info/device_info.dart';
+import 'package:http/http.dart' as http;
 
 import 'track.dart';
 
@@ -138,6 +140,20 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<http.Response> postTracks(List<Map<String, dynamic>> body) {
+    final headers = <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    };
+    postHeaders.forEach((key, value) {
+      headers[key] = value;
+    });
+    return http.post(
+      postEndpoint,
+      headers: headers,
+      body: jsonEncode(body),
+    );
+  }
+
   Future<int> _pushTracks(List<Position> tracks) async {
     print("Got batched tracks:");
 
@@ -146,6 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final Map<String, dynamic> original = tracks[index].toJson();
       final Map<String, dynamic> output = {};
 
+      output['version'] = appVersion;
       output['uuid'] = _deviceUUID;
       output['timestamp'] = (original['timestamp'] / 1000).floor();
       output['time'] =
@@ -168,10 +185,11 @@ class _MyHomePageState extends State<MyHomePage> {
       return output;
     });
 
-    print(jsonEncode(pushable));
+    // print(jsonEncode(pushable));
+    final res = await postTracks(pushable);
 
     // TODO
-    return 200;
+    return res.statusCode;
   }
 
   void _handleStreamLocationUpdate(Position position) async {
@@ -211,12 +229,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // At push mod, tracks in air.
     var tracks = await firstTracksWithLimit(10);
-    if (await _pushTracks(tracks) == 200) {
+    var resCode = await _pushTracks(tracks);
+    if (resCode == 200) {
       // Push yielded success, delete the tracks we just pushed.
       // Note that the delete condition used assumes tracks are ordered
       // earliest -> latest.
       deleteTracksBeforeInclusive(
           tracks[tracks.length - 1].timestamp.millisecondsSinceEpoch);
+    } else {
+      print("bad status: " + resCode.toString());
     }
   }
 
