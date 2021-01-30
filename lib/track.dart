@@ -7,15 +7,15 @@ import 'package:geolocator/geolocator.dart';
 const _cDatabaseName = 'cattracks_database.db';
 const _cTableName = "cattracks";
 const dbSchemaColumns = [
-  'longitude numeric',
-  'latitude numeric',
+  'longitude real',
+  'latitude real',
   'timestamp integer',
-  'accuracy numeric',
-  'altitude numeric',
+  'accuracy real',
+  'altitude real',
   'floor integer',
-  'heading numeric',
-  'speed numeric',
-  'speed_accuracy numeric'
+  'heading real',
+  'speed real',
+  'speed_accuracy real'
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -39,7 +39,6 @@ Future<Database> database() async {
 
     // // [onConfigure] is the first callback invoked when opening the database. It allows you to perform database initialization such as enabling foreign keys or write-ahead logging
     // onConfigure: (db) {
-    //   return rmrfDb();
     // },
 
     // Set the version. This executes the onCreate function and provides a
@@ -63,7 +62,6 @@ Future<void> insertTrack(Position position) async {
   }
 
   // App-specific mutations.
-  m['timestamp'] = m['timestamp'] / 1000;
   m.remove('is_mocked');
 
   await db.insert(
@@ -84,4 +82,19 @@ Future<int> lastId() async {
   var x = await db.rawQuery('SELECT id LIMIT 1 FROM $_cTableName');
   int lastID = Sqflite.firstIntValue(x);
   return lastID;
+}
+
+Future<List<Position>> firstTracksWithLimit(int limit) async {
+  final Database db = await database();
+  final List<Map<String, dynamic>> maps =
+      await db.query('$_cTableName', limit: limit, orderBy: 'id ASC');
+
+  return List.generate(maps.length, (i) {
+    return Position.fromMap(maps[i]);
+  });
+}
+
+Future<void> deleteTracksBeforeInclusive(int ts) async {
+  final Database db = await database();
+  await db.delete(_cTableName, where: 'timestamp <= ?', whereArgs: [ts]);
 }

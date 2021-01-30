@@ -122,28 +122,80 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<int> _pushTracks(List<Position> tracks) async {
+    print("Got batched tracks:");
+
+    final List<Map<String, dynamic>> pushable =
+        List.generate(tracks.length, (index) {
+      final Map<String, dynamic> original = tracks[index].toJson();
+      final Map<String, dynamic> output = {};
+
+      output['timestamp'] = (original['timestamp'] / 1000).floor();
+      output['latitude'] = num.parse(original['latitude'].toStringAsFixed(8));
+      output['longitude'] = num.parse(original['longitude'].toStringAsFixed(8));
+      output['altitude'] = num.parse(original['altitude'].toStringAsFixed(1));
+      output['accuracy'] = num.parse(original['accuracy'].toStringAsFixed(1));
+      output['speed'] = num.parse(original['speed'].toStringAsFixed(1));
+      output['speed_accuracy'] =
+          num.parse(original['speed_accuracy'].toStringAsFixed(1));
+      output['heading'] = num.parse(original['heading'].toStringAsFixed(0));
+      original['floor'] != null
+          ? output['floor'] = num.parse(original['floor'].toStringAsFixed(0))
+          : null;
+
+      return output;
+    });
+
+    print(jsonEncode(pushable));
+
+    // TODO
+    return 200;
+  }
+
   void _handleStreamLocationUpdate(Position position) async {
-    if (position == null) {
-      print("streamed position: unknown");
+    // Short circuit if position is null or timestamp is null.
+    if (position == null || position.timestamp == null) {
+      print("streamed position: unknown or null timestamp");
       setState(() {
         geolocation_api_stream_text = 'Unknown';
       });
       return;
     }
 
+    // Got a position!
     print("streamed position: " + position.toString());
+
+    // Update display
     setState(() {
       geolocation_api_stream_text =
           position.latitude.toString() + ', ' + position.longitude.toString();
       locLng = position.longitude.toDouble();
     });
 
+    // Persist the position.
     print("saving position");
     await insertTrack(position);
     var count = await countTracks();
+
+    // Update the persistent-state display.
     setState(() {
       _countStored = count;
     });
+
+    // If we're not at a push mod, we're done.
+    if (count % 10 != 0) {
+      return;
+    }
+
+    // At push mod, tracks in air.
+    var tracks = await firstTracksWithLimit(10);
+    if (await _pushTracks(tracks) == 200) {
+      // Push yielded success, delete the tracks we just pushed.
+      // Note that the delete condition used assumes tracks are ordered
+      // earliest -> latest.
+      deleteTracksBeforeInclusive(
+          tracks[tracks.length - 1].timestamp.millisecondsSinceEpoch);
+    }
   }
 
   void _startStream() {
