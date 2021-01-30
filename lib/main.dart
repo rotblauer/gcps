@@ -148,9 +148,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
       output['uuid'] = _deviceUUID;
       output['timestamp'] = (original['timestamp'] / 1000).floor();
-      output['latitude'] = num.parse(original['latitude'].toStringAsFixed(8));
-      output['longitude'] = num.parse(original['longitude'].toStringAsFixed(8));
-      output['altitude'] = num.parse(original['altitude'].toStringAsFixed(1));
+      output['time'] =
+          DateTime.fromMillisecondsSinceEpoch(original['timestamp'])
+              .toUtc()
+              .toIso8601String();
+      output['lat'] = num.parse(original['latitude'].toStringAsFixed(8));
+      output['long'] = num.parse(original['longitude'].toStringAsFixed(8));
+      output['elevation'] = num.parse(original['altitude'].toStringAsFixed(1));
       output['accuracy'] = num.parse(original['accuracy'].toStringAsFixed(1));
       output['speed'] = num.parse(original['speed'].toStringAsFixed(1));
       output['speed_accuracy'] =
@@ -158,6 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
       output['heading'] = num.parse(original['heading'].toStringAsFixed(0));
       original['floor'] != null
           ? output['floor'] = num.parse(original['floor'].toStringAsFixed(0))
+          // ignore: unnecessary_statements
           : null;
 
       return output;
