@@ -163,6 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final Map<String, dynamic> output = {};
 
       output['version'] = appVersion;
+      output['name'] = deviceName;
       output['uuid'] = _deviceUUID;
       output['timestamp'] = (original['timestamp'] / 1000).floor();
       output['time'] =
@@ -223,22 +224,32 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // If we're not at a push mod, we're done.
-    if (count % 10 != 0) {
+    if (count % 100 != 0) {
       return;
     }
 
-    // At push mod, tracks in air.
-    var tracks = await firstTracksWithLimit(10);
-    var resCode = await _pushTracks(tracks);
-    if (resCode == 200) {
-      // Push yielded success, delete the tracks we just pushed.
-      // Note that the delete condition used assumes tracks are ordered
-      // earliest -> latest.
-      deleteTracksBeforeInclusive(
-          tracks[tracks.length - 1].timestamp.millisecondsSinceEpoch);
-    } else {
-      print("bad status: " + resCode.toString());
+    for (var count = await countTracks();
+        count > 0;
+        count = await countTracks()) {
+      var tracks = await firstTracksWithLimit(100);
+      var resCode = await _pushTracks(tracks);
+
+      if (resCode == 200) {
+        // Push yielded success, delete the tracks we just pushed.
+        // Note that the delete condition used assumes tracks are ordered
+        // earliest -> latest.
+        deleteTracksBeforeInclusive(
+            tracks[tracks.length - 1].timestamp.millisecondsSinceEpoch);
+      } else {
+        print("bad status: " + resCode.toString());
+        break;
+      }
     }
+    // Awkwardly placed but whatever.
+    // Update the persistent-state display.
+    setState(() {
+      _countStored = count;
+    });
   }
 
   void _startStream() {
