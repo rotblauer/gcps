@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(runner LANGUAGES CXX)
 
 set(BINARY_NAME "gcps")
-set(APPLICATION_ID "com.example.gcps")
+set(APPLICATION_ID "com.rotblauer.gcps")
 
 cmake_policy(SET CMP0063 NEW)
 

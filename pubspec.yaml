@@ -1,5 +1,5 @@
 name: gcps
-description: A new Flutter project.
+description: Global Cat Positioning System.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -39,7 +39,7 @@ dependencies:
   http:
   connectivity:
   camera:
-  workmanager: ^0.2.0
+  # workmanager: ^0.2.0
   # image_gallery_saver:
   # gallery_saver:
   flutter_background_geolocation: ^1.11.0
