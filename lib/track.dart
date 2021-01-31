@@ -129,7 +129,7 @@ class AppPoint {
   Map<String, dynamic> toMap() {
     return {
       'uuid': uuid,
-      'time': time,
+      'time': time.toUtc().toIso8601String(),
       'timestamp': timestamp,
       'accuracy': accuracy,
       'latitude': latitude,
@@ -193,7 +193,42 @@ class AppPoint {
     );
   }
 
-  static AppPoint fromLocationProvider(bg.Location location) {}
+  static AppPoint fromLocationProvider(bg.Location location) {
+    if (location.timestamp == "") {
+      throw ArgumentError.value(location, 'location',
+          'The supplied location doesn\'t contain the mandatory key `timestamp`.');
+    }
+    if (location.coords == null || location.coords.latitude == null) {
+      throw ArgumentError.value(location, 'location',
+          'The supplied location doesn\'t contain the mandatory key `coords.latitude`.');
+    }
+    if (location.coords == null || location.coords.longitude == null) {
+      throw ArgumentError.value(location, 'location',
+          'The supplied location doesn\'t contain the mandatory key `coords.longitude`.');
+    }
+
+    final DateTime dt = DateTime.parse(location.timestamp);
+    return AppPoint(
+      uuid: location.uuid,
+      timestamp: (dt.millisecondsSinceEpoch / 1000).toInt(),
+      time: dt,
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+      accuracy: location.coords.accuracy,
+      altitude: location.coords.altitude,
+      altitude_accuracy: location.coords.altitudeAccuracy,
+      heading: location.coords.heading,
+      heading_accuracy: location.coords.headingAccuracy,
+      speed: location.coords.speed,
+      speed_accuracy: location.coords.speedAccuracy,
+      odometer: location.odometer,
+      activity_confidence: location.activity.confidence,
+      activity_type: location.activity.type,
+      battery_level: location.battery.level,
+      battery_is_charging: location.battery.isCharging,
+      event: location.event,
+    );
+  }
 
   // toJSON creates a dynamic map for JSON (push).
   Map<String, dynamic> toCattrackJSON() {
