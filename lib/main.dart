@@ -118,6 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double locSpeed = 0;
   double locSpeedAcc = 0;
   int locHeading = 0;
+  double locElevation = 0;
 
   // Display data history information
   int _countStored = 0;
@@ -276,6 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
       locSpeedAcc =
           num.parse(position.speedAccuracy.toDouble().toStringAsFixed(2));
       locHeading = num.parse(position.heading.toStringAsFixed(0));
+      locElevation = num.parse(position.altitude.toDouble().toStringAsFixed(1));
     });
 
     // Persist the position.
@@ -412,6 +414,7 @@ class _MyHomePageState extends State<MyHomePage> {
           InfoDisplay(keyname: "longitude", value: locLng),
           InfoDisplay(keyname: "latitude", value: locLat),
           InfoDisplay(keyname: "accuracy", value: locAcc),
+          InfoDisplay(keyname: "elevation", value: locElevation),
           InfoDisplay(keyname: "heading", value: locHeading),
           InfoDisplay(keyname: "speed", value: locSpeed),
           InfoDisplay(keyname: "speed accuracy", value: locSpeedAcc),
