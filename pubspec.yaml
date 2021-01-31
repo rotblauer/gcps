@@ -43,6 +43,7 @@ dependencies:
   # image_gallery_saver:
   # gallery_saver:
   flutter_background_geolocation: ^1.11.0
+  dio:
 
 dev_dependencies:
   flutter_test:

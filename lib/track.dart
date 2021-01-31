@@ -30,7 +30,7 @@ const dbSchemaColumns = [
   'battery_level real',
   'battery_is_charging integer',
   'event text',
-  'imgB64 text',
+  'imgb64 text',
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -154,7 +154,7 @@ class AppPoint {
       'battery_level': battery_level,
       'battery_is_charging': battery_is_charging ? 1 : 0,
       'event': event,
-      'imgB64': imgB64,
+      'imgb64': imgB64,
     };
   }
 
@@ -200,8 +200,8 @@ class AppPoint {
       event: appMap['event'] ?? "Unknown",
     );
 
-    if (appMap['imgB64'] != null && appMap['imgB64'] != "") {
-      ap.imgB64 = appMap['imgB64'];
+    if (appMap['imgb64'] != null && appMap['imgb64'] != "") {
+      ap.imgB64 = appMap['imgb64'].toString();
     }
     return ap;
   }
@@ -341,7 +341,7 @@ Future<void> insertTrack(AppPoint position) async {
   await db.insert(
     _cTableName,
     position.toMap(),
-    conflictAlgorithm: ConflictAlgorithm.replace,
+    conflictAlgorithm: ConflictAlgorithm.ignore,
   );
 }
 

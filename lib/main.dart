@@ -20,6 +20,7 @@ import 'package:path_provider/path_provider.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
+// import 'package:dio/dio.dart';
 
 import 'track.dart';
 
@@ -383,24 +384,35 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<http.Response> postTracks(List<dynamic> body) {
+  Future<http.Response> postTracks(List<Map<String, dynamic>> body) {
+    print("body.length: " + body.length.toString());
+    print(jsonEncode(body));
+
+    // Dio dio = new Dio();
+    // dio.options.connectTimeout = 60000; // 60s
+    // dio.options.receiveTimeout = 60000; // 60s
+    // dio.options.headers = postHeaders;
+    // var rs = await dio.post(postEndpoint, data: body);
+    // return rs.statusCode;
+
     final headers = <String, String>{
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      // 'Accept': 'application/json',
     };
     postHeaders.forEach((key, value) {
       headers[key] = value;
     });
     print("body.length: " + body.length.toString());
     print(jsonEncode(body));
-    return http
-        .post(
-          postEndpoint,
-          headers: headers,
-          encoding: Encoding.getByName("utf-8"),
-          body: jsonEncode(body),
-        )
-        .timeout(const Duration(seconds: 60));
+    return http.post(
+      postEndpoint,
+      headers: headers,
+      encoding: Encoding.getByName("utf-8"),
+      body: jsonEncode(body),
+    );
+    // .timeout(const Duration(seconds: 60));
+
+    // return res.statusCode;
   }
 
   Future<int> _pushTracks(List<AppPoint> tracks) async {
@@ -410,10 +422,10 @@ class _MyHomePageState extends State<MyHomePage> {
         List.generate(tracks.length, (index) {
       var c = tracks[index].toCattrackJSON();
 
-      c['tripStarted'] = _appStarted;
+      c['tripStarted'] = _appStarted.toUtc().toIso8601String();
       c['uuid'] = _deviceUUID;
 
-      return;
+      return c;
     });
 
     print("=====> ... Pushing tracks: " +
@@ -423,7 +435,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // print(jsonEncode(pushable));
     final res = await postTracks(pushable);
-
     return res.statusCode;
   }
 
