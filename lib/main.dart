@@ -15,6 +15,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:camera/camera.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
+import 'package:workmanager/workmanager.dart';
 // import 'package:gallery_saver/gallery_saver.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
 
@@ -152,6 +153,24 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  static const fetchLocationBackground = "fetchLocationBackground";
+  void callbackDispatcher() {
+    Workmanager.executeTask((task, inputData) async {
+      switch (task) {
+        case fetchLocationBackground:
+          Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+              .then((Position pos) {
+            _handleStreamLocationUpdate(pos);
+          }).catchError((err) {
+            print(err.toString());
+          });
+
+          break;
+      }
+      return Future.value(true);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -166,6 +185,15 @@ class _MyHomePageState extends State<MyHomePage> {
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
     _initCameras();
+
+    Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
+    /*
+    fuck
+     // When no frequency is provided the default 15 minutes is set.
+    // Minimum frequency is 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
+    */
+    Workmanager.registerPeriodicTask("1", fetchLocationBackground,
+        frequency: Duration(seconds: 1));
   }
 
   @override
