@@ -39,6 +39,8 @@ dependencies:
   http:
   connectivity:
   camera:
+  # image_gallery_saver:
+  gallery_saver:
 
 dev_dependencies:
   flutter_test:

@@ -15,6 +15,8 @@ import 'package:connectivity/connectivity.dart';
 import 'package:camera/camera.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
+// import 'package:gallery_saver/gallery_saver.dart';
+// import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 import 'track.dart';
 
@@ -609,7 +611,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
               // Store the picture in the temp directory.
               // Find the temp directory using the `path_provider` plugin.
               (await getTemporaryDirectory()).path,
-              '${DateTime.now()}.png',
+              '${DateTime.now().millisecondsSinceEpoch}.png',
             );
 
             // Attempt to take a picture and log where it's been saved.
@@ -646,6 +648,13 @@ class DisplayPictureScreen extends StatelessWidget {
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
       body: Image.file(File(imagePath)),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.save),
+        onPressed: () async {
+          // await GallerySaver.saveImage(imagePath ?? "");
+          // await ImageGallerySaver.saveFile(imagePath);
+        },
+      ),
     );
   }
 }
