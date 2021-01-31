@@ -7,15 +7,22 @@ import 'package:geolocator/geolocator.dart';
 const _cDatabaseName = 'cattracks_database.db';
 const _cTableName = "cattracks";
 const dbSchemaColumns = [
+  'odometer real',
+  'activity_confidence integer',
+  'activity_type string',
+  'battery_level real',
+  'battery_is_charging bool',
+  'timestamp integer',
   'longitude real',
   'latitude real',
-  'timestamp integer',
   'accuracy real',
   'altitude real',
-  'floor integer',
+  'altitude_accuracy real',
   'heading real',
+  'heading_accuracy real',
   'speed real',
-  'speed_accuracy real'
+  'speed_accuracy real',
+  'event string'
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -69,6 +76,97 @@ Future<void> insertTrack(Position position) async {
     m,
     conflictAlgorithm: ConflictAlgorithm.replace,
   );
+}
+
+abstract class AppPoint {
+  final double accuracy;
+  final double latitude;
+  final double longitude;
+  final double speed;
+  final double speed_accuracy;
+  final double heading;
+  final double heading_accuracy;
+  final double altitude;
+  final double altitude_accuracy;
+
+  AppPoint({
+    this.accuracy,
+    this.lat,
+    this.lng,
+    this.speed,
+    this.speed_accuracy,
+    this.heading,
+    this.heading_accuracy,
+    this.altitude,
+    this.altitude_accuracy,
+  });
+
+  // toMap creates a dynamic map for persistence.
+  Map<String, dynamic> toMap() {
+    return {
+      'accuracy': accuracy,
+      'lat': lat,
+      'lng': lng,
+      'speed': speed,
+      'speed_accuracy': speed_accuracy,
+      'heading': heading,
+      'heading_accuracy': heading_accuracy,
+      'altitude': altitude,
+      'altitude_accuracy': altitude_accuracy,
+    };
+  }
+
+  /// Converts the supplied [Map] to an instance of the [Position] class.
+  static AppPoint fromMap(dynamic message) {
+    if (message == null) {
+      return null;
+    }
+
+    final Map<dynamic, dynamic> appMap = message;
+
+    if (!appMap.containsKey('latitude')) {
+      throw ArgumentError.value(appMap, 'appMap',
+          'The supplied map doesn\'t contain the mandatory key `latitude`.');
+    }
+
+    if (!appMap.containsKey('longitude')) {
+      throw ArgumentError.value(appMap, 'appMap',
+          'The supplied map doesn\'t contain the mandatory key `longitude`.');
+    }
+
+    final timestamp = appMap['timestamp'] != null
+        ? DateTime.fromMillisecondsSinceEpoch(appMap['timestamp'].toInt(),
+            isUtc: true)
+        : null;
+
+    return AppPoint(
+      latitude: appMap['latitude'],
+      longitude: appMap['longitude'],
+      timestamp: timestamp,
+      altitude: appMap['altitude'] ?? 0.0,
+      accuracy: appMap['accuracy'] ?? 0.0,
+      heading: appMap['heading'] ?? 0.0,
+      floor: appMap['floor'],
+      speed: appMap['speed'] ?? 0.0,
+      speedAccuracy: appMap['speed_accuracy'] ?? 0.0,
+      isMocked: appMap['is_mocked'] ?? false,
+    );
+  }
+
+  // toJSON creates a dynamic map for JSON (push).
+  Map<String, dynamic> toJSON() {
+    return {
+      'accuracy': accuracy,
+      'lat': lat,
+      'lng': lng,
+      'speed': speed,
+      'speed_accuracy': speed_accuracy,
+      'heading': heading,
+      'heading_accuracy': heading_accuracy,
+      'altitude': altitude,
+      'altitude_accuracy': altitude_accuracy,
+    };
+  }
 }
 
 Future<int> countTracks() async {

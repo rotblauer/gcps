@@ -35,17 +35,17 @@ void main() {
   runApp(MyApp());
 }
 
-Future<String> _getId() async {
-  var deviceInfo = DeviceInfoPlugin();
-  if (Platform.isIOS) {
-    // import 'dart:io'
-    var iosDeviceInfo = await deviceInfo.iosInfo;
-    return iosDeviceInfo.identifierForVendor; // unique ID on iOS
-  } else {
-    var androidDeviceInfo = await deviceInfo.androidInfo;
-    return androidDeviceInfo.androidId; // unique ID on Android
-  }
-}
+// Future<String> _getId() async {
+//   var deviceInfo = DeviceInfoPlugin();
+//   if (Platform.isIOS) {
+//     // import 'dart:io'
+//     var iosDeviceInfo = await deviceInfo.iosInfo;
+//     return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+//   } else {
+//     var androidDeviceInfo = await deviceInfo.androidInfo;
+//     return androidDeviceInfo.androidId; // unique ID on Android
+//   }
+// }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -115,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final Connectivity _connectivity = Connectivity();
 
   // Subscriptions
-  StreamSubscription<Position> positionStream;
+  // StreamSubscription<Position> positionStream;
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   // Display location information
@@ -177,11 +177,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     // this.getIp();
-    _getId().then((value) {
-      _deviceUUID = value;
-      print("uuid: " + value);
-    });
-    this._startStream();
+    // _getId().then((value) {
+    //   _deviceUUID = value;
+    //   print("uuid: " + value);
+    // });
+    // this._startStream();
     initConnectivity();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
@@ -263,7 +263,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _connectivitySubscription.cancel();
-    positionStream.cancel();
+    // positionStream.cancel();
     super.dispose();
   }
 
@@ -437,65 +437,65 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _startStream() {
-    positionStream =
-        Geolocator.getPositionStream(desiredAccuracy: LocationAccuracy.best)
-            .listen(_handleStreamLocationUpdate);
-  }
+  // void _startStream() {
+  //   positionStream =
+  //       Geolocator.getPositionStream(desiredAccuracy: LocationAccuracy.best)
+  //           .listen(_handleStreamLocationUpdate);
+  // }
 
-  /// Determine the current position of the device.
-  ///
-  /// When the location services are not enabled or permissions
-  /// are denied the `Future` will return an error.
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  // /// Determine the current position of the device.
+  // ///
+  // /// When the location services are not enabled or permissions
+  // /// are denied the `Future` will return an error.
+  // Future<Position> _determinePosition() async {
+  //   bool serviceEnabled;
+  //   LocationPermission permission;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
+  //   serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  //   if (!serviceEnabled) {
+  //     return Future.error('Location services are disabled.');
+  //   }
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.deniedForever) {
-      /*
-      Settings
+  //   permission = await Geolocator.checkPermission();
+  //   if (permission == LocationPermission.deniedForever) {
+  //     /*
+  //     Settings
 
-      In some cases it is necessary to ask the user and update their device settings. 
-      For example when the user initially permanently denied permissions to access 
-      the device's location or if the location services are not enabled 
-      (and, on Android, automatic resolution didn't work). In these cases you 
-      can use the openAppSettings or openLocationSettings methods to immediately 
-      redirect the user to the device's settings page.
+  //     In some cases it is necessary to ask the user and update their device settings.
+  //     For example when the user initially permanently denied permissions to access
+  //     the device's location or if the location services are not enabled
+  //     (and, on Android, automatic resolution didn't work). In these cases you
+  //     can use the openAppSettings or openLocationSettings methods to immediately
+  //     redirect the user to the device's settings page.
 
-      On Android the openAppSettings method will redirect the user to the App 
-      specific settings where the user can update necessary permissions. 
-      The openLocationSettings method will redirect the user to the location 
-      settings where the user can enable/ disable the location services.
+  //     On Android the openAppSettings method will redirect the user to the App
+  //     specific settings where the user can update necessary permissions.
+  //     The openLocationSettings method will redirect the user to the location
+  //     settings where the user can enable/ disable the location services.
 
-      On iOS we are not allowed to open specific setting pages so both methods 
-      will redirect the user to the Settings App from where the user can navigate 
-      to the correct settings category to update permissions or enable/ disable 
-      the location services.
-      */
-      // await Geolocator.openAppSettings();
-      await Geolocator.openLocationSettings();
-      return Future.error(
-          'Location permissions are permantly denied, we cannot request permissions.');
-    }
+  //     On iOS we are not allowed to open specific setting pages so both methods
+  //     will redirect the user to the Settings App from where the user can navigate
+  //     to the correct settings category to update permissions or enable/ disable
+  //     the location services.
+  //     */
+  //     // await Geolocator.openAppSettings();
+  //     await Geolocator.openLocationSettings();
+  //     return Future.error(
+  //         'Location permissions are permantly denied, we cannot request permissions.');
+  //   }
 
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse &&
-          permission != LocationPermission.always) {
-        return Future.error(
-            'Location permissions are denied (actual value: $permission).');
-      }
-    }
+  //   if (permission == LocationPermission.denied) {
+  //     permission = await Geolocator.requestPermission();
+  //     if (permission != LocationPermission.whileInUse &&
+  //         permission != LocationPermission.always) {
+  //       return Future.error(
+  //           'Location permissions are denied (actual value: $permission).');
+  //     }
+  //   }
 
-    return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best);
-  }
+  //   return await Geolocator.getCurrentPosition(
+  //       desiredAccuracy: LocationAccuracy.best);
+  // }
 
   Widget _exampleStuff() {
     return Center(
@@ -559,33 +559,33 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text(
                 "Get location from IP",
               )),
-          Text("Geolocate (API): " + geolocation_api_text),
-          TextButton(
-              onPressed: () {
-                this
-                    ._determinePosition()
-                    .then((value) => {
-                          setState(() {
-                            geolocation_api_text = value.toString();
-                          })
-                        })
-                    .catchError((err) => {
-                          setState(() {
-                            geolocation_api_text = err.toString();
-                          })
-                        });
-              },
-              child: Text(
-                "Get geolocation from  API",
-              )),
-          Text("Geolocate Stream (API): " + geolocation_api_stream_text),
-          TextButton(
-              onPressed: () {
-                this._startStream();
-              },
-              child: Text(
-                "Get streaming geolocation from API",
-              )),
+          // Text("Geolocate (API): " + geolocation_api_text),
+          // TextButton(
+          //     onPressed: () {
+          //       this
+          //           ._determinePosition()
+          //           .then((value) => {
+          //                 setState(() {
+          //                   geolocation_api_text = value.toString();
+          //                 })
+          //               })
+          //           .catchError((err) => {
+          //                 setState(() {
+          //                   geolocation_api_text = err.toString();
+          //                 })
+          //               });
+          //     },
+          //     child: Text(
+          //       "Get geolocation from  API",
+          //     )),
+          // Text("Geolocate Stream (API): " + geolocation_api_stream_text),
+          // TextButton(
+          //     onPressed: () {
+          //       this._startStream();
+          //     },
+          //     child: Text(
+          //       "Get streaming geolocation from API",
+          //     )),
           TextButton(
               onPressed: () {
                 Navigator.push(
