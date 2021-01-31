@@ -336,12 +336,21 @@ String activityTypeApp(String original) {
   }
 }
 
-Future<void> insertTrack(AppPoint position) async {
+Future<void> insertTrack(AppPoint point) async {
   final Database db = await database();
   await db.insert(
     _cTableName,
-    position.toMap(),
+    point.toMap(),
     conflictAlgorithm: ConflictAlgorithm.ignore,
+  );
+}
+
+Future<void> insertTrackForce(AppPoint point) async {
+  final Database db = await database();
+  await db.insert(
+    _cTableName,
+    point.toMap(),
+    conflictAlgorithm: ConflictAlgorithm.replace,
   );
 }
 

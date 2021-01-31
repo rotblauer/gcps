@@ -21,6 +21,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
 // import 'package:dio/dio.dart';
+import 'package:image/image.dart' as img;
 
 import 'track.dart';
 
@@ -94,14 +95,33 @@ class MyHomePage extends StatefulWidget {
 }
 
 class InfoDisplay extends StatelessWidget {
-  InfoDisplay({this.keyname, this.value});
+  InfoDisplay({this.keyname, this.value, this.options});
 
   final String keyname;
   final dynamic value;
+  Map<String, dynamic> options;
 
   @override
   Widget build(BuildContext context) {
-    return Text('Key: $keyname, Value: $value');
+    return Container(
+        padding: const EdgeInsets.all(8),
+        // color: Colors.green[500],
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                '$keyname',
+                style: Theme.of(context).textTheme.overline,
+              ),
+              Text(
+                '$value',
+                style: options != null && options.containsKey('t2.font')
+                    ? options['t2.font']
+                    : Theme.of(context).textTheme.headline4,
+                maxLines: 2,
+              ),
+            ]));
   }
 }
 
@@ -599,83 +619,166 @@ class _MyHomePageState extends State<MyHomePage> {
         // center the children vertically; the main axis here is the vertical
         // axis because Columns are vertical (the cross axis would be
         // horizontal).
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          InfoDisplay(keyname: "uuid", value: _deviceUUID),
-          InfoDisplay(keyname: "connection status", value: _connectionStatus),
-          InfoDisplay(keyname: "longitude", value: glocation.coords.longitude),
-          InfoDisplay(keyname: "latitude", value: glocation.coords.latitude),
-          InfoDisplay(keyname: "accuracy", value: glocation.coords.accuracy),
-          InfoDisplay(keyname: "elevation", value: glocation.coords.altitude),
-          InfoDisplay(keyname: "heading", value: glocation.coords.heading),
-          InfoDisplay(keyname: "speed", value: glocation.coords.speed),
-          InfoDisplay(
-              keyname: "speed accuracy", value: glocation.coords.speedAccuracy),
-          InfoDisplay(keyname: "activity", value: glocation.activity.type),
-          InfoDisplay(
-              keyname: "activity confidence",
-              value: glocation.activity.confidence),
-          InfoDisplay(keyname: "stored", value: _countStored),
-          InfoDisplay(keyname: "pushed", value: _countPushed),
-          Text(
-            'You done ${ew.adjectives[_counter]}ly caressed the button this many times:',
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              ElevatedButton(
+                  onPressed: () {
+                    // snaps().then((value) {
+                    //   print("stored snapsy");
+                    //   for (var item in value) {
+                    //     print(jsonEncode(item.toCattrackJSON()));
+                    //   }
+                    // });
+                    this._pushTracksBatching();
+                  },
+                  child: Icon(Icons.cloud_upload)),
+            ],
           ),
-          Text(
-            '$_counter',
-            style: Theme.of(context).textTheme.headline4,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              InfoDisplay(
+                keyname: "stored",
+                value: _countStored,
+                options: {
+                  't2.font': Theme.of(context).textTheme.bodyText2,
+                },
+              ),
+              InfoDisplay(
+                keyname: "pushed",
+                value: _countPushed,
+                options: {
+                  't2.font': Theme.of(context).textTheme.bodyText2,
+                },
+              ),
+            ],
           ),
-          Text('Geolocate (IP): ' + geolocation_text),
-          TextButton(
-              onPressed: () {
-                this.getIp().then((value) => {
-                      if (geolocationData != null)
-                        {
-                          setState(() {
-                            geolocation_text =
-                                jsonEncode(geolocationData.toJson());
-                          })
-                        }
-                      else
-                        {
-                          setState(() {
-                            geolocation_text =
-                                "could not get location data from IP";
-                          })
-                        }
-                    });
-              },
-              child: Text(
-                "Get location from IP",
-              )),
-          Text("Geolocate (API): " + geolocation_api_text),
-          TextButton(
-              onPressed: () {
-                bg.BackgroundGeolocation.getCurrentPosition().then((value) {
-                  this._handleStreamLocationUpdate(value);
-                });
-              },
-              child: Text(
-                "Get geolocation from  API",
-              )),
+          Row(
+            // primary: false,
+            // padding: const EdgeInsets.all(20),
+            // crossAxisSpacing: 10,
+            // mainAxisSpacing: 10,
+            // crossAxisCount: 2,
+            children: <Widget>[
+              InfoDisplay(
+                keyname: "uuid",
+                value: _deviceUUID,
+                options: {
+                  't2.font': Theme.of(context).textTheme.bodyText2,
+                },
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              InfoDisplay(
+                keyname: "connection status",
+                value: _connectionStatus,
+                options: {
+                  't2.font': Theme.of(context).textTheme.bodyText2,
+                },
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              InfoDisplay(
+                keyname: "longitude,latitude",
+                value: '${glocation.coords.longitude}' +
+                    ',' +
+                    '${glocation.coords.latitude}',
+                options: {
+                  't2.font': Theme.of(context).textTheme.bodyText2,
+                },
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              InfoDisplay(
+                  keyname: "elevation", value: glocation.coords.altitude),
+              InfoDisplay(
+                  keyname: "accuracy", value: glocation.coords.accuracy),
+            ],
+          ),
+          Row(
+            children: [
+              InfoDisplay(keyname: "heading", value: glocation.coords.heading),
+              InfoDisplay(keyname: "speed", value: glocation.coords.speed),
+              InfoDisplay(
+                  keyname: "speed accuracy",
+                  value: glocation.coords.speedAccuracy),
+            ],
+          ),
+          Row(
+            children: [
+              InfoDisplay(keyname: "activity", value: glocation.activity.type),
+              InfoDisplay(
+                  keyname: "activity confidence",
+                  value: glocation.activity.confidence),
+            ],
+          ),
+          Row(
+            children: [],
+          ),
+
+          // Text(
+          //   'You done ${ew.adjectives[_counter]}ly caressed the button this many times:',
+          // ),
+          // Text(
+          //   '$_counter',
+          //   style: Theme.of(context).textTheme.headline4,
+          // ),
+          // Text('Geolocate (IP): ' + geolocation_text),
+          // TextButton(
+          //     onPressed: () {
+          //       this.getIp().then((value) => {
+          //             if (geolocationData != null)
+          //               {
+          //                 setState(() {
+          //                   geolocation_text =
+          //                       jsonEncode(geolocationData.toJson());
+          //                 })
+          //               }
+          //             else
+          //               {
+          //                 setState(() {
+          //                   geolocation_text =
+          //                       "could not get location data from IP";
+          //                 })
+          //               }
+          //           });
+          //     },
+          //     child: Text(
+          //       "Get location from IP",
+          //     )),
+          // Text("Geolocate (API): " + geolocation_api_text),
+          // TextButton(
+          //     onPressed: () {
+          //       bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+          //         this._handleStreamLocationUpdate(value);
+          //       });
+          //     },
+          //     child: Text(
+          //       "Get geolocation from  API",
+          //     )),
           // Text("Geolocate Stream (API): " + geolocation_api_stream_text),
-          TextButton(
-              onPressed: () {
-                this._pushTracksBatching();
-              },
-              child: Text(
-                "Push",
-              )),
-          TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        TakePictureScreen(camera: firstCamera),
-                  ),
-                );
-              },
-              child: Text("Camera!"))
+          // TextButton(
+          //     onPressed: () {
+          //       Navigator.push(
+          //         context,
+          //         MaterialPageRoute(
+          //           builder: (context) =>
+          //               TakePictureScreen(camera: firstCamera),
+          //         ),
+          //       );
+          //     },
+          //     child: Text("Camera!"))
         ],
       ),
     );
@@ -696,10 +799,18 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: _exampleStuff(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TakePictureScreen(camera: firstCamera),
+            ),
+          );
+        },
+        tooltip: 'Camera',
+        child: Icon(Icons.camera),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
@@ -824,22 +935,31 @@ class DisplayPictureScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.save),
         onPressed: () async {
-          bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+          // final img.Image orientedImage = img.bakeOrientation(Image.file(File(imagePath)))
+          return bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+            final img.Image capturedImage =
+                img.decodeImage(File(imagePath).readAsBytesSync());
+            final img.Image orientedImage = img.bakeOrientation(capturedImage);
+            File(imagePath).writeAsBytesSync(img.encodePng(orientedImage));
+
             var p = AppPoint.fromLocationProvider(value);
             p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
             print("saved: " + jsonEncode(p.toCattrackJSON()));
-            insertTrack(p).then((value) {
+            insertTrackForce(p).then((value) {
+              File(imagePath).deleteSync();
               Navigator.popUntil(context, ModalRoute.withName('/'));
             });
             return null;
-          }).then((value) {
-            snaps().then((value) {
-              print("stored snapsy");
-              for (var item in value) {
-                print(jsonEncode(item.toCattrackJSON()));
-              }
-            });
           });
+          // .then((value) {
+          //   // Prove that it actually got saved.
+          //   snaps().then((value) {
+          //     print("stored snapsy");
+          //     for (var item in value) {
+          //       print(jsonEncode(item.toCattrackJSON()));
+          //     }
+          //   });
+          // });
           // await GallerySaver.saveImage(imagePath ?? "");
           // await ImageGallerySaver.saveFile(imagePath);
         },
