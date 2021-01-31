@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:path/path.dart';
@@ -13,7 +14,7 @@ const _cTableName = "cattracks";
 const dbSchemaColumns = [
   'uuid string',
   'time string',
-  'timestamp integer',
+  'timestamp integer UNIQUE',
   'accuracy real',
   'latitude real',
   'longitude real',
@@ -27,7 +28,7 @@ const dbSchemaColumns = [
   'activity_confidence integer',
   'activity_type string',
   'battery_level real',
-  'battery_is_charging bool',
+  'battery_is_charging integer',
   'event string',
 ];
 
@@ -125,7 +126,7 @@ class AppPoint {
       'activity_confidence': activity_confidence,
       'activity_type': activity_type,
       'battery_level': battery_level,
-      'battery_is_charging': battery_is_charging,
+      'battery_is_charging': battery_is_charging ? 1 : 0,
       'event': event,
     };
   }
@@ -155,7 +156,7 @@ class AppPoint {
     return AppPoint(
       uuid: appMap['uuid'],
       timestamp: appMap['timestamp'],
-      time: appMap['time'],
+      time: DateTime.parse(appMap['time']),
       latitude: appMap['latitude'],
       longitude: appMap['longitude'],
       accuracy: appMap['accuracy'] ?? -1.0,
@@ -169,7 +170,7 @@ class AppPoint {
       activity_confidence: appMap['activity_confidence'] ?? 0.0,
       activity_type: appMap['activity_type'] ?? "Unknown",
       battery_level: appMap['battery_level'] ?? -1.0,
-      battery_is_charging: appMap['battery_is_charging'] ?? false,
+      battery_is_charging: appMap['battery_is_charging'] == 1 ? true : false,
       event: appMap['event'] ?? "Unknown",
     );
   }
@@ -212,7 +213,7 @@ class AppPoint {
     );
   }
 
-  // toJSON creates a dynamic map for JSON (push).
+  // toCattrackJSON creates a dynamic map for JSON (push).
   Map<String, dynamic> toCattrackJSON() {
     /*
     type TrackPoint struct {
@@ -236,13 +237,31 @@ class AppPoint {
       COVerified bool      `json:"COVerified"`
       RemoteAddr string    `json:"remoteaddr"`
     }
-
     */
+    // GOTCHA: Notes are strings.
+    String notesString = "";
+    String batteryStatusString = "";
+    var batteryStatus = <String, dynamic>{
+      'level': battery_level.toPrecision(0),
+      'status': battery_is_charging
+          ? (battery_level == 1 ? 'full' : 'charging')
+          : 'unplugged', // full/unplugged
+    };
+    batteryStatusString = jsonEncode(batteryStatus);
+    var notes = <String, dynamic>{
+      'activity': activityTypeApp(activity_type),
+      'activity_confidence': activity_confidence,
+      'numberOfSteps': odometer.toInt(),
+      'distance': 0,
+      'batteryStatus': batteryStatusString,
+      // 'imgb64' string
+    };
+    notesString = jsonEncode(notes);
     return {
       'uuid': uuid,
       'version': appVersion,
       'name': deviceName,
-      'time': time,
+      'time': time.toUtc().toIso8601String(),
       'timestamp': timestamp,
       'lat': latitude.toPrecision(9),
       'long': longitude.toPrecision(9),
@@ -253,18 +272,7 @@ class AppPoint {
       'heading_accuracy': heading_accuracy.toPrecision(1),
       'elevation': altitude.toPrecision(2),
       'vAccuracy': altitude_accuracy.toPrecision(1),
-      'notes': <String, dynamic>{
-        'activity': activityTypeApp(activity_type),
-        'activity_confidence': activity_confidence,
-        'numberOfSteps': odometer.toPrecision(0),
-        // 'distance'
-        'batteryStatus': <String, dynamic>{
-          'level': battery_level.toPrecision(0),
-          'status':
-              battery_is_charging ? 'full' : 'unplugged', // full/unplugged
-        }
-        // 'imgb64' string
-      }
+      'notes': notesString,
     };
   }
 }

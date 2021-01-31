@@ -166,6 +166,65 @@ class _MyHomePageState extends State<MyHomePage> {
   //   });
   // }
 
+  /// Receives all events from BackgroundGeolocation while app is terminated:
+  void headlessTask(bg.HeadlessEvent headlessEvent) async {
+    print('[HeadlessTask]: ${headlessEvent}');
+
+    // Implement a `case` for only those events you're interested in.
+    switch (headlessEvent.name) {
+      case bg.Event.TERMINATE:
+        bg.State state = headlessEvent.event;
+        print('- State: ${state}');
+        break;
+      case bg.Event.HEARTBEAT:
+        bg.HeartbeatEvent event = headlessEvent.event;
+        print('- HeartbeatEvent: ${event}');
+        break;
+      case bg.Event.LOCATION:
+        bg.Location location = headlessEvent.event;
+        print('- Location: ${location}');
+        _handleStreamLocationUpdate(location);
+        break;
+      case bg.Event.MOTIONCHANGE:
+        bg.Location location = headlessEvent.event;
+        print('- Location: ${location}');
+        _handleStreamLocationUpdate(location);
+        break;
+      case bg.Event.GEOFENCE:
+        bg.GeofenceEvent geofenceEvent = headlessEvent.event;
+        print('- GeofenceEvent: ${geofenceEvent}');
+        break;
+      case bg.Event.GEOFENCESCHANGE:
+        bg.GeofencesChangeEvent event = headlessEvent.event;
+        print('- GeofencesChangeEvent: ${event}');
+        break;
+      case bg.Event.SCHEDULE:
+        bg.State state = headlessEvent.event;
+        print('- State: ${state}');
+        break;
+      case bg.Event.ACTIVITYCHANGE:
+        bg.ActivityChangeEvent event = headlessEvent.event;
+        print('ActivityChangeEvent: ${event}');
+        break;
+      case bg.Event.HTTP:
+        bg.HttpEvent response = headlessEvent.event;
+        print('HttpEvent: ${response}');
+        break;
+      case bg.Event.POWERSAVECHANGE:
+        bool enabled = headlessEvent.event;
+        print('ProviderChangeEvent: ${enabled}');
+        break;
+      case bg.Event.CONNECTIVITYCHANGE:
+        bg.ConnectivityChangeEvent event = headlessEvent.event;
+        print('ConnectivityChangeEvent: ${event}');
+        break;
+      case bg.Event.ENABLEDCHANGE:
+        bool enabled = headlessEvent.event;
+        print('EnabledChangeEvent: ${enabled}');
+        break;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -218,8 +277,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // Fired whenever a location is recorded
     bg.BackgroundGeolocation.onLocation((bg.Location location) {
       // print('[location] - ${location.toString(compact: false)}');
-      var j = jsonEncode(location.toMap());
-      print('[location] - ${j}');
+      // var j = jsonEncode(location.toMap());
+      // print('[location] - ${j}');
       _handleStreamLocationUpdate(location);
     });
 
@@ -234,16 +293,34 @@ class _MyHomePageState extends State<MyHomePage> {
       print('[providerchange] - $event');
     });
 
+    bg.BackgroundGeolocation.registerHeadlessTask(headlessTask);
+
     ////
     // 2.  Configure the plugin
     //
     bg.BackgroundGeolocation.ready(bg.Config(
             desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
-            distanceFilter: 1.0,
+            distanceFilter: 0.0,
+            disableElasticity: true,
+            isMoving: false,
+            stopTimeout: 2, // minutes
+            minimumActivityRecognitionConfidence: 25, // default: 75
+
+            disableStopDetection: true,
+            stopOnStationary: false,
+            pausesLocationUpdatesAutomatically: false,
+            preventSuspend: true,
+            disableAutoSyncOnCellular: true,
+            maxRecordsToPersist: 24 * 60 * 60 * 3,
+            locationUpdateInterval: 1000,
+            fastestLocationUpdateInterval: 1000,
+            allowIdenticalLocations: false,
+            speedJumpFilter: 300,
             stopOnTerminate: false,
+            enableHeadless: true,
             startOnBoot: true,
             heartbeatInterval: 60,
-            debug: true,
+            debug: false,
             logLevel: bg.Config.LOG_LEVEL_INFO))
         .then((bg.State state) {
       if (!state.enabled) {
@@ -304,33 +381,76 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<http.Response> postTracks(List<Map<String, dynamic>> body) {
+  Future<http.Response> postTracks(List<dynamic> body) {
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
     };
     postHeaders.forEach((key, value) {
       headers[key] = value;
     });
+    print("body.length: " + body.length.toString());
+    print(jsonEncode(body));
     return http.post(
       postEndpoint,
       headers: headers,
+      // encoding: Encoding.getByName("utf-8"),
       body: jsonEncode(body),
     );
   }
 
   Future<int> _pushTracks(List<AppPoint> tracks) async {
-    print("Got batched tracks:");
+    print("=====> ... Pushing tracks: " + tracks.length.toString());
 
     final List<Map<String, dynamic>> pushable =
         List.generate(tracks.length, (index) {
       return tracks[index].toCattrackJSON();
     });
 
+    print("=====> ... Pushing tracks: " +
+        tracks.length.toString() +
+        "/" +
+        pushable.length.toString());
+
     // print(jsonEncode(pushable));
     final res = await postTracks(pushable);
 
-    // TODO
     return res.statusCode;
+  }
+
+  Future<void> _pushTracksBatching() async {
+    print("=====> Attempting push");
+
+    // All conditions passed, attempt to push all stored points.
+    for (var count = await countTracks();
+        count > 0;
+        count = await countTracks()) {
+      var tracks = await firstTracksWithLimit(100);
+      var resCode = await _pushTracks(tracks);
+
+      if (resCode == 200) {
+        // Push yielded success, delete the tracks we just pushed.
+        // Note that the delete condition used assumes tracks are ordered
+        // earliest -> latest.
+        print("🗸 PUSH OK");
+        setState(() {
+          _countPushed += tracks.length;
+        });
+        deleteTracksBeforeInclusive(tracks[tracks.length - 1].timestamp);
+      } else {
+        print("✘ PUSH FAILED, status: " + resCode.toString());
+        break;
+      }
+    }
+    var count = await countTracks();
+    if (count == 0) {
+      bg.BackgroundGeolocation.sync(); // delete from database
+    }
+    // Awkwardly placed but whatever.
+    // Update the persistent-state display.
+    setState(() {
+      _countStored = count;
+    });
   }
 
   void _handleStreamLocationUpdate(bg.Location location) async {
@@ -345,8 +465,12 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
+    // // debug
+    // print(
+    //     jsonEncode(AppPoint.fromLocationProvider(location).toCattrackJSON()));
+
     // Got a position!
-    print("streamed position: " + location.toString());
+    // print("streamed position: " + location.toString());
 
     // Update display
     setState(() {
@@ -373,31 +497,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    // All conditions passed, attempt to push all stored points.
-    for (var count = await countTracks();
-        count > 0;
-        count = await countTracks()) {
-      var tracks = await firstTracksWithLimit(100);
-      var resCode = await _pushTracks(tracks);
-
-      if (resCode == 200) {
-        // Push yielded success, delete the tracks we just pushed.
-        // Note that the delete condition used assumes tracks are ordered
-        // earliest -> latest.
-        setState(() {
-          _countPushed += tracks.length;
-        });
-        deleteTracksBeforeInclusive(tracks[tracks.length - 1].timestamp);
-      } else {
-        print("bad status: " + resCode.toString());
-        break;
-      }
-    }
-    // Awkwardly placed but whatever.
-    // Update the persistent-state display.
-    setState(() {
-      _countStored = count;
-    });
+    await _pushTracksBatching();
   }
 
   // void _startStream() {
@@ -527,33 +627,24 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text(
                 "Get location from IP",
               )),
-          // Text("Geolocate (API): " + geolocation_api_text),
-          // TextButton(
-          //     onPressed: () {
-          //       this
-          //           ._determinePosition()
-          //           .then((value) => {
-          //                 setState(() {
-          //                   geolocation_api_text = value.toString();
-          //                 })
-          //               })
-          //           .catchError((err) => {
-          //                 setState(() {
-          //                   geolocation_api_text = err.toString();
-          //                 })
-          //               });
-          //     },
-          //     child: Text(
-          //       "Get geolocation from  API",
-          //     )),
+          Text("Geolocate (API): " + geolocation_api_text),
+          TextButton(
+              onPressed: () {
+                bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+                  this._handleStreamLocationUpdate(value);
+                });
+              },
+              child: Text(
+                "Get geolocation from  API",
+              )),
           // Text("Geolocate Stream (API): " + geolocation_api_stream_text),
-          // TextButton(
-          //     onPressed: () {
-          //       this._startStream();
-          //     },
-          //     child: Text(
-          //       "Get streaming geolocation from API",
-          //     )),
+          TextButton(
+              onPressed: () {
+                this._pushTracksBatching();
+              },
+              child: Text(
+                "Push",
+              )),
           TextButton(
               onPressed: () {
                 Navigator.push(
