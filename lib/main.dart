@@ -4,12 +4,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:convert'; // jsonEncode
 import 'package:english_words/english_words.dart' as ew;
+import 'package:flutter/services.dart';
 import 'package:gcps/secrets.dart';
 import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/widgets.dart';
 import 'package:device_info/device_info.dart';
 import 'package:http/http.dart' as http;
+import 'package:connectivity/connectivity.dart';
 
 import 'track.dart';
 
@@ -101,7 +103,12 @@ class _MyHomePageState extends State<MyHomePage> {
   String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
 
+  String _connectionStatus = 'Unknown';
+  final Connectivity _connectivity = Connectivity();
+
+  // Subscriptions
   StreamSubscription<Position> positionStream;
+  StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   // Display location information
   String _deviceUUID;
@@ -124,6 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  @override
   void initState() {
     super.initState();
     // this.getIp();
@@ -132,6 +140,49 @@ class _MyHomePageState extends State<MyHomePage> {
       print("uuid: " + value);
     });
     this._startStream();
+    initConnectivity();
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    positionStream.cancel();
+    super.dispose();
+  }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initConnectivity() async {
+    ConnectivityResult result;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      print(e.toString());
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    switch (result) {
+      case ConnectivityResult.wifi:
+      case ConnectivityResult.mobile:
+      case ConnectivityResult.none:
+        setState(() => _connectionStatus = result.toString());
+        break;
+      default:
+        setState(() => _connectionStatus = 'Failed to get connectivity.');
+        break;
+    }
   }
 
   Future<void> getIp() async {
@@ -230,7 +281,13 @@ class _MyHomePageState extends State<MyHomePage> {
     if (count % 100 != 0) {
       return;
     }
+    if (!_connectionStatus.contains("wifi") &&
+        !_connectionStatus.contains("mobile")) {
+      print("no positive connectivity, no attempt push");
+      return;
+    }
 
+    // All conditions passed, attempt to push all stored points.
     for (var count = await countTracks();
         count > 0;
         count = await countTracks()) {
@@ -326,6 +383,7 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           InfoDisplay(keyname: "uuid", value: _deviceUUID),
+          InfoDisplay(keyname: "connection status", value: _connectionStatus),
           InfoDisplay(keyname: "longitude", value: locLng),
           InfoDisplay(keyname: "stored", value: _countStored),
           Text(

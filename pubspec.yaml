@@ -36,6 +36,7 @@ dependencies:
   path:
   device_info:
   http:
+  connectivity:
 
 dev_dependencies:
   flutter_test:
