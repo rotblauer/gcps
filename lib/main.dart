@@ -19,7 +19,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Development: reset (rm -rf db) if exists.
-  resetDB();
+  // resetDB();
 
   // Run app.
   runApp(MyApp());
@@ -127,7 +127,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     // this.getIp();
-    _getId().then((value) => {_deviceUUID = value});
+    _getId().then((value) {
+      _deviceUUID = value;
+      print("uuid: " + value);
+    });
     this._startStream();
   }
 
@@ -322,6 +325,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // horizontal).
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
+          InfoDisplay(keyname: "uuid", value: _deviceUUID),
           InfoDisplay(keyname: "longitude", value: locLng),
           InfoDisplay(keyname: "stored", value: _countStored),
           Text(
