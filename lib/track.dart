@@ -1,28 +1,34 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
+    as bg;
+import 'secrets.dart';
 
 const _cDatabaseName = 'cattracks_database.db';
 const _cTableName = "cattracks";
 const dbSchemaColumns = [
+  'uuid string',
+  'time string',
+  'timestamp integer',
+  'accuracy real',
+  'latitude real',
+  'longitude real',
+  'speed real',
+  'speed_accuracy real',
+  'heading real',
+  'heading_accuracy real',
+  'altitude real',
+  'altitude_accuracy real',
   'odometer real',
   'activity_confidence integer',
   'activity_type string',
   'battery_level real',
   'battery_is_charging bool',
-  'timestamp integer',
-  'longitude real',
-  'latitude real',
-  'accuracy real',
-  'altitude real',
-  'altitude_accuracy real',
-  'heading real',
-  'heading_accuracy real',
-  'speed real',
-  'speed_accuracy real',
-  'event string'
+  'event string',
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -78,7 +84,10 @@ Future<void> insertTrack(Position position) async {
   );
 }
 
-abstract class AppPoint {
+class AppPoint {
+  final String uuid;
+  final DateTime time;
+  final int timestamp;
   final double accuracy;
   final double latitude;
   final double longitude;
@@ -88,31 +97,55 @@ abstract class AppPoint {
   final double heading_accuracy;
   final double altitude;
   final double altitude_accuracy;
+  final double odometer;
+  final int activity_confidence;
+  final String activity_type;
+  final double battery_level;
+  final bool battery_is_charging;
+  final String event;
 
   AppPoint({
+    this.uuid,
+    this.time,
+    this.timestamp,
     this.accuracy,
-    this.lat,
-    this.lng,
+    this.latitude,
+    this.longitude,
     this.speed,
     this.speed_accuracy,
     this.heading,
     this.heading_accuracy,
     this.altitude,
     this.altitude_accuracy,
+    this.odometer,
+    this.activity_confidence,
+    this.activity_type,
+    this.battery_level,
+    this.battery_is_charging,
+    this.event,
   });
 
   // toMap creates a dynamic map for persistence.
   Map<String, dynamic> toMap() {
     return {
+      'uuid': uuid,
+      'time': time,
+      'timestamp': timestamp,
       'accuracy': accuracy,
-      'lat': lat,
-      'lng': lng,
+      'latitude': latitude,
+      'longitude': longitude,
       'speed': speed,
       'speed_accuracy': speed_accuracy,
       'heading': heading,
       'heading_accuracy': heading_accuracy,
       'altitude': altitude,
       'altitude_accuracy': altitude_accuracy,
+      'odometer': odometer,
+      'activity_confidence': activity_confidence,
+      'activity_type': activity_type,
+      'battery_level': battery_level,
+      'battery_is_charging': battery_is_charging,
+      'event': event,
     };
   }
 
@@ -133,39 +166,113 @@ abstract class AppPoint {
       throw ArgumentError.value(appMap, 'appMap',
           'The supplied map doesn\'t contain the mandatory key `longitude`.');
     }
-
-    final timestamp = appMap['timestamp'] != null
-        ? DateTime.fromMillisecondsSinceEpoch(appMap['timestamp'].toInt(),
-            isUtc: true)
-        : null;
+    if (!appMap.containsKey('time')) {
+      throw ArgumentError.value(appMap, 'appMap',
+          'The supplied map doesn\'t contain the mandatory key `time`.');
+    }
 
     return AppPoint(
+      uuid: appMap['uuid'],
+      timestamp: appMap['timestamp'],
+      time: appMap['time'],
       latitude: appMap['latitude'],
       longitude: appMap['longitude'],
-      timestamp: timestamp,
+      accuracy: appMap['accuracy'] ?? -1.0,
       altitude: appMap['altitude'] ?? 0.0,
-      accuracy: appMap['accuracy'] ?? 0.0,
+      altitude_accuracy: appMap['altitude_accuracy'] ?? -1.0,
       heading: appMap['heading'] ?? 0.0,
-      floor: appMap['floor'],
+      heading_accuracy: appMap['heading_accuracy'] ?? -1.0,
       speed: appMap['speed'] ?? 0.0,
-      speedAccuracy: appMap['speed_accuracy'] ?? 0.0,
-      isMocked: appMap['is_mocked'] ?? false,
+      speed_accuracy: appMap['speed_accuracy'] ?? -1.0,
+      odometer: appMap['odometer'] ?? 0.0,
+      activity_confidence: appMap['activity_confidence'] ?? 0.0,
+      activity_type: appMap['activity_type'] ?? "Unknown",
+      battery_level: appMap['battery_level'] ?? -1.0,
+      battery_is_charging: appMap['battery_is_charging'] ?? false,
+      event: appMap['event'] ?? "Unknown",
     );
   }
 
+  static AppPoint fromLocationProvider(bg.Location location) {}
+
   // toJSON creates a dynamic map for JSON (push).
-  Map<String, dynamic> toJSON() {
+  Map<String, dynamic> toCattrackJSON() {
+    /*
+    type TrackPoint struct {
+      Uuid       string    `json:"uuid"`
+      PushToken  string    `json:"pushToken"`
+      Version    string    `json:"version"`
+      ID         int64     `json:"id"` //either bolt auto id or unixnano //think nano is better cuz can check for dupery
+      Name       string    `json:"name"`
+      Lat        float64   `json:"lat"`
+      Lng        float64   `json:"long"`
+      Accuracy   float64   `json:"accuracy"`  // horizontal, in meters
+      VAccuracy  float64   `json:"vAccuracy"` // vertical, in meteres
+      Elevation  float64   `json:"elevation"` //in meters
+      Speed      float64   `json:"speed"`     //in kilometers per hour
+      Tilt       float64   `json:"tilt"`      //degrees?
+      Heading    float64   `json:"heading"`   //in degrees
+      HeartRate  float64   `json:"heartrate"` // bpm
+      Time       time.Time `json:"time"`
+      Floor      int       `json:"floor"` // building floor if available
+      Notes      string    `json:"notes"` //special events of the day
+      COVerified bool      `json:"COVerified"`
+      RemoteAddr string    `json:"remoteaddr"`
+    }
+
+    */
     return {
-      'accuracy': accuracy,
-      'lat': lat,
-      'lng': lng,
-      'speed': speed,
-      'speed_accuracy': speed_accuracy,
-      'heading': heading,
-      'heading_accuracy': heading_accuracy,
-      'altitude': altitude,
-      'altitude_accuracy': altitude_accuracy,
+      'uuid': uuid,
+      'version': appVersion,
+      'name': deviceName,
+      'time': time,
+      'timestamp': timestamp,
+      'lat': latitude.toPrecision(9),
+      'long': longitude.toPrecision(9),
+      'accuracy': accuracy.toPrecision(2),
+      'speed': speed.toPrecision(2),
+      'speed_accuracy': speed_accuracy.toPrecision(2),
+      'heading': heading.toPrecision(0),
+      'heading_accuracy': heading_accuracy.toPrecision(1),
+      'elevation': altitude.toPrecision(2),
+      'vAccuracy': altitude_accuracy.toPrecision(1),
+      'notes': <String, dynamic>{
+        'activity': activityTypeApp(activity_type),
+        'activity_confidence': activity_confidence,
+        'numberOfSteps': odometer.toPrecision(0),
+        // 'distance'
+        'batteryStatus': <String, dynamic>{
+          'level': battery_level.toPrecision(0),
+          'status':
+              battery_is_charging ? 'full' : 'unplugged', // full/unplugged
+        }
+        // 'imgb64' string
+      }
     };
+  }
+}
+
+extension Precision on double {
+  double toPrecision(int fractionDigits) {
+    double mod = pow(10, fractionDigits.toDouble());
+    return ((this * mod).round().toDouble() / mod);
+  }
+}
+
+String activityTypeApp(String original) {
+  switch (original) {
+    case 'still':
+      return 'Stationary';
+    case 'on_foot':
+      return 'Walking';
+    case 'on_bicycle':
+      return 'Bike';
+    case 'running':
+      return 'Running';
+    case 'in_vehicle':
+      return 'Driving';
+    default:
+      return 'Unknown';
   }
 }
 
@@ -182,13 +289,13 @@ Future<int> lastId() async {
   return lastID;
 }
 
-Future<List<Position>> firstTracksWithLimit(int limit) async {
+Future<List<AppPoint>> firstTracksWithLimit(int limit) async {
   final Database db = await database();
   final List<Map<String, dynamic>> maps =
       await db.query('$_cTableName', limit: limit, orderBy: 'id ASC');
 
   return List.generate(maps.length, (i) {
-    return Position.fromMap(maps[i]);
+    return AppPoint.fromMap(maps[i]);
   });
 }
 
