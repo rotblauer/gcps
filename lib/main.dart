@@ -18,6 +18,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:workmanager/workmanager.dart';
 // import 'package:gallery_saver/gallery_saver.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
+    as bg;
 
 import 'track.dart';
 
@@ -194,6 +196,62 @@ class _MyHomePageState extends State<MyHomePage> {
     */
     Workmanager.registerPeriodicTask("1", fetchLocationBackground,
         frequency: Duration(seconds: 1));
+
+    ////
+    // 1.  Listen to events (See docs for all 12 available events).
+    // https://pub.dev/documentation/flutter_background_geolocation/latest/flt_background_geolocation/BackgroundGeolocation-class.html
+    /*
+    onLocation	Fired with each recorded Location
+    onMotionChange	Fired when the plugin changes state between moving / stationary
+    onHttp	Fired with each HTTP response from your server. (see Config.url).
+    onActivityChange	Fired with each change in device motion-activity.
+    onProviderChange	Fired after changes to device location-services configuration.
+    onHeartbeat	Periodic timed events. See Config.heartbeatInterval. iOS requires Config.preventSuspend.
+    onGeofence	Fired with each Geofence transition event (ENTER, EXIT, DWELL).
+    onGeofencesChange	Fired when the list of actively-monitored geofences changed. See Config.geofenceProximityRadius.
+    onSchedule	Fired for Config.schedule events.
+    onConnectivityChange	Fired when network-connectivity changes (connected / disconnected).
+    onPowerSaveChange	Fired when state of operating-system's "power-saving" feature is enabled / disabled.
+    onEnabledChange	Fired when the plugin is enabled / disabled via its start / stop methods.
+    onNotificationAction	(Android only) Fired when a Notification.actions button is clicked upon a custom Notification.layout
+    */
+    //
+
+    // Fired whenever a location is recorded
+    bg.BackgroundGeolocation.onLocation((bg.Location location) {
+      // print('[location] - ${location.toString(compact: false)}');
+      var j = jsonEncode(location.toMap());
+      print('[location] - ${j}');
+    });
+
+    // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
+    bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
+      print('[motionchange] - ${location.toString(compact: false)}');
+    });
+
+    // Fired whenever the state of location-services changes.  Always fired at boot
+    bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
+      print('[providerchange] - $event');
+    });
+
+    ////
+    // 2.  Configure the plugin
+    //
+    bg.BackgroundGeolocation.ready(bg.Config(
+            desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
+            distanceFilter: 1.0,
+            stopOnTerminate: false,
+            startOnBoot: true,
+            debug: true,
+            logLevel: bg.Config.LOG_LEVEL_VERBOSE))
+        .then((bg.State state) {
+      if (!state.enabled) {
+        ////
+        // 3.  Start the plugin.
+        //
+        bg.BackgroundGeolocation.start();
+      }
+    });
   }
 
   @override

@@ -39,9 +39,10 @@ dependencies:
   http:
   connectivity:
   camera:
-  workmanager:
+  workmanager: ^0.2.0
   # image_gallery_saver:
   # gallery_saver:
+  flutter_background_geolocation: ^1.11.0
 
 dev_dependencies:
   flutter_test:
