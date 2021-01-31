@@ -29,23 +29,23 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Development: reset (rm -rf db) if exists.
-  // resetDB();
+  resetDB();
 
   // Run app.
   runApp(MyApp());
 }
 
-// Future<String> _getId() async {
-//   var deviceInfo = DeviceInfoPlugin();
-//   if (Platform.isIOS) {
-//     // import 'dart:io'
-//     var iosDeviceInfo = await deviceInfo.iosInfo;
-//     return iosDeviceInfo.identifierForVendor; // unique ID on iOS
-//   } else {
-//     var androidDeviceInfo = await deviceInfo.androidInfo;
-//     return androidDeviceInfo.androidId; // unique ID on Android
-//   }
-// }
+Future<String> _getId() async {
+  var deviceInfo = DeviceInfoPlugin();
+  if (Platform.isIOS) {
+    // import 'dart:io'
+    var iosDeviceInfo = await deviceInfo.iosInfo;
+    return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+  } else {
+    var androidDeviceInfo = await deviceInfo.androidInfo;
+    return androidDeviceInfo.androidId; // unique ID on Android
+  }
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -105,6 +105,7 @@ class InfoDisplay extends StatelessWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String _deviceUUID = "";
   int _counter = 0;
   String geolocation_text = '<ip.somewhere>';
   String geolocation_api_text = '<api.somewhere>';
@@ -230,10 +231,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     // this.getIp();
-    // _getId().then((value) {
-    //   _deviceUUID = value;
-    //   print("uuid: " + value);
-    // });
+    _getId().then((value) {
+      _deviceUUID = value;
+      print("uuid: " + value);
+    });
     // this._startStream();
     initConnectivity();
     _connectivitySubscription =
@@ -384,7 +385,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<http.Response> postTracks(List<dynamic> body) {
     final headers = <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
+      'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
     postHeaders.forEach((key, value) {
@@ -392,12 +393,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     print("body.length: " + body.length.toString());
     print(jsonEncode(body));
-    return http.post(
-      postEndpoint,
-      headers: headers,
-      // encoding: Encoding.getByName("utf-8"),
-      body: jsonEncode(body),
-    );
+    return http
+        .post(
+          postEndpoint,
+          headers: headers,
+          encoding: Encoding.getByName("utf-8"),
+          body: jsonEncode(body),
+        )
+        .timeout(const Duration(seconds: 60));
   }
 
   Future<int> _pushTracks(List<AppPoint> tracks) async {
@@ -405,11 +408,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final List<Map<String, dynamic>> pushable =
         List.generate(tracks.length, (index) {
-      tracks[index].tripStarted = _appStarted;
-      if (tracks[index].imgB64 != null && tracks[index].imgB64 != "") {
-        print("imgB64: " + tracks[index].imgB64);
-      }
-      return tracks[index].toCattrackJSON();
+      var c = tracks[index].toCattrackJSON();
+
+      c['tripStarted'] = _appStarted;
+      c['uuid'] = _deviceUUID;
+
+      return;
     });
 
     print("=====> ... Pushing tracks: " +
@@ -433,7 +437,7 @@ class _MyHomePageState extends State<MyHomePage> {
       var tracks = await firstTracksWithLimit(100);
       var resCode = await _pushTracks(tracks);
 
-      if (resCode == 200) {
+      if (resCode == HttpStatus.ok) {
         // Push yielded success, delete the tracks we just pushed.
         // Note that the delete condition used assumes tracks are ordered
         // earliest -> latest.
@@ -586,7 +590,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // horizontal).
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          InfoDisplay(keyname: "uuid", value: glocation.uuid),
+          InfoDisplay(keyname: "uuid", value: _deviceUUID),
           InfoDisplay(keyname: "connection status", value: _connectionStatus),
           InfoDisplay(keyname: "longitude", value: glocation.coords.longitude),
           InfoDisplay(keyname: "latitude", value: glocation.coords.latitude),
@@ -811,11 +815,18 @@ class DisplayPictureScreen extends StatelessWidget {
         onPressed: () async {
           bg.BackgroundGeolocation.getCurrentPosition().then((value) {
             var p = AppPoint.fromLocationProvider(value);
-            var bys = File(imagePath).readAsBytesSync();
-            String base64Img = base64Encode(bys);
-            p.imgB64 = base64Img;
+            p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
+            print("saved: " + jsonEncode(p.toCattrackJSON()));
             insertTrack(p).then((value) {
               Navigator.popUntil(context, ModalRoute.withName('/'));
+            });
+            return null;
+          }).then((value) {
+            snaps().then((value) {
+              print("stored snapsy");
+              for (var item in value) {
+                print(jsonEncode(item.toCattrackJSON()));
+              }
             });
           });
           // await GallerySaver.saveImage(imagePath ?? "");

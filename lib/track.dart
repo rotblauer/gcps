@@ -12,8 +12,8 @@ import 'secrets.dart';
 const _cDatabaseName = 'cattracks_database.db';
 const _cTableName = "cattracks";
 const dbSchemaColumns = [
-  'uuid string',
-  'time string',
+  'uuid text',
+  'time text',
   'timestamp integer UNIQUE',
   'accuracy real',
   'latitude real',
@@ -26,11 +26,11 @@ const dbSchemaColumns = [
   'altitude_accuracy real',
   'odometer real',
   'activity_confidence integer',
-  'activity_type string',
+  'activity_type text',
   'battery_level real',
   'battery_is_charging integer',
-  'event string',
-  'imgB64 string',
+  'event text',
+  'imgB64 text',
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -68,7 +68,6 @@ Future<void> resetDB() async {
 }
 
 class AppPoint {
-  final String uuid;
   final DateTime time;
   final int timestamp;
   final double accuracy;
@@ -87,11 +86,35 @@ class AppPoint {
   final bool battery_is_charging;
   final String event;
 
-  DateTime tripStarted;
-  String imgB64;
+  String _uuid;
+
+  String get uuid {
+    return _uuid;
+  }
+
+  void set uuid(String uuid) {
+    this._uuid = uuid;
+  }
+
+  DateTime _tripStarted;
+  DateTime get tripStarted {
+    return _tripStarted;
+  }
+
+  void set tripStarted(DateTime dt) {
+    this._tripStarted = dt;
+  }
+
+  String _imgB64;
+  String get imgB64 {
+    return _imgB64;
+  }
+
+  void set imgB64(String i) {
+    this._imgB64 = i;
+  }
 
   AppPoint({
-    this.uuid,
     this.time,
     this.timestamp,
     this.accuracy,
@@ -114,7 +137,6 @@ class AppPoint {
   // toMap creates a dynamic map for persistence.
   Map<String, dynamic> toMap() {
     return {
-      'uuid': uuid,
       'time': time.toUtc().toIso8601String(),
       'timestamp': timestamp,
       'accuracy': accuracy,
@@ -159,7 +181,6 @@ class AppPoint {
     }
 
     var ap = AppPoint(
-      uuid: appMap['uuid'],
       timestamp: appMap['timestamp'],
       time: DateTime.parse(appMap['time']),
       latitude: appMap['latitude'],
@@ -178,6 +199,7 @@ class AppPoint {
       battery_is_charging: appMap['battery_is_charging'] == 1 ? true : false,
       event: appMap['event'] ?? "Unknown",
     );
+
     if (appMap['imgB64'] != null && appMap['imgB64'] != "") {
       ap.imgB64 = appMap['imgB64'];
     }
@@ -201,7 +223,6 @@ class AppPoint {
     final DateTime dt = DateTime.parse(location.timestamp);
 
     return new AppPoint(
-      uuid: location.uuid,
       timestamp: (dt.millisecondsSinceEpoch / 1000).toInt(),
       time: dt,
       latitude: location.coords.latitude,
@@ -263,17 +284,16 @@ class AppPoint {
       'numberOfSteps': odometer.toInt(),
       'distance': 0,
       'batteryStatus': batteryStatusString,
-      // 'imgb64' string
     };
-    if (tripStarted != null) {
-      notes['currentTripStart'] = tripStarted.toUtc().toIso8601String();
+    if (_tripStarted != null) {
+      notes['currentTripStart'] = _tripStarted.toUtc().toIso8601String();
     }
     if (imgB64 != null && imgB64 != "") {
       notes['imgb64'] = imgB64;
     }
     notesString = jsonEncode(notes);
     return {
-      'uuid': uuid,
+      'uuid': _uuid,
       'version': appVersion,
       'name': deviceName,
       'time': time.toUtc().toIso8601String(),
@@ -351,4 +371,13 @@ Future<List<AppPoint>> firstTracksWithLimit(int limit) async {
 Future<void> deleteTracksBeforeInclusive(int ts) async {
   final Database db = await database();
   await db.delete(_cTableName, where: 'timestamp <= ?', whereArgs: [ts]);
+}
+
+Future<List<AppPoint>> snaps() async {
+  final Database db = await database();
+  final List<Map<String, dynamic>> maps =
+      await db.query('$_cTableName', where: 'imgB64 IS NOT NULL');
+  return List.generate(maps.length, (i) {
+    return AppPoint.fromMap(maps[i]);
+  });
 }
