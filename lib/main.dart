@@ -204,7 +204,12 @@ class _MyHomePageState extends State<MyHomePage> {
     onLocation	Fired with each recorded Location
     onMotionChange	Fired when the plugin changes state between moving / stationary
     onHttp	Fired with each HTTP response from your server. (see Config.url).
+
     onActivityChange	Fired with each change in device motion-activity.
+    Subscribe to changes in motion activity.
+
+    Your callback will be executed each time the activity-recognition system receives an event (still, on_foot, in_vehicle, on_bicycle, running).
+
     onProviderChange	Fired after changes to device location-services configuration.
     onHeartbeat	Periodic timed events. See Config.heartbeatInterval. iOS requires Config.preventSuspend.
     onGeofence	Fired with each Geofence transition event (ENTER, EXIT, DWELL).
@@ -242,6 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
             distanceFilter: 1.0,
             stopOnTerminate: false,
             startOnBoot: true,
+            heartbeatInterval: 60,
             debug: true,
             logLevel: bg.Config.LOG_LEVEL_VERBOSE))
         .then((bg.State state) {
