@@ -5,7 +5,7 @@ Global Cat Positioning System
 - [ ] battery status
 - [ ] wifi/radio context information
 - [ ] activity, healthkit stuff?
-- [ ] only attempt push when wifi or data available
+- [x] only attempt push when wifi or data available
 - [ ] catsnaps!
 - [ ] settings
   - [ ] push every n

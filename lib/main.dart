@@ -113,6 +113,11 @@ class _MyHomePageState extends State<MyHomePage> {
   // Display location information
   String _deviceUUID;
   double locLng = 0;
+  double locLat = 0;
+  double locAcc = 0;
+  double locSpeed = 0;
+  double locSpeedAcc = 0;
+  int locHeading = 0;
 
   // Display data history information
   int _countStored = 0;
@@ -224,8 +229,8 @@ class _MyHomePageState extends State<MyHomePage> {
           DateTime.fromMillisecondsSinceEpoch(original['timestamp'])
               .toUtc()
               .toIso8601String();
-      output['lat'] = num.parse(original['latitude'].toStringAsFixed(8));
-      output['long'] = num.parse(original['longitude'].toStringAsFixed(8));
+      output['lat'] = num.parse(original['latitude'].toStringAsFixed(9));
+      output['long'] = num.parse(original['longitude'].toStringAsFixed(9));
       output['elevation'] = num.parse(original['altitude'].toStringAsFixed(1));
       output['accuracy'] = num.parse(original['accuracy'].toStringAsFixed(1));
       output['speed'] = num.parse(original['speed'].toStringAsFixed(1));
@@ -264,7 +269,13 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       geolocation_api_stream_text =
           position.latitude.toString() + ', ' + position.longitude.toString();
-      locLng = position.longitude.toDouble();
+      locLng = num.parse(position.longitude.toDouble().toStringAsFixed(9));
+      locLat = num.parse(position.latitude.toDouble().toStringAsFixed(9));
+      locAcc = num.parse(position.accuracy.toDouble().toStringAsFixed(2));
+      locSpeed = num.parse(position.speed.toDouble().toStringAsFixed(2));
+      locSpeedAcc =
+          num.parse(position.speedAccuracy.toDouble().toStringAsFixed(2));
+      locHeading = num.parse(position.heading.toStringAsFixed(0));
     });
 
     // Persist the position.
@@ -298,6 +309,9 @@ class _MyHomePageState extends State<MyHomePage> {
         // Push yielded success, delete the tracks we just pushed.
         // Note that the delete condition used assumes tracks are ordered
         // earliest -> latest.
+        setState(() {
+          _countPushed += tracks.length;
+        });
         deleteTracksBeforeInclusive(
             tracks[tracks.length - 1].timestamp.millisecondsSinceEpoch);
       } else {
@@ -336,11 +350,22 @@ class _MyHomePageState extends State<MyHomePage> {
       /*
       Settings
 
-      In some cases it is necessary to ask the user and update their device settings. For example when the user initially permanently denied permissions to access the device's location or if the location services are not enabled (and, on Android, automatic resolution didn't work). In these cases you can use the openAppSettings or openLocationSettings methods to immediately redirect the user to the device's settings page.
+      In some cases it is necessary to ask the user and update their device settings. 
+      For example when the user initially permanently denied permissions to access 
+      the device's location or if the location services are not enabled 
+      (and, on Android, automatic resolution didn't work). In these cases you 
+      can use the openAppSettings or openLocationSettings methods to immediately 
+      redirect the user to the device's settings page.
 
-      On Android the openAppSettings method will redirect the user to the App specific settings where the user can update necessary permissions. The openLocationSettings method will redirect the user to the location settings where the user can enable/ disable the location services.
+      On Android the openAppSettings method will redirect the user to the App 
+      specific settings where the user can update necessary permissions. 
+      The openLocationSettings method will redirect the user to the location 
+      settings where the user can enable/ disable the location services.
 
-      On iOS we are not allowed to open specific setting pages so both methods will redirect the user to the Settings App from where the user can navigate to the correct settings category to update permissions or enable/ disable the location services.
+      On iOS we are not allowed to open specific setting pages so both methods 
+      will redirect the user to the Settings App from where the user can navigate 
+      to the correct settings category to update permissions or enable/ disable 
+      the location services.
       */
       // await Geolocator.openAppSettings();
       await Geolocator.openLocationSettings();
@@ -385,7 +410,13 @@ class _MyHomePageState extends State<MyHomePage> {
           InfoDisplay(keyname: "uuid", value: _deviceUUID),
           InfoDisplay(keyname: "connection status", value: _connectionStatus),
           InfoDisplay(keyname: "longitude", value: locLng),
+          InfoDisplay(keyname: "latitude", value: locLat),
+          InfoDisplay(keyname: "accuracy", value: locAcc),
+          InfoDisplay(keyname: "heading", value: locHeading),
+          InfoDisplay(keyname: "speed", value: locSpeed),
+          InfoDisplay(keyname: "speed accuracy", value: locSpeedAcc),
           InfoDisplay(keyname: "stored", value: _countStored),
+          InfoDisplay(keyname: "pushed", value: _countPushed),
           Text(
             'You done ${ew.adjectives[_counter]}ly caressed the button this many times:',
           ),
