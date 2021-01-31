@@ -2,6 +2,22 @@
 
 Global Cat Positioning System
 
+- [ ] battery status
+- [ ] wifi/radio context information
+- [ ] activity, healthkit stuff?
+- [ ] only attempt push when wifi or data available
+- [ ] catsnaps!
+- [ ] settings
+  - [ ] push every n
+  - [ ] push batch size n
+  - [ ] desired accuracy
+- [ ] offline map?
+- [ ] fitness features
+  - [ ] lap recording
+  - [ ] distance, pace recording
+- [ ] other cats status?
+- [ ] app icon
+
 ### Flutter console
 
 ```
@@ -10,6 +26,16 @@ r - hot reload
 ```
 
 - [HISTORY.txt](./HISTORY.txt)
+
+```
+Enabling USB Debugging on an Android Device
+
+On the device, go to Settings > About <device>.
+Tap the Build number seven times to make Settings > Developer options available.
+Then enable the USB Debugging option. Tip: You might also want to enable the Stay awake option, to prevent your Android device from sleeping while plugged into the USB port.
+```
+> https://www.google.com/search?channel=fs&q=android+enable+usb+debugging
+
 
 ---
 
