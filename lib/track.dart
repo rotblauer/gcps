@@ -65,25 +65,6 @@ Future<void> resetDB() async {
   if (await databaseExists(p)) return deleteDatabase(p);
 }
 
-Future<void> insertTrack(Position position) async {
-  final Database db = await database();
-  final Map<String, dynamic> m = position.toJson();
-
-  // App-specific key/value demands.
-  if (!m.containsKey('timestamp') || m['timestamp'] == null) {
-    return;
-  }
-
-  // App-specific mutations.
-  m.remove('is_mocked');
-
-  await db.insert(
-    _cTableName,
-    m,
-    conflictAlgorithm: ConflictAlgorithm.replace,
-  );
-}
-
 class AppPoint {
   final String uuid;
   final DateTime time;
@@ -208,6 +189,7 @@ class AppPoint {
     }
 
     final DateTime dt = DateTime.parse(location.timestamp);
+
     return AppPoint(
       uuid: location.uuid,
       timestamp: (dt.millisecondsSinceEpoch / 1000).toInt(),
@@ -309,6 +291,15 @@ String activityTypeApp(String original) {
     default:
       return 'Unknown';
   }
+}
+
+Future<void> insertTrack(AppPoint position) async {
+  final Database db = await database();
+  await db.insert(
+    _cTableName,
+    position.toMap(),
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
 }
 
 Future<int> countTracks() async {

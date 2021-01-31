@@ -119,14 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   // Display location information
-  String _deviceUUID;
-  double locLng = 0;
-  double locLat = 0;
-  double locAcc = 0;
-  double locSpeed = 0;
-  double locSpeedAcc = 0;
-  int locHeading = 0;
-  double locElevation = 0;
+  bg.Location glocation;
 
   // Display data history information
   int _countStored = 0;
@@ -227,11 +220,13 @@ class _MyHomePageState extends State<MyHomePage> {
       // print('[location] - ${location.toString(compact: false)}');
       var j = jsonEncode(location.toMap());
       print('[location] - ${j}');
+      _handleStreamLocationUpdate(location);
     });
 
     // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
     bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
       print('[motionchange] - ${location.toString(compact: false)}');
+      _handleStreamLocationUpdate(location);
     });
 
     // Fired whenever the state of location-services changes.  Always fired at boot
@@ -249,7 +244,7 @@ class _MyHomePageState extends State<MyHomePage> {
             startOnBoot: true,
             heartbeatInterval: 60,
             debug: true,
-            logLevel: bg.Config.LOG_LEVEL_VERBOSE))
+            logLevel: bg.Config.LOG_LEVEL_INFO))
         .then((bg.State state) {
       if (!state.enabled) {
         ////
@@ -323,36 +318,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<int> _pushTracks(List<Position> tracks) async {
+  Future<int> _pushTracks(List<AppPoint> tracks) async {
     print("Got batched tracks:");
 
     final List<Map<String, dynamic>> pushable =
         List.generate(tracks.length, (index) {
-      final Map<String, dynamic> original = tracks[index].toJson();
-      final Map<String, dynamic> output = {};
-
-      output['version'] = appVersion;
-      output['name'] = deviceName;
-      output['uuid'] = _deviceUUID;
-      output['timestamp'] = (original['timestamp'] / 1000).floor();
-      output['time'] =
-          DateTime.fromMillisecondsSinceEpoch(original['timestamp'])
-              .toUtc()
-              .toIso8601String();
-      output['lat'] = num.parse(original['latitude'].toStringAsFixed(9));
-      output['long'] = num.parse(original['longitude'].toStringAsFixed(9));
-      output['elevation'] = num.parse(original['altitude'].toStringAsFixed(1));
-      output['accuracy'] = num.parse(original['accuracy'].toStringAsFixed(1));
-      output['speed'] = num.parse(original['speed'].toStringAsFixed(1));
-      output['speed_accuracy'] =
-          num.parse(original['speed_accuracy'].toStringAsFixed(1));
-      output['heading'] = num.parse(original['heading'].toStringAsFixed(0));
-      original['floor'] != null
-          ? output['floor'] = num.parse(original['floor'].toStringAsFixed(0))
-          // ignore: unnecessary_statements
-          : null;
-
-      return output;
+      return tracks[index].toCattrackJSON();
     });
 
     // print(jsonEncode(pushable));
@@ -362,9 +333,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return res.statusCode;
   }
 
-  void _handleStreamLocationUpdate(Position position) async {
+  void _handleStreamLocationUpdate(bg.Location location) async {
     // Short circuit if position is null or timestamp is null.
-    if (position == null || position.timestamp == null) {
+    if (location == null ||
+        location.timestamp == null ||
+        location.timestamp == "") {
       print("streamed position: unknown or null timestamp");
       setState(() {
         geolocation_api_stream_text = 'Unknown';
@@ -373,25 +346,16 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     // Got a position!
-    print("streamed position: " + position.toString());
+    print("streamed position: " + location.toString());
 
     // Update display
     setState(() {
-      geolocation_api_stream_text =
-          position.latitude.toString() + ', ' + position.longitude.toString();
-      locLng = num.parse(position.longitude.toDouble().toStringAsFixed(9));
-      locLat = num.parse(position.latitude.toDouble().toStringAsFixed(9));
-      locAcc = num.parse(position.accuracy.toDouble().toStringAsFixed(2));
-      locSpeed = num.parse(position.speed.toDouble().toStringAsFixed(2));
-      locSpeedAcc =
-          num.parse(position.speedAccuracy.toDouble().toStringAsFixed(2));
-      locHeading = num.parse(position.heading.toStringAsFixed(0));
-      locElevation = num.parse(position.altitude.toDouble().toStringAsFixed(1));
+      glocation = location;
     });
 
     // Persist the position.
     print("saving position");
-    await insertTrack(position);
+    await insertTrack(AppPoint.fromLocationProvider(location));
     var count = await countTracks();
 
     // Update the persistent-state display.
@@ -423,8 +387,7 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           _countPushed += tracks.length;
         });
-        deleteTracksBeforeInclusive(
-            tracks[tracks.length - 1].timestamp.millisecondsSinceEpoch);
+        deleteTracksBeforeInclusive(tracks[tracks.length - 1].timestamp);
       } else {
         print("bad status: " + resCode.toString());
         break;
@@ -518,15 +481,20 @@ class _MyHomePageState extends State<MyHomePage> {
         // horizontal).
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          InfoDisplay(keyname: "uuid", value: _deviceUUID),
+          InfoDisplay(keyname: "uuid", value: glocation.uuid),
           InfoDisplay(keyname: "connection status", value: _connectionStatus),
-          InfoDisplay(keyname: "longitude", value: locLng),
-          InfoDisplay(keyname: "latitude", value: locLat),
-          InfoDisplay(keyname: "accuracy", value: locAcc),
-          InfoDisplay(keyname: "elevation", value: locElevation),
-          InfoDisplay(keyname: "heading", value: locHeading),
-          InfoDisplay(keyname: "speed", value: locSpeed),
-          InfoDisplay(keyname: "speed accuracy", value: locSpeedAcc),
+          InfoDisplay(keyname: "longitude", value: glocation.coords.longitude),
+          InfoDisplay(keyname: "latitude", value: glocation.coords.latitude),
+          InfoDisplay(keyname: "accuracy", value: glocation.coords.accuracy),
+          InfoDisplay(keyname: "elevation", value: glocation.coords.altitude),
+          InfoDisplay(keyname: "heading", value: glocation.coords.heading),
+          InfoDisplay(keyname: "speed", value: glocation.coords.speed),
+          InfoDisplay(
+              keyname: "speed accuracy", value: glocation.coords.speedAccuracy),
+          InfoDisplay(keyname: "activity", value: glocation.activity.type),
+          InfoDisplay(
+              keyname: "activity confidence",
+              value: glocation.activity.confidence),
           InfoDisplay(keyname: "stored", value: _countStored),
           InfoDisplay(keyname: "pushed", value: _countPushed),
           Text(
