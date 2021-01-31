@@ -34,9 +34,11 @@ dependencies:
   geolocator: ^6.1.13
   sqflite:
   path:
+  path_provider:
   device_info:
   http:
   connectivity:
+  camera:
 
 dev_dependencies:
   flutter_test:
