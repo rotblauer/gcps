@@ -360,6 +360,12 @@ Future<int> countTracks() async {
       await db.rawQuery('SELECT COUNT(*) FROM $_cTableName'));
 }
 
+Future<int> countSnaps() async {
+  final Database db = await database();
+  return Sqflite.firstIntValue(await db
+      .rawQuery('SELECT COUNT(*) FROM $_cTableName WHERE imgB64 IS NOT NULL'));
+}
+
 Future<int> lastId() async {
   final Database db = await database();
   var x = await db.rawQuery('SELECT id LIMIT 1 FROM $_cTableName');

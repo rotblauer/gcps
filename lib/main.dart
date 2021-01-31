@@ -107,8 +107,8 @@ class InfoDisplay extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         // color: Colors.green[500],
         child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 '$keyname',
@@ -146,6 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Display data history information
   int _countStored = 0;
+  int _countSnaps = 0;
   int _countPushed = 0;
 
   List<CameraDescription> cameras;
@@ -484,8 +485,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     var count = await countTracks();
     if (count == 0) {
+      _countSnaps = 0;
       bg.BackgroundGeolocation.sync(); // delete from database
+    } else {
+      _countSnaps = await countSnaps();
     }
+
     // Awkwardly placed but whatever.
     // Update the persistent-state display.
     setState(() {
@@ -520,15 +525,17 @@ class _MyHomePageState extends State<MyHomePage> {
     // Persist the position.
     print("saving position");
     await insertTrack(AppPoint.fromLocationProvider(location));
-    var count = await countTracks();
+    var countStored = await countTracks();
+    var vcountSnaps = await countSnaps();
 
     // Update the persistent-state display.
     setState(() {
-      _countStored = count;
+      _countStored = countStored;
+      _countSnaps = vcountSnaps;
     });
 
     // If we're not at a push mod, we're done.
-    if (count % 100 != 0) {
+    if (countStored % 100 != 0) {
       return;
     }
     if (!_connectionStatus.contains("wifi") &&
@@ -619,7 +626,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // center the children vertically; the main axis here is the vertical
         // axis because Columns are vertical (the cross axis would be
         // horizontal).
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Row(
@@ -643,7 +650,14 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               InfoDisplay(
-                keyname: "stored",
+                keyname: "snaps",
+                value: _countSnaps,
+                options: {
+                  't2.font': Theme.of(context).textTheme.bodyText2,
+                },
+              ),
+              InfoDisplay(
+                keyname: "points",
                 value: _countStored,
                 options: {
                   't2.font': Theme.of(context).textTheme.bodyText2,
@@ -664,6 +678,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // crossAxisSpacing: 10,
             // mainAxisSpacing: 10,
             // crossAxisCount: 2,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               InfoDisplay(
                 keyname: "uuid",
@@ -672,10 +687,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   't2.font': Theme.of(context).textTheme.bodyText2,
                 },
               ),
-            ],
-          ),
-          Row(
-            children: [
               InfoDisplay(
                 keyname: "connection status",
                 value: _connectionStatus,
@@ -686,6 +697,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               InfoDisplay(
                 keyname: "longitude,latitude",
@@ -699,16 +711,15 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              InfoDisplay(
-                  keyname: "elevation", value: glocation.coords.altitude),
               InfoDisplay(
                   keyname: "accuracy", value: glocation.coords.accuracy),
             ],
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              InfoDisplay(keyname: "heading", value: glocation.coords.heading),
               InfoDisplay(keyname: "speed", value: glocation.coords.speed),
               InfoDisplay(
                   keyname: "speed accuracy",
@@ -716,6 +727,26 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InfoDisplay(keyname: "heading", value: glocation.coords.heading),
+              InfoDisplay(
+                  keyname: "heading accuracy",
+                  value: glocation.coords.headingAccuracy),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InfoDisplay(
+                  keyname: "elevation", value: glocation.coords.altitude),
+              InfoDisplay(
+                  keyname: "elevation accuracy",
+                  value: glocation.coords.altitudeAccuracy),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               InfoDisplay(keyname: "activity", value: glocation.activity.type),
               InfoDisplay(
@@ -723,9 +754,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   value: glocation.activity.confidence),
             ],
           ),
-          Row(
-            children: [],
-          ),
+          Row(children: []),
+          Row(children: []),
+          Row(children: []),
 
           // Text(
           //   'You done ${ew.adjectives[_counter]}ly caressed the button this many times:',
