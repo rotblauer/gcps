@@ -30,6 +30,7 @@ const dbSchemaColumns = [
   'battery_level real',
   'battery_is_charging integer',
   'event string',
+  'imgB64 string',
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -86,6 +87,9 @@ class AppPoint {
   final bool battery_is_charging;
   final String event;
 
+  DateTime tripStarted;
+  String imgB64;
+
   AppPoint({
     this.uuid,
     this.time,
@@ -128,6 +132,7 @@ class AppPoint {
       'battery_level': battery_level,
       'battery_is_charging': battery_is_charging ? 1 : 0,
       'event': event,
+      'imgB64': imgB64,
     };
   }
 
@@ -153,7 +158,7 @@ class AppPoint {
           'The supplied map doesn\'t contain the mandatory key `time`.');
     }
 
-    return AppPoint(
+    var ap = AppPoint(
       uuid: appMap['uuid'],
       timestamp: appMap['timestamp'],
       time: DateTime.parse(appMap['time']),
@@ -173,6 +178,10 @@ class AppPoint {
       battery_is_charging: appMap['battery_is_charging'] == 1 ? true : false,
       event: appMap['event'] ?? "Unknown",
     );
+    if (appMap['imgB64'] != null && appMap['imgB64'] != "") {
+      ap.imgB64 = appMap['imgB64'];
+    }
+    return ap;
   }
 
   static AppPoint fromLocationProvider(bg.Location location) {
@@ -191,7 +200,7 @@ class AppPoint {
 
     final DateTime dt = DateTime.parse(location.timestamp);
 
-    return AppPoint(
+    return new AppPoint(
       uuid: location.uuid,
       timestamp: (dt.millisecondsSinceEpoch / 1000).toInt(),
       time: dt,
@@ -256,6 +265,12 @@ class AppPoint {
       'batteryStatus': batteryStatusString,
       // 'imgb64' string
     };
+    if (tripStarted != null) {
+      notes['currentTripStart'] = tripStarted.toUtc().toIso8601String();
+    }
+    if (imgB64 != null && imgB64 != "") {
+      notes['imgb64'] = imgB64;
+    }
     notesString = jsonEncode(notes);
     return {
       'uuid': uuid,

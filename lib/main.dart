@@ -110,6 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String geolocation_api_text = '<api.somewhere>';
   String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
+  DateTime _appStarted = DateTime.now();
 
   String _connectionStatus = 'Unknown';
   final Connectivity _connectivity = Connectivity();
@@ -404,6 +405,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final List<Map<String, dynamic>> pushable =
         List.generate(tracks.length, (index) {
+      tracks[index].tripStarted = _appStarted;
+      if (tracks[index].imgB64 != null && tracks[index].imgB64 != "") {
+        print("imgB64: " + tracks[index].imgB64);
+      }
       return tracks[index].toCattrackJSON();
     });
 
@@ -766,8 +771,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             );
 
             // Attempt to take a picture and log where it's been saved.
-            final xpath = await _controller.takePicture();
-            xpath.saveTo(path);
+            // var xpath =
+            await _controller.takePicture().then((value) => value.saveTo(path));
+            // _controller.setFlashMode(FlashMode.off);
+            // xpath.saveTo(path);
 
             // If the picture was taken, display it on a new screen.
             Navigator.push(
@@ -802,6 +809,15 @@ class DisplayPictureScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.save),
         onPressed: () async {
+          bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+            var p = AppPoint.fromLocationProvider(value);
+            var bys = File(imagePath).readAsBytesSync();
+            String base64Img = base64Encode(bys);
+            p.imgB64 = base64Img;
+            insertTrack(p).then((value) {
+              Navigator.popUntil(context, ModalRoute.withName('/'));
+            });
+          });
           // await GallerySaver.saveImage(imagePath ?? "");
           // await ImageGallerySaver.saveFile(imagePath);
         },
