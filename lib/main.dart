@@ -397,7 +397,7 @@ class _MyHomePageState extends State<MyHomePage> {
     //
     bg.BackgroundGeolocation.ready(bg.Config(
             desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
-            distanceFilter: 0.0,
+            distanceFilter: 3.0,
             disableElasticity: true,
             isMoving: true, // false,
             stopTimeout: 2, // minutes
@@ -408,7 +408,7 @@ class _MyHomePageState extends State<MyHomePage> {
             pausesLocationUpdatesAutomatically: false,
             preventSuspend: true,
             disableAutoSyncOnCellular: true,
-            maxRecordsToPersist: 24 * 60 * 60 * 3,
+            maxRecordsToPersist: 3600,
             locationUpdateInterval: 1000,
             fastestLocationUpdateInterval: 1000,
             allowIdenticalLocations: false,
@@ -416,7 +416,7 @@ class _MyHomePageState extends State<MyHomePage> {
             stopOnTerminate: false,
             enableHeadless: true,
             startOnBoot: true,
-            heartbeatInterval: 60,
+            heartbeatInterval: 1200,
             debug: false,
             logLevel: bg.Config.LOG_LEVEL_INFO))
         .then((bg.State state) {
