@@ -823,17 +823,17 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
-          Row(
-            children: [
-              InfoDisplay(
-                keyname: "name",
-                value: _deviceName,
-                options: {
-                  't2.font': Theme.of(context).textTheme.bodyText2,
-                },
-              ),
-            ],
-          ),
+          // Row(
+          //   children: [
+          //     InfoDisplay(
+          //       keyname: "name",
+          //       value: _deviceName,
+          //       options: {
+          //         't2.font': Theme.of(context).textTheme.bodyText2,
+          //       },
+          //     ),
+          //   ],
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
