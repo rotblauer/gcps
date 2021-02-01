@@ -718,6 +718,7 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
+          Row(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
