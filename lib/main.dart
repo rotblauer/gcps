@@ -724,37 +724,36 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Expanded(
                   child: Container(
-                      padding: EdgeInsets.all(8.0),
-                      child: Expanded(
-                        child: ElevatedButton(
-                            onPressed: () {
-                              // snaps().then((value) {
-                              //   print("stored snapsy");
-                              //   for (var item in value) {
-                              //     print(jsonEncode(item.toCattrackJSON()));
-                              //   }
-                              // });
-                              this._pushTracksBatching();
-                            },
-                            child: Icon(Icons.cloud_upload,
-                                semanticLabel: 'Push', color: Colors.blue)),
-                      ))),
+                padding: EdgeInsets.all(8.0),
+                // child: Expanded(
+                child: ElevatedButton(
+                    onPressed: () {
+                      // snaps().then((value) {
+                      //   print("stored snapsy");
+                      //   for (var item in value) {
+                      //     print(jsonEncode(item.toCattrackJSON()));
+                      //   }
+                      // });
+                      this._pushTracksBatching();
+                    },
+                    child: Icon(Icons.cloud_upload,
+                        semanticLabel: 'Push', color: Colors.blue)),
+              )),
               Expanded(
                   child: Container(
-                      padding: EdgeInsets.all(8.0),
-                      child: Expanded(
-                        child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      prefs.MySettingsScreen(),
-                                ),
-                              );
-                            },
-                            child: Text('Settings')),
-                      ))),
+                padding: EdgeInsets.all(8.0),
+                // child: Expanded(
+                child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => prefs.MySettingsScreen(),
+                        ),
+                      );
+                    },
+                    child: Text('Settings')),
+              )),
             ],
           ),
           // Row(
