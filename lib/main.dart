@@ -60,9 +60,9 @@ Future<String> _getName() async {
   } else {
     var androidDeviceInfo = await deviceInfo.androidInfo;
     if (!androidDeviceInfo.isPhysicalDevice) {
-      return 'QP1A.191005.007.A3/Pixel XL';
+      return 'sofia3585 moto g power';
     }
-    return '${androidDeviceInfo.board}${androidDeviceInfo.androidId.substring(0, 4)} ${androidDeviceInfo.model}'; // unique ID on Android
+    return '${androidDeviceInfo.board}-${androidDeviceInfo.model.split(" ")[0]}-${androidDeviceInfo.androidId.substring(0, 4)}'; // unique ID on Android
   }
 }
 
