@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-source .env.dev && flutter run -d ZY22BK96TD --dart-define="GCPS_APP_VERSION=v.catInTheHandroid-${version},GCPS_AUTH_HEADER_KEY=${GCPS_AUTH_HEADER_KEY},GCPS_AUTH_HEADER_VALUE=${GCPS_AUTH_HEADER_VALUE}"
+source .env.${2} && flutter run -d "${1}" --dart-define="GCPS_AUTH_HEADER_KEY=${GCPS_AUTH_HEADER_KEY}" --dart-define="GCPS_AUTH_HEADER_VALUE=${GCPS_AUTH_HEADER_VALUE}" --dart-define="GCPS_POST_ENDPOINT=${GCPS_POST_ENDPOINT}"
