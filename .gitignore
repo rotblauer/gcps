@@ -45,5 +45,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-secrets.dart
+secrets.dart*
+.env*
+
 testdata/
