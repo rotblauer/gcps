@@ -82,7 +82,8 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.yellow,
+        brightness: Brightness.light,
+        primarySwatch: Colors.amber,
         backgroundColor: Colors.limeAccent,
         canvasColor: Colors.deepOrange,
       ),
@@ -702,7 +703,7 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Expanded(
                   child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      padding: EdgeInsets.all(8.0),
                       child: Expanded(
                         child: ElevatedButton(
                             onPressed: () {
@@ -714,11 +715,12 @@ class _MyHomePageState extends State<MyHomePage> {
                               // });
                               this._pushTracksBatching();
                             },
-                            child: Icon(Icons.cloud_upload)),
+                            child: Icon(Icons.cloud_upload,
+                                semanticLabel: 'Push', color: Colors.blue)),
                       ))),
               Expanded(
                   child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      padding: EdgeInsets.all(8.0),
                       child: Expanded(
                         child: ElevatedButton(
                             onPressed: () {
@@ -739,7 +741,7 @@ class _MyHomePageState extends State<MyHomePage> {
             //   }
             //   return out;
             // }(),
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -930,6 +932,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  // int _currentIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -939,12 +943,101 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
+      // appBar: AppBar(
+      //   // Here we take the value from the MyHomePage object that was created by
+      //   // the App.build method, and use it to set our appbar title.
+      //   title: Text(widget.title),
+      // ),
       // title: Icon(Icons.map)),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   currentIndex: _currentIndex,
+      //   onTap: (value) {
+      //     // Respond to item press.
+      //     setState(() => _currentIndex = value);
+      //   },
+      //   items: [
+      //     BottomNavigationBarItem(
+      //       title: Text('Cat Tracking'),
+      //       icon: Icon(Icons.map_outlined),
+      //     ),
+      //     BottomNavigationBarItem(
+      //       title: Text('Settings'),
+      //       icon: Icon(Icons.settings),
+      //     ),
+      //   ],
+      // ),
+      // persistentFooterButtons: [
+      //   // TextButton(onPressed: () {}, child: Text('left')),
+      //   // ElevatedButton(
+      //   //     onPressed: () {
+      //   //       Navigator.push(context,
+      //   //           MaterialPageRoute(builder: (context) => SettingsScreen()));
+      //   //     },
+      //   //     child: Text('Settings')),
+      //   Expanded(
+      //       child: Container(
+      //           padding: EdgeInsets.symmetric(horizontal: 8.0),
+      //           child: Expanded(
+      //             child: ElevatedButton(
+      //                 onPressed: () {
+      //                   // snaps().then((value) {
+      //                   //   print("stored snapsy");
+      //                   //   for (var item in value) {
+      //                   //     print(jsonEncode(item.toCattrackJSON()));
+      //                   //   }
+      //                   // });
+      //                   this._pushTracksBatching();
+      //                 },
+      //                 child: Icon(Icons.cloud_upload)),
+      //           ))),
+      //   Expanded(
+      //       child: Container(
+      //           padding: EdgeInsets.symmetric(horizontal: 8.0),
+      //           child: Expanded(
+      //             child: ElevatedButton(
+      //                 onPressed: () {
+      //                   Navigator.push(
+      //                       context,
+      //                       MaterialPageRoute(
+      //                           builder: (context) => SettingsScreen()));
+      //                 },
+      //                 child: Text('Settings')),
+      //           ))),
+      //   // Row(
+      //   //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //   //   children: [
+      //   //     Expanded(
+      //   //         child: Container(
+      //   //             padding: EdgeInsets.symmetric(horizontal: 8.0),
+      //   //             child: Expanded(
+      //   //               child: ElevatedButton(
+      //   //                   onPressed: () {
+      //   //                     // snaps().then((value) {
+      //   //                     //   print("stored snapsy");
+      //   //                     //   for (var item in value) {
+      //   //                     //     print(jsonEncode(item.toCattrackJSON()));
+      //   //                     //   }
+      //   //                     // });
+      //   //                     this._pushTracksBatching();
+      //   //                   },
+      //   //                   child: Icon(Icons.cloud_upload)),
+      //   //             ))),
+      //   //     Expanded(
+      //   //         child: Container(
+      //   //             padding: EdgeInsets.symmetric(horizontal: 8.0),
+      //   //             child: Expanded(
+      //   //               child: ElevatedButton(
+      //   //                   onPressed: () {
+      //   //                     Navigator.push(
+      //   //                         context,
+      //   //                         MaterialPageRoute(
+      //   //                             builder: (context) => SettingsScreen()));
+      //   //                   },
+      //   //                   child: Text('Settings')),
+      //   //             ))),
+      //   //   ],
+      //   // ),
+      // ],
       body: _exampleStuff(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
