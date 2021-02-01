@@ -782,21 +782,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 keyname: "snaps",
                 value: _countSnaps,
                 options: {
-                  't2.font': Theme.of(context).textTheme.bodyText2,
+                  // 't2.font': Theme.of(context).textTheme.bodyText2,
                 },
               ),
               InfoDisplay(
                 keyname: "points",
                 value: _countStored,
                 options: {
-                  't2.font': Theme.of(context).textTheme.bodyText2,
+                  // 't2.font': Theme.of(context).textTheme.bodyText2,
                 },
               ),
               InfoDisplay(
                 keyname: "pushed",
                 value: _countPushed,
                 options: {
-                  't2.font': Theme.of(context).textTheme.bodyText2,
+                  // 't2.font': Theme.of(context).textTheme.bodyText2,
                 },
               ),
             ],
