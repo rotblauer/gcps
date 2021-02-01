@@ -45,6 +45,8 @@ dependencies:
   flutter_background_geolocation: ^1.11.0
   # dio:
   image:
+  # shared_preferences: ^0.4.2
+  shared_preferences_settings: ^1.2.0
 
 dev_dependencies:
   flutter_launcher_icons: "^0.8.0"

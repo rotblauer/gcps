@@ -24,6 +24,8 @@ import 'package:flutter_background_geolocation/flutter_background_geolocation.da
 // import 'package:image/image.dart' as img;
 
 import 'track.dart';
+import 'prefs.dart' as prefs;
+import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 
 void main() {
   // Avoid errors caused by flutter upgrade.
@@ -31,7 +33,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Development: reset (rm -rf db) if exists.
-  resetDB();
+  // resetDB();
 
   // Run app.
   runApp(MyApp());
@@ -167,22 +169,19 @@ class _MyHomePageState extends State<MyHomePage> {
   String _deviceUUID = "";
   String _deviceName = "";
   // int _counter = 0;
-  String geolocation_text = '<ip.somewhere>';
-  String geolocation_api_text = '<api.somewhere>';
-  String geolocation_api_stream_text = '<apistream.somewhere>';
+  // String geolocation_text = '<ip.somewhere>';
+  // String geolocation_api_text = '<api.somewhere>';
+  // String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
   DateTime _appStarted = DateTime.now().toUtc();
 
   String _connectionStatus = 'Unknown';
+  ConnectivityResult _connectionResult;
   final Connectivity _connectivity = Connectivity();
 
   // Subscriptions
   // StreamSubscription<Position> positionStream;
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
-
-  // Settings
-  int _pushBatchSize = 100;
-  int _pushEvery = 100;
 
   // Display location information
   bg.Location glocation = new bg.Location({
@@ -212,6 +211,13 @@ class _MyHomePageState extends State<MyHomePage> {
   int _countStored = 0;
   int _countSnaps = 0;
   int _countPushed = 0;
+
+  // Future<void> initPrefs() async {
+  //   var v = await SharedPreferencesHelper().getPushBatchSize();
+  //   await SharedPreferencesHelper().setPushBatchSize(v);
+  //   v = await SharedPreferencesHelper().getPushInterval();
+  //   await SharedPreferencesHelper().setPushInterval(v);
+  // }
 
   List<CameraDescription> cameras;
   CameraDescription firstCamera;
@@ -325,6 +331,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _deviceName = value;
       print("device name: " + value);
     });
+    // initPrefs();
     // this._startStream();
     initConnectivity();
     _connectivitySubscription =
@@ -452,6 +459,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    _connectionResult = result;
     switch (result) {
       case ConnectivityResult.wifi:
       case ConnectivityResult.mobile:
@@ -464,14 +472,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> getIp() async {
-    geolocationData = await GeolocationAPI.getData();
-    if (geolocationData != null) {
-      setState(() {
-        geolocation_text = geolocationData.ip;
-      });
-    }
-  }
+  // Future<void> getIp() async {
+  //   geolocationData = await GeolocationAPI.getData();
+  //   if (geolocationData != null) {
+  //     setState(() {
+  //       geolocation_text = geolocationData.ip;
+  //     });
+  //   }
+  // }
 
   Future<http.Response> postTracks(List<Map<String, dynamic>> body) {
     print("body.length: " + body.length.toString());
@@ -535,7 +543,8 @@ class _MyHomePageState extends State<MyHomePage> {
     for (var count = await countTracks();
         count > 0;
         count = await countTracks()) {
-      var tracks = await firstTracksWithLimit(_pushBatchSize);
+      var tracks = await firstTracksWithLimit(
+          (await Settings().getDouble(prefs.kPushBatchSize, 100)).toInt());
       var resCode = await _pushTracks(tracks);
 
       if (resCode == HttpStatus.ok) {
@@ -573,9 +582,9 @@ class _MyHomePageState extends State<MyHomePage> {
         location.timestamp == null ||
         location.timestamp == "") {
       print("streamed position: unknown or null timestamp");
-      setState(() {
-        geolocation_api_stream_text = 'Unknown';
-      });
+      // setState(() {
+      //   geolocation_api_stream_text = 'Unknown';
+      // });
       return;
     }
 
@@ -604,12 +613,23 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // If we're not at a push mod, we're done.
-    if (countStored % _pushEvery != 0) {
+    if (countStored %
+            ((await Settings().getDouble(prefs.kPushInterval, 100))).toInt() !=
+        0) {
       return;
     }
-    if (!_connectionStatus.contains("wifi") &&
-        !_connectionStatus.contains("mobile")) {
-      print("no positive connectivity, no attempt push");
+
+    var connectedWifi = _connectionResult != null &&
+        _connectionResult == ConnectivityResult.wifi;
+    if (connectedWifi &&
+        !(await Settings().getBool(prefs.kAllowPushWithWifi, true))) {
+      return;
+    }
+
+    var connectedMobile = _connectionResult != null &&
+        _connectionResult == ConnectivityResult.mobile;
+    if (connectedMobile &&
+        !(await Settings().getBool(prefs.kAllowPushWithMobile, true))) {
       return;
     }
 
@@ -725,33 +745,36 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: ElevatedButton(
                             onPressed: () {
                               Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SettingsScreen()));
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      prefs.MySettingsScreen(),
+                                ),
+                              );
                             },
                             child: Text('Settings')),
                       ))),
             ],
           ),
-          Row(
-            // children: () {
-            //   List<Widget> out = [];
-            //   for (var i = 0; i < _countStored && i < _pushEvery; i++) {
-            //     out.add(Icon(Icons.control_point));
-            //   }
-            //   return out;
-            // }(),
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(('|' * (_countStored % _pushEvery) +
-                    (_countStored <= _pushEvery
-                        ? ('.' * (_pushEvery - _countStored))
-                        : ''))),
-              )
-            ],
-          ),
+          // Row(
+          //   // children: () {
+          //   //   List<Widget> out = [];
+          //   //   for (var i = 0; i < _countStored && i < _pushEvery; i++) {
+          //   //     out.add(Icon(Icons.control_point));
+          //   //   }
+          //   //   return out;
+          //   // }(),
+          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //   children: [
+          //     Container(
+          //       padding: EdgeInsets.symmetric(horizontal: 8.0),
+          //       child: Text(('|' * (_countStored % _pushEvery) +
+          //           (_countStored <= _pushEvery
+          //               ? ('.' * (_pushEvery - _countStored))
+          //               : ''))),
+          //     )
+          //   ],
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -1154,20 +1177,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             print(e);
           }
         },
-      ),
-    );
-  }
-}
-
-class SettingsScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Settings')),
-      body: Container(
-        child: ListView(
-          children: [Text('Hello world')],
-        ),
       ),
     );
   }
