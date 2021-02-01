@@ -56,16 +56,16 @@ class MySettingsScreen extends StatelessWidget {
       title: "Settings",
       children: [
         SwitchSettingsTile(
-          settingKey: kAllowPushWithMobile,
-          title: 'Push with mobile data',
-          icon: Icon(Icons.settings_cell_outlined),
-          defaultValue: false,
-        ),
-        SwitchSettingsTile(
           settingKey: kAllowPushWithWifi,
           title: 'Push with wifi data',
           icon: Icon(Icons.wifi),
           defaultValue: true,
+        ),
+        SwitchSettingsTile(
+          settingKey: kAllowPushWithMobile,
+          title: 'Push with mobile data',
+          icon: Icon(Icons.settings_cell_outlined),
+          defaultValue: false,
         ),
         Settings().onDoubleChanged(
             settingKey: kPushInterval,
