@@ -62,9 +62,7 @@ Future<String> _getName() async {
     if (!androidDeviceInfo.isPhysicalDevice) {
       return 'QP1A.191005.007.A3/Pixel XL';
     }
-    return androidDeviceInfo.display +
-        '/' +
-        androidDeviceInfo.model; // unique ID on Android
+    return '${androidDeviceInfo.board}${androidDeviceInfo.androidId.substring(0, 4)} ${androidDeviceInfo.model}'; // unique ID on Android
   }
 }
 
@@ -825,17 +823,17 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
-          // Row(
-          //   children: [
-          //     InfoDisplay(
-          //       keyname: "name",
-          //       value: _deviceName,
-          //       options: {
-          //         't2.font': Theme.of(context).textTheme.bodyText2,
-          //       },
-          //     ),
-          //   ],
-          // ),
+          Row(
+            children: [
+              InfoDisplay(
+                keyname: "name",
+                value: _deviceName,
+                options: {
+                  't2.font': Theme.of(context).textTheme.bodyText2,
+                },
+              ),
+            ],
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
