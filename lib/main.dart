@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'dart:convert'; // jsonEncode
-import 'package:english_words/english_words.dart' as ew;
+// import 'package:english_words/english_words.dart' as ew;
 import 'package:flutter/services.dart';
 import 'package:gcps/secrets.dart';
 import 'package:ip_geolocation_api/ip_geolocation_api.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 import 'package:flutter/widgets.dart';
 import 'package:device_info/device_info.dart';
 import 'package:http/http.dart' as http;
@@ -21,7 +21,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
 // import 'package:dio/dio.dart';
-import 'package:image/image.dart' as img;
+// import 'package:image/image.dart' as img;
 
 import 'track.dart';
 
@@ -57,6 +57,9 @@ Future<String> _getName() async {
     return iosDeviceInfo.name; // user-given name
   } else {
     var androidDeviceInfo = await deviceInfo.androidInfo;
+    if (!androidDeviceInfo.isPhysicalDevice) {
+      return 'QP1A.191005.007.A3/Pixel XL';
+    }
     return androidDeviceInfo.display +
         '/' +
         androidDeviceInfo.model; // unique ID on Android
@@ -83,7 +86,7 @@ class MyApp extends StatelessWidget {
         backgroundColor: Colors.limeAccent,
         canvasColor: Colors.deepOrange,
       ),
-      home: MyHomePage(title: 'gcps'),
+      home: MyHomePage(title: 'Global Cat Positioning System'),
       showPerformanceOverlay: false,
       debugShowMaterialGrid: false,
     );
@@ -139,10 +142,30 @@ class InfoDisplay extends StatelessWidget {
   }
 }
 
+class MovingAverager {
+  final int max;
+  List<double> vals;
+
+  MovingAverager({this.max});
+
+  void push(double value) {
+    vals.add(value);
+    if (vals.length > max) {
+      vals.removeAt(0);
+    }
+  }
+
+  double avg() {
+    double out = 0;
+    vals.forEach((element) => out += element);
+    return out / vals.length.toDouble();
+  }
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   String _deviceUUID = "";
   String _deviceName = "";
-  int _counter = 0;
+  // int _counter = 0;
   String geolocation_text = '<ip.somewhere>';
   String geolocation_api_text = '<api.somewhere>';
   String geolocation_api_stream_text = '<apistream.somewhere>';
@@ -156,8 +179,33 @@ class _MyHomePageState extends State<MyHomePage> {
   // StreamSubscription<Position> positionStream;
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
+  // Settings
+  int _pushBatchSize = 100;
+  int _pushEvery = 100;
+
   // Display location information
-  bg.Location glocation;
+  bg.Location glocation = new bg.Location({
+    'timestamp': DateTime.now().toIso8601String(),
+    'isMoving': false,
+    'uuid': 'abc',
+    'odometer': 42,
+    'coords': {
+      'latitude': 42.0,
+      'longitude': -69.0,
+      'accuracy': 42.0,
+      'altitude': 69.0,
+      'speed': 69.0,
+      'heading': 69.0,
+    },
+    'battery': {
+      'level': 1.0,
+      'status': 'full',
+    },
+    'activity': {
+      'type': 'still',
+      'confidence': 9000,
+    },
+  });
 
   // Display data history information
   int _countStored = 0;
@@ -176,16 +224,16 @@ class _MyHomePageState extends State<MyHomePage> {
     firstCamera = cameras.first;
   }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  // void _incrementCounter() {
+  //   setState(() {
+  //     // This call to setState tells the Flutter framework that something has
+  //     // changed in this State, which causes it to rerun the build method below
+  //     // so that the display can reflect the updated values. If we changed
+  //     // _counter without calling setState(), then the build method would not be
+  //     // called again, and so nothing would appear to happen.
+  //     _counter++;
+  //   });
+  // }
 
   // static const fetchLocationBackground = "fetchLocationBackground";
   // void callbackDispatcher() {
@@ -345,7 +393,7 @@ class _MyHomePageState extends State<MyHomePage> {
             desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
             distanceFilter: 0.0,
             disableElasticity: true,
-            isMoving: false,
+            isMoving: true, // false,
             stopTimeout: 2, // minutes
             minimumActivityRecognitionConfidence: 25, // default: 75
 
@@ -486,7 +534,7 @@ class _MyHomePageState extends State<MyHomePage> {
     for (var count = await countTracks();
         count > 0;
         count = await countTracks()) {
-      var tracks = await firstTracksWithLimit(100);
+      var tracks = await firstTracksWithLimit(_pushBatchSize);
       var resCode = await _pushTracks(tracks);
 
       if (resCode == HttpStatus.ok) {
@@ -555,7 +603,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // If we're not at a push mod, we're done.
-    if (countStored % 100 != 0) {
+    if (countStored % _pushEvery != 0) {
       return;
     }
     if (!_connectionStatus.contains("wifi") &&
@@ -651,19 +699,55 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            mainAxisSize: MainAxisSize.max,
             children: [
-              ElevatedButton(
-                  onPressed: () {
-                    // snaps().then((value) {
-                    //   print("stored snapsy");
-                    //   for (var item in value) {
-                    //     print(jsonEncode(item.toCattrackJSON()));
-                    //   }
-                    // });
-                    this._pushTracksBatching();
-                  },
-                  child: Icon(Icons.cloud_upload)),
+              Expanded(
+                  child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Expanded(
+                        child: ElevatedButton(
+                            onPressed: () {
+                              // snaps().then((value) {
+                              //   print("stored snapsy");
+                              //   for (var item in value) {
+                              //     print(jsonEncode(item.toCattrackJSON()));
+                              //   }
+                              // });
+                              this._pushTracksBatching();
+                            },
+                            child: Icon(Icons.cloud_upload)),
+                      ))),
+              Expanded(
+                  child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Expanded(
+                        child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SettingsScreen()));
+                            },
+                            child: Text('Settings')),
+                      ))),
+            ],
+          ),
+          Row(
+            // children: () {
+            //   List<Widget> out = [];
+            //   for (var i = 0; i < _countStored && i < _pushEvery; i++) {
+            //     out.add(Icon(Icons.control_point));
+            //   }
+            //   return out;
+            // }(),
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(('|' * (_countStored % _pushEvery) +
+                    (_countStored <= _pushEvery
+                        ? ('.' * (_pushEvery - _countStored))
+                        : ''))),
+              )
             ],
           ),
           Row(
@@ -708,14 +792,25 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
               InfoDisplay(
-                keyname: "connection status",
-                value: _connectionStatus,
+                keyname: "connection",
+                value: _connectionStatus.split('.')[1],
                 options: {
                   't2.font': Theme.of(context).textTheme.bodyText2,
                 },
               ),
             ],
           ),
+          // Row(
+          //   children: [
+          //     InfoDisplay(
+          //       keyname: "name",
+          //       value: _deviceName,
+          //       options: {
+          //         't2.font': Theme.of(context).textTheme.bodyText2,
+          //       },
+          //     ),
+          //   ],
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -849,6 +944,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
+      // title: Icon(Icons.map)),
       body: _exampleStuff(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
@@ -965,6 +1061,20 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             print(e);
           }
         },
+      ),
+    );
+  }
+}
+
+class SettingsScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Settings')),
+      body: Container(
+        child: ListView(
+          children: [Text('Hello world')],
+        ),
       ),
     );
   }
