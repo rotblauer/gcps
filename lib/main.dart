@@ -49,6 +49,20 @@ Future<String> _getId() async {
   }
 }
 
+Future<String> _getName() async {
+  var deviceInfo = DeviceInfoPlugin();
+  if (Platform.isIOS) {
+    // import 'dart:io'
+    var iosDeviceInfo = await deviceInfo.iosInfo;
+    return iosDeviceInfo.name; // user-given name
+  } else {
+    var androidDeviceInfo = await deviceInfo.androidInfo;
+    return androidDeviceInfo.display +
+        '/' +
+        androidDeviceInfo.model; // unique ID on Android
+  }
+}
+
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -127,12 +141,13 @@ class InfoDisplay extends StatelessWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String _deviceUUID = "";
+  String _deviceName = "";
   int _counter = 0;
   String geolocation_text = '<ip.somewhere>';
   String geolocation_api_text = '<api.somewhere>';
   String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
-  DateTime _appStarted = DateTime.now();
+  DateTime _appStarted = DateTime.now().toUtc();
 
   String _connectionStatus = 'Unknown';
   final Connectivity _connectivity = Connectivity();
@@ -256,6 +271,10 @@ class _MyHomePageState extends State<MyHomePage> {
     _getId().then((value) {
       _deviceUUID = value;
       print("uuid: " + value);
+    });
+    _getName().then((value) {
+      _deviceName = value;
+      print("device name: " + value);
     });
     // this._startStream();
     initConnectivity();
@@ -445,6 +464,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       c['tripStarted'] = _appStarted.toUtc().toIso8601String();
       c['uuid'] = _deviceUUID;
+      c['name'] = _deviceName;
 
       return c;
     });
@@ -968,10 +988,13 @@ class DisplayPictureScreen extends StatelessWidget {
         onPressed: () async {
           // final img.Image orientedImage = img.bakeOrientation(Image.file(File(imagePath)))
           return bg.BackgroundGeolocation.getCurrentPosition().then((value) {
-            final img.Image capturedImage =
-                img.decodeImage(File(imagePath).readAsBytesSync());
-            final img.Image orientedImage = img.bakeOrientation(capturedImage);
-            File(imagePath).writeAsBytesSync(img.encodePng(orientedImage));
+            // TODO: This should work, might not.
+            //
+            ///
+            // final img.Image capturedImage =
+            //     img.decodeImage(File(imagePath).readAsBytesSync());
+            // final img.Image orientedImage = img.bakeOrientation(capturedImage);
+            // File(imagePath).writeAsBytesSync(img.encodePng(orientedImage));
 
             var p = AppPoint.fromLocationProvider(value);
             p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());

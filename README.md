@@ -38,6 +38,12 @@ Then enable the USB Debugging option. Tip: You might also want to enable the Sta
 
 __Need to set `USB Preferences > Use USB For = PTP`
 
+
+```
+flutter pub get && flutter pub run flutter_launcher_icons:main
+flutter build apk --split-per-abi
+```
+
 ---
 
 Background location library required this to happen:

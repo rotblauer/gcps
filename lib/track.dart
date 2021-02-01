@@ -295,7 +295,6 @@ class AppPoint {
     return {
       'uuid': _uuid,
       'version': appVersion,
-      'name': deviceName,
       'time': time.toUtc().toIso8601String(),
       'timestamp': timestamp,
       'lat': latitude.toPrecision(9),
