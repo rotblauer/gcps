@@ -452,7 +452,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Future<void> sensors() async {
   //   var sensors = await bg.BackgroundGeolocation.sensors;
-  //   sensors.
+  //   sensors..
   // }
 
   @override
