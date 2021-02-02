@@ -29,7 +29,7 @@ jobs:
           GCPS_AUTH_HEADER_KEY: ${{ secrets.GCPS_AUTH_HEADER_KEY }}
           GCPS_AUTH_HEADER_VALUE: ${{ secrets.GCPS_AUTH_HEADER_VALUE }}
           GCPS_POST_ENDPOINT: ${{ secrets.GCPS_POST_ENDPOINT }}
-        run: |
+      - run: |
           flutter clean
           flutter pub get
           flutter pub run flutter_launcher_icons:main
