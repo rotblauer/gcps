@@ -321,6 +321,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  // just a random comment here... don't mind me...
+
   @override
   void initState() {
     super.initState();
@@ -333,6 +335,11 @@ class _MyHomePageState extends State<MyHomePage> {
       _deviceName = value;
       print("device name: " + value);
     });
+
+    getAppVersion().then((value) {
+      _deviceAppVersion = value;
+      print("device app version: " + value);
+    });
     // initPrefs();
     // this._startStream();
     initConnectivity();
@@ -340,11 +347,6 @@ class _MyHomePageState extends State<MyHomePage> {
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
     _initCameras();
-
-    getAppVersion().then((value) {
-      _deviceAppVersion = value;
-      print("device app version: " + value);
-    });
 
     // Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
     // /*
