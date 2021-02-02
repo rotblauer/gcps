@@ -44,6 +44,7 @@ jobs:
           echo "Date: $(date --iso-8601=m)" >> release_notes_body.md
           echo "Version: $GITHUB_REF" >> release_notes_body.md
           echo "Build number: $GITHUB_RUN_NUMBER" >> release_notes_body.md
+          curl -O words.txt https://raw.githubusercontent.com/sindresorhus/word-list/main/words.txt
 
       - name: Create release
         id: create_release
@@ -53,7 +54,7 @@ jobs:
         with:
           body_path: release_notes_body.md
           tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          release_name: ${{ github.ref }} $(printf '%s ' $(shuf -n2 < <(curl --silent 'https://raw.githubusercontent.com/sindresorhus/word-list/main/words.txt')))
           draft: false
           prerelease: false
 
