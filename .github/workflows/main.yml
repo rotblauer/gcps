@@ -30,14 +30,12 @@ jobs:
       - run: flutter pub get
       - run: flutter pub run flutter_launcher_icons:main
 
-      - name: Build
+      - name: Build APKs per API
         env:
           GCPS_AUTH_HEADER_KEY: ${{ secrets.GCPS_AUTH_HEADER_KEY }}
           GCPS_AUTH_HEADER_VALUE: ${{ secrets.GCPS_AUTH_HEADER_VALUE }}
           GCPS_POST_ENDPOINT: ${{ secrets.GCPS_POST_ENDPOINT }}
-          GCPS_BUILD_NAME: ${{ env.GITHUB_REF }}
-          GCPS_BUILD_NUMBER: ${{ env.GITHUB_RUN_NUMBER }}
-        run: flutter build apk --split-per-abi --debug --dart-define="GCPS_AUTH_HEADER_KEY=${GCPS_AUTH_HEADER_KEY}" --dart-define="GCPS_AUTH_HEADER_VALUE=${GCPS_AUTH_HEADER_VALUE}" --dart-define="GCPS_POST_ENDPOINT=${GCPS_POST_ENDPOINT}" --build-name="${GCPS_BUILD_NAME}" --build-number="${GCPS_BUILD_NUMBER}"
+        run: flutter build apk --split-per-abi --debug --dart-define="GCPS_AUTH_HEADER_KEY=${GCPS_AUTH_HEADER_KEY}" --dart-define="GCPS_AUTH_HEADER_VALUE=${GCPS_AUTH_HEADER_VALUE}" --dart-define="GCPS_POST_ENDPOINT=${GCPS_POST_ENDPOINT}" --build-name="${GITHUB_REF}" --build-number=${GITHUB_BUILD_NUMBER}
       
       - name: Create release
         id: create_release
