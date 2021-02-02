@@ -2,21 +2,20 @@
 
 Global Cat Positioning System
 
-- [ ] battery status
+- [x] battery status
 - [ ] wifi/radio context information
-- [ ] activity, healthkit stuff?
+- [x] activity, healthkit stuff?
 - [x] only attempt push when wifi or data available
-- [ ] catsnaps!
-- [ ] settings
-  - [ ] push every n
-  - [ ] push batch size n
-  - [ ] desired accuracy
+- [x] catsnaps!
+- [x] settings
+  - [x] push every n
+  - [x] push batch size n
+  - [x] desired accuracy
 - [ ] offline map?
 - [ ] fitness features
   - [ ] lap recording
   - [ ] distance, pace recording
-- [ ] other cats status?
-- [ ] app icon
+- [x] app icon
 
 ### Flutter console
 
