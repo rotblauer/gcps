@@ -25,15 +25,17 @@ jobs:
         with:
           version: '1.26.0'
           channel: dev
+        
+      - run: flutter clean
+      - run: flutter pub get
+      - run: flutter pub run flutter_launcher_icons:main
+
+      - name: Build
         env:
           GCPS_AUTH_HEADER_KEY: ${{ secrets.GCPS_AUTH_HEADER_KEY }}
           GCPS_AUTH_HEADER_VALUE: ${{ secrets.GCPS_AUTH_HEADER_VALUE }}
           GCPS_POST_ENDPOINT: ${{ secrets.GCPS_POST_ENDPOINT }}
-      - run: |
-          flutter clean
-          flutter pub get
-          flutter pub run flutter_launcher_icons:main
-          flutter build apk --split-per-abi --debug --dart-define="GCPS_AUTH_HEADER_KEY=${GCPS_AUTH_HEADER_KEY}" --dart-define="GCPS_AUTH_HEADER_VALUE=${GCPS_AUTH_HEADER_VALUE}" --dart-define="GCPS_POST_ENDPOINT=${GCPS_POST_ENDPOINT}" --build-name="${GITHUB_REF}" --build-number=$((GITHUB_RUN_NUMBER+100))
+        run: flutter build apk --split-per-abi --debug --dart-define="GCPS_AUTH_HEADER_KEY=${GCPS_AUTH_HEADER_KEY}" --dart-define="GCPS_AUTH_HEADER_VALUE=${GCPS_AUTH_HEADER_VALUE}" --dart-define="GCPS_POST_ENDPOINT=${GCPS_POST_ENDPOINT}" --build-name="${GITHUB_REF}" --build-number=$((GITHUB_RUN_NUMBER+100))
       
       - name: Create release
         id: create_release
@@ -42,7 +44,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: ${{ github.ref }}
           draft: false
           prerelease: false
 
