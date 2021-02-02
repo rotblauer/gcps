@@ -445,6 +445,8 @@ class _MyHomePageState extends State<MyHomePage> {
         bg.BackgroundGeolocation.start();
       }
     });
+
+    eachSecond();
   }
 
   @override
@@ -712,6 +714,20 @@ class _MyHomePageState extends State<MyHomePage> {
   //       desiredAccuracy: LocationAccuracy.best);
   // }
 
+  // runs every 1 second
+
+  int _secondsSinceLastPoint = 0;
+  void eachSecond() {
+    Timer.periodic(new Duration(seconds: 1), (timer) {
+      var s = (DateTime.now().millisecondsSinceEpoch -
+              DateTime.parse(glocation.timestamp).millisecondsSinceEpoch) ~/
+          1000;
+      setState(() {
+        _secondsSinceLastPoint = s;
+      });
+    });
+  }
+
   Widget _exampleStuff() {
     return Center(
       // Center is a layout widget. It takes a single child and positions it
@@ -735,6 +751,13 @@ class _MyHomePageState extends State<MyHomePage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Row(),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Text('uuid:${_deviceUUID}',
+          //         style: Theme.of(context).textTheme.bodyText2),
+          //   ],
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -825,9 +848,18 @@ class _MyHomePageState extends State<MyHomePage> {
             // crossAxisCount: 2,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
+              // InfoDisplay(
+              //   keyname: "uuid",
+              //   value: _deviceUUID,
+              //   options: {
+              //     't2.font': Theme.of(context).textTheme.bodyText2,
+              //   },
+              // ),
               InfoDisplay(
-                keyname: "uuid",
-                value: _deviceUUID,
+                keyname: "longitude,latitude",
+                value: '${glocation.coords.longitude}' +
+                    ',' +
+                    '${glocation.coords.latitude}',
                 options: {
                   't2.font': Theme.of(context).textTheme.bodyText2,
                 },
@@ -852,20 +884,20 @@ class _MyHomePageState extends State<MyHomePage> {
           //     ),
           //   ],
           // ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              InfoDisplay(
-                keyname: "longitude,latitude",
-                value: '${glocation.coords.longitude}' +
-                    ',' +
-                    '${glocation.coords.latitude}',
-                options: {
-                  't2.font': Theme.of(context).textTheme.bodyText2,
-                },
-              ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //   children: [
+          //     InfoDisplay(
+          //       keyname: "longitude,latitude",
+          //       value: '${glocation.coords.longitude}' +
+          //           ',' +
+          //           '${glocation.coords.latitude}',
+          //       options: {
+          //         't2.font': Theme.of(context).textTheme.bodyText2,
+          //       },
+          //     ),
+          //   ],
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -899,6 +931,17 @@ class _MyHomePageState extends State<MyHomePage> {
               InfoDisplay(
                   keyname: "elevation accuracy",
                   value: glocation.coords.altitudeAccuracy),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InfoDisplay(
+                  keyname: "odometer", value: glocation.odometer.toInt()),
+              InfoDisplay(
+                keyname: "since last point",
+                value: (_secondsSinceLastPoint),
+              )
             ],
           ),
           Row(
