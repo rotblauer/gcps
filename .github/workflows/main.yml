@@ -53,7 +53,7 @@ jobs:
         with:
           body_path: release_notes_body.md
           tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }} $(printf '%s ' $(shuf -n2 < <(curl --silent 'https://raw.githubusercontent.com/sindresorhus/word-list/main/words.txt')))
+          release_name: ${{ github.ref }} # $(printf '%s ' $(shuf -n2 < <(curl --silent 'https://raw.githubusercontent.com/sindresorhus/word-list/main/words.txt')))
           draft: false
           prerelease: false
 
