@@ -35,7 +35,7 @@ jobs:
           GCPS_AUTH_HEADER_KEY: ${{ secrets.GCPS_AUTH_HEADER_KEY }}
           GCPS_AUTH_HEADER_VALUE: ${{ secrets.GCPS_AUTH_HEADER_VALUE }}
           GCPS_POST_ENDPOINT: ${{ secrets.GCPS_POST_ENDPOINT }}
-        run: flutter build apk --split-per-abi --debug --dart-define="GCPS_AUTH_HEADER_KEY=${GCPS_AUTH_HEADER_KEY}" --dart-define="GCPS_AUTH_HEADER_VALUE=${GCPS_AUTH_HEADER_VALUE}" --dart-define="GCPS_POST_ENDPOINT=${GCPS_POST_ENDPOINT}" --build-name="${GITHUB_REF}" --build-number=${GITHUB_BUILD_NUMBER}
+        run: flutter build apk --split-per-abi --debug --dart-define="GCPS_AUTH_HEADER_KEY=${GCPS_AUTH_HEADER_KEY}" --dart-define="GCPS_AUTH_HEADER_VALUE=${GCPS_AUTH_HEADER_VALUE}" --dart-define="GCPS_POST_ENDPOINT=${GCPS_POST_ENDPOINT}" --build-name=${GITHUB_REF} --build-number=$GITHUB_RUN_NUMBER
       
       - name: Create release
         id: create_release
