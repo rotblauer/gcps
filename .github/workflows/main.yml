@@ -37,12 +37,21 @@ jobs:
           GCPS_POST_ENDPOINT: ${{ secrets.GCPS_POST_ENDPOINT }}
         run: flutter build apk --split-per-abi --debug --dart-define="GCPS_AUTH_HEADER_KEY=${GCPS_AUTH_HEADER_KEY}" --dart-define="GCPS_AUTH_HEADER_VALUE=${GCPS_AUTH_HEADER_VALUE}" --dart-define="GCPS_POST_ENDPOINT=${GCPS_POST_ENDPOINT}" --build-name=${GITHUB_REF} --build-number=$GITHUB_RUN_NUMBER
       
+      - name: Draft release notes
+        run: |
+          touch release_notes_body.md
+          echo "App: GCPS" >> release_notes_body.md
+          echo "Date: $(date --iso-8601=m)" >> release_notes_body.md
+          echo "Version: $GITHUB_REF" >> release_notes_body.md
+          echo "Build number: $GITHUB_RUN_NUMBER" >> release_notes_body.md
+
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
+          body_path: release_notes_body.md
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
           draft: false
