@@ -23,7 +23,7 @@ import 'package:flutter_background_geolocation/flutter_background_geolocation.da
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 
 // import 'package:dio/dio.dart';
-// import 'package:image/image.dart' as img;
+import 'package:image/image.dart' as img;
 
 import 'track.dart';
 import 'prefs.dart' as prefs;
@@ -766,7 +766,9 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Row(),
+          Row(
+            children: [Container(height: 24, child: null)],
+          ),
           // Row(
           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
           //   children: [
@@ -973,9 +975,42 @@ class _MyHomePageState extends State<MyHomePage> {
                   value: glocation.activity.confidence),
             ],
           ),
-          Row(children: []),
-          Row(children: []),
-          Row(children: []),
+          // Row(children: []),
+          // Row(children: []),
+          // Row(children: []),
+          Row(
+            children: [
+              Expanded(
+                  child: Container(
+                      height: 128,
+                      padding: const EdgeInsets.all(8),
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.lime)),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TakePictureScreen(camera: firstCamera),
+                            ),
+                          );
+                        },
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text('Cat snap',
+                                  style: Theme.of(context).textTheme.overline),
+                              Icon(
+                                Icons.camera_alt,
+                                size: 48,
+                                color: Colors.green, // green
+                              ),
+                            ]),
+                      )))
+            ],
+          )
 
           // Text(
           //   'You done ${ew.adjectives[_counter]}ly caressed the button this many times:',
@@ -1141,19 +1176,21 @@ class _MyHomePageState extends State<MyHomePage> {
       //   // ),
       // ],
       body: _exampleStuff(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TakePictureScreen(camera: firstCamera),
-            ),
-          );
-        },
-        tooltip: 'Camera',
-        child: Icon(Icons.camera),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      // floatingActionButton: FloatingActionButton(
+      //   materialTapTargetSize: MaterialTapTargetSize.padded,
+      //   foregroundColor: Colors.green,
+      //   onPressed: () {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder: (context) => TakePictureScreen(camera: firstCamera),
+      //       ),
+      //     );
+      //   },
+      //   tooltip: 'Camera',
+      //   child: Icon(Icons.camera),
+      // ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
@@ -1203,60 +1240,131 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Take a picture')),
+      appBar: AppBar(
+        title: Text('Cat snap'),
+        backgroundColor: Colors.lime,
+      ),
       // Wait until the controller is initialized before displaying the
       // camera preview. Use a FutureBuilder to display a loading spinner
       // until the controller has finished initializing.
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            // If the Future is complete, display the preview.
-            return CameraPreview(_controller);
-          } else {
-            // Otherwise, display a loading indicator.
-            return Center(child: CircularProgressIndicator());
-          }
-        },
+      body: Column(
+        children: [
+          FutureBuilder<void>(
+            future: _initializeControllerFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                // If the Future is complete, display the preview.
+                return CameraPreview(_controller);
+              } else {
+                // Otherwise, display a loading indicator.
+                return Center(child: CircularProgressIndicator());
+              }
+            },
+          ),
+          Row(
+            children: [
+              Expanded(
+                  child: Container(
+                      height: 128,
+                      padding: const EdgeInsets.all(8),
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.lime)),
+                        onPressed: () async {
+                          // Take the Picture in a try / catch block. If anything goes wrong,
+                          // catch the error.
+                          try {
+                            // Ensure that the camera is initialized.
+                            await _initializeControllerFuture;
+
+                            // Construct the path where the image should be saved using the
+                            // pattern package.
+                            final path = join(
+                              // Store the picture in the temp directory.
+                              // Find the temp directory using the `path_provider` plugin.
+                              (await getTemporaryDirectory()).path,
+                              '${DateTime.now().millisecondsSinceEpoch}.jpg',
+                            );
+
+                            // Attempt to take a picture and log where it's been saved.
+                            // var xpath =
+                            await _controller
+                                .takePicture()
+                                .then((value) => value.saveTo(path));
+                            // _controller.setFlashMode(FlashMode.off);
+                            // xpath.saveTo(path);
+
+                            // If the picture was taken, display it on a new screen.
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DisplayPictureScreen(imagePath: path),
+                              ),
+                            );
+                          } catch (e) {
+                            // If an error occurs, log the error to the console.
+                            print(e);
+                          }
+                        },
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              // Text('Cat snap',
+                              //     style: Theme.of(context).textTheme.overline),
+                              Icon(
+                                Icons.camera,
+                                size: 48,
+                                color: Colors.green, // green
+                              ),
+                            ]),
+                      )))
+            ],
+          )
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.camera_alt),
-        // Provide an onPressed callback.
-        onPressed: () async {
-          // Take the Picture in a try / catch block. If anything goes wrong,
-          // catch the error.
-          try {
-            // Ensure that the camera is initialized.
-            await _initializeControllerFuture;
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: Colors.tealAccent,
+      //   materialTapTargetSize: MaterialTapTargetSize.padded,
+      //   child: Icon(Icons.camera_alt),
+      //   // Provide an onPressed callback.
+      //   onPressed: () async {
+      //     // Take the Picture in a try / catch block. If anything goes wrong,
+      //     // catch the error.
+      //     try {
+      //       // Ensure that the camera is initialized.
+      //       await _initializeControllerFuture;
 
-            // Construct the path where the image should be saved using the
-            // pattern package.
-            final path = join(
-              // Store the picture in the temp directory.
-              // Find the temp directory using the `path_provider` plugin.
-              (await getTemporaryDirectory()).path,
-              '${DateTime.now().millisecondsSinceEpoch}.png',
-            );
+      //       // Construct the path where the image should be saved using the
+      //       // pattern package.
+      //       final path = join(
+      //         // Store the picture in the temp directory.
+      //         // Find the temp directory using the `path_provider` plugin.
+      //         (await getTemporaryDirectory()).path,
+      //         '${DateTime.now().millisecondsSinceEpoch}.jpg',
+      //       );
 
-            // Attempt to take a picture and log where it's been saved.
-            // var xpath =
-            await _controller.takePicture().then((value) => value.saveTo(path));
-            // _controller.setFlashMode(FlashMode.off);
-            // xpath.saveTo(path);
+      //       // Attempt to take a picture and log where it's been saved.
+      //       // var xpath =
+      //       await _controller.takePicture().then((value) => value.saveTo(path));
+      //       // _controller.setFlashMode(FlashMode.off);
+      //       // xpath.saveTo(path);
 
-            // If the picture was taken, display it on a new screen.
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DisplayPictureScreen(imagePath: path),
-              ),
-            );
-          } catch (e) {
-            // If an error occurs, log the error to the console.
-            print(e);
-          }
-        },
-      ),
+      //       // If the picture was taken, display it on a new screen.
+      //       Navigator.push(
+      //         context,
+      //         MaterialPageRoute(
+      //           builder: (context) => DisplayPictureScreen(imagePath: path),
+      //         ),
+      //       );
+      //     } catch (e) {
+      //       // If an error occurs, log the error to the console.
+      //       print(e);
+      //     }
+      //   },
+      // ),
     );
   }
 }
@@ -1270,45 +1378,98 @@ class DisplayPictureScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Display the Picture')),
+      appBar: AppBar(
+        title: Text('Reviewing cat snap'),
+        backgroundColor: Colors.lime,
+      ),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      body: Image.file(File(imagePath)),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.save),
-        onPressed: () async {
-          // final img.Image orientedImage = img.bakeOrientation(Image.file(File(imagePath)))
-          return bg.BackgroundGeolocation.getCurrentPosition().then((value) {
-            // TODO: This should work, might not.
-            //
-            ///
-            // final img.Image capturedImage =
-            //     img.decodeImage(File(imagePath).readAsBytesSync());
-            // final img.Image orientedImage = img.bakeOrientation(capturedImage);
-            // File(imagePath).writeAsBytesSync(img.encodePng(orientedImage));
+      body: Column(children: [
+        Image.file(File(imagePath)),
+        Row(
+          children: [
+            Expanded(
+                child: Container(
+                    height: 128,
+                    padding: const EdgeInsets.all(8),
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(Colors.green)),
+                      onPressed: () async {
+                        // Get location.
+                        var location =
+                            await bg.BackgroundGeolocation.getCurrentPosition();
 
-            var p = AppPoint.fromLocationProvider(value);
-            p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
-            print("saved: " + jsonEncode(p.toCattrackJSON()));
-            insertTrackForce(p).then((value) {
-              File(imagePath).deleteSync();
-              Navigator.popUntil(context, ModalRoute.withName('/'));
-            });
-            return null;
-          });
-          // .then((value) {
-          //   // Prove that it actually got saved.
-          //   snaps().then((value) {
-          //     print("stored snapsy");
-          //     for (var item in value) {
-          //       print(jsonEncode(item.toCattrackJSON()));
-          //     }
-          //   });
-          // });
-          // await GallerySaver.saveImage(imagePath ?? "");
-          // await ImageGallerySaver.saveFile(imagePath);
-        },
-      ),
+                        // Read and rotate the image according to exif data as needed.
+                        final img.Image capturedImage = img
+                            .decodeImage(await File(imagePath).readAsBytes());
+                        final img.Image orientedImage =
+                            img.bakeOrientation(capturedImage);
+                        await File(imagePath).writeAsBytes(
+                            img.encodeJpg(orientedImage),
+                            flush: true);
+
+                        // Add the snap to the cat track.
+                        var p = AppPoint.fromLocationProvider(location);
+                        p.imgB64 =
+                            base64Encode(File(imagePath).readAsBytesSync());
+
+                        // Save it.
+                        await insertTrackForce(p);
+
+                        // Delete the original image file.
+                        File(imagePath).deleteSync();
+
+                        // Go back home.
+                        Navigator.popUntil(context, ModalRoute.withName('/'));
+
+                        return null;
+                      },
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text('Track it',
+                                style: Theme.of(context).textTheme.overline),
+                            Icon(
+                              Icons.add_location_alt_outlined,
+                              size: 48,
+                              color: Colors.lightGreenAccent, // green
+                            ),
+                          ]),
+                    )))
+          ],
+        )
+      ]),
+      // floatingActionButton: FloatingActionButton(
+      //   child: Icon(Icons.save),
+      //   onPressed: () async {
+      //     // Get location.
+      //     var location = await bg.BackgroundGeolocation.getCurrentPosition();
+
+      //     // Read and rotate the image according to exif data as needed.
+      //     final img.Image capturedImage =
+      //         img.decodeImage(await File(imagePath).readAsBytes());
+      //     final img.Image orientedImage = img.bakeOrientation(capturedImage);
+      //     await File(imagePath)
+      //         .writeAsBytes(img.encodeJpg(orientedImage), flush: true);
+
+      //     // Add the snap to the cat track.
+      //     var p = AppPoint.fromLocationProvider(location);
+      //     p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
+
+      //     // Save it.
+      //     await insertTrackForce(p);
+
+      //     // Delete the original image file.
+      //     File(imagePath).deleteSync();
+
+      //     // Go back home.
+      //     Navigator.popUntil(context, ModalRoute.withName('/'));
+
+      //     return null;
+      //   },
+      // ),
     );
   }
 }
