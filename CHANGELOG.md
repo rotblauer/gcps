@@ -1,3 +1,10 @@
+## 1.0.1+24
+> 2021-02-02T07:03-06:00
+
+- 4b0263e moar work on versioning and changelog
+- 19058d4 working on versioning
+
+
 ## 1.0.1+23
 - 19058d4 working on versioning
 
