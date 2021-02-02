@@ -223,7 +223,7 @@ class AppPoint {
     final DateTime dt = DateTime.parse(location.timestamp);
 
     return new AppPoint(
-      timestamp: (dt.millisecondsSinceEpoch / 1000).toInt(),
+      timestamp: dt.millisecondsSinceEpoch ~/ 1000,
       time: dt,
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,

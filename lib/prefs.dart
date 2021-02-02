@@ -55,17 +55,8 @@ class MySettingsScreen extends StatelessWidget {
     return SettingsScreen(
       title: "Settings",
       children: [
-        SwitchSettingsTile(
-          settingKey: kAllowPushWithWifi,
-          title: 'Push with wifi data',
-          icon: Icon(Icons.wifi),
-          defaultValue: true,
-        ),
-        SwitchSettingsTile(
-          settingKey: kAllowPushWithMobile,
-          title: 'Push with mobile data',
-          icon: Icon(Icons.settings_cell_outlined),
-          defaultValue: false,
+        SettingsContainer(
+          child: Text('Push', style: Theme.of(context).textTheme.overline),
         ),
         Settings().onDoubleChanged(
             settingKey: kPushInterval,
@@ -129,6 +120,21 @@ class MySettingsScreen extends StatelessWidget {
           step: 100.0,
           maxIcon: Icon(Icons.arrow_upward),
           minIcon: Icon(Icons.arrow_downward),
+        ),
+        SwitchSettingsTile(
+          settingKey: kAllowPushWithWifi,
+          title: 'Push with wifi data',
+          icon: Icon(Icons.wifi),
+          defaultValue: true,
+        ),
+        SwitchSettingsTile(
+          settingKey: kAllowPushWithMobile,
+          title: 'Push with mobile data',
+          icon: Icon(Icons.settings_cell_outlined),
+          defaultValue: false,
+        ),
+        SettingsContainer(
+          child: Text('Locate', style: Theme.of(context).textTheme.overline),
         ),
       ],
     );

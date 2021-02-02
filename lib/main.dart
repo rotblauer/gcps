@@ -397,8 +397,8 @@ class _MyHomePageState extends State<MyHomePage> {
     //
     bg.BackgroundGeolocation.ready(bg.Config(
             desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
-            distanceFilter: 3.0,
             disableElasticity: true,
+            distanceFilter: 3.0,
             isMoving: true, // false,
             stopTimeout: 2, // minutes
             minimumActivityRecognitionConfidence: 25, // default: 75
@@ -409,7 +409,7 @@ class _MyHomePageState extends State<MyHomePage> {
             preventSuspend: true,
             disableAutoSyncOnCellular: true,
             maxRecordsToPersist: 3600,
-            locationUpdateInterval: 1000,
+            // locationUpdateInterval: 1000,
             fastestLocationUpdateInterval: 1000,
             allowIdenticalLocations: false,
             speedJumpFilter: 300,
