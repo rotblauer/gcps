@@ -49,3 +49,4 @@ secrets.dart*
 .env*
 
 testdata/
+.vscode/
