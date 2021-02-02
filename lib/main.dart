@@ -392,31 +392,49 @@ class _MyHomePageState extends State<MyHomePage> {
 
     bg.BackgroundGeolocation.registerHeadlessTask(headlessTask);
 
+    bg.BackgroundGeolocation.stop();
+
     ////
     // 2.  Configure the plugin
     //
     bg.BackgroundGeolocation.ready(bg.Config(
             desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
+
+            // This OVERRIDES the locationUpdateInterval, which otherwise
+            // wants to do some sort-of-configurable dynamic things.
+            distanceFilter: 1.0,
             disableElasticity: true,
-            distanceFilter: 3.0,
-            isMoving: true, // false,
-            stopTimeout: 2, // minutes
+            // locationUpdateInterval: 1000,
+            fastestLocationUpdateInterval: 1000,
+
+            // 100 m/s ~> 223 mi/h; planes grounded.
+            speedJumpFilter: 100,
+
+            //
+            isMoving: true,
+            stopTimeout: 2, // minutes... right?
             minimumActivityRecognitionConfidence: 25, // default: 75
 
+            // We must know what we're doing.
             disableStopDetection: true,
             stopOnStationary: false,
             pausesLocationUpdatesAutomatically: false,
-            preventSuspend: true,
+
+            // But we probably don't really know what we're doing.
+            // preventSuspend: true,
+
             disableAutoSyncOnCellular: true,
             maxRecordsToPersist: 3600,
-            // locationUpdateInterval: 1000,
-            fastestLocationUpdateInterval: 1000,
+            activityRecognitionInterval: 10000, // default=10000=10s
             allowIdenticalLocations: false,
-            speedJumpFilter: 300,
+
+            // I can't believe they let you do this.
             stopOnTerminate: false,
             enableHeadless: true,
             startOnBoot: true,
             heartbeatInterval: 1200,
+
+            // Buggers.
             debug: false,
             logLevel: bg.Config.LOG_LEVEL_INFO))
         .then((bg.State state) {

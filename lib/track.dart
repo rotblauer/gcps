@@ -324,6 +324,8 @@ String activityTypeApp(String original) {
       return 'Stationary';
     case 'on_foot':
       return 'Walking';
+    case 'walking':
+      return 'Walking';
     case 'on_bicycle':
       return 'Bike';
     case 'running':
