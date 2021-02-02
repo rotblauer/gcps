@@ -7,7 +7,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
-import 'secrets.dart';
+// import 'config.dart' as config;
 
 const _cDatabaseName = 'cattracks_database.db';
 const _cTableName = "cattracks";
@@ -294,7 +294,7 @@ class AppPoint {
     notesString = jsonEncode(notes);
     return {
       'uuid': _uuid,
-      'version': appVersion,
+      // 'version': appVersion,
       'time': time.toUtc().toIso8601String(),
       'timestamp': timestamp,
       'lat': latitude.toPrecision(9),

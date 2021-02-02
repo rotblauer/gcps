@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert'; // jsonEncode
 // import 'package:english_words/english_words.dart' as ew;
 import 'package:flutter/services.dart';
-import 'package:gcps/secrets.dart';
+
 import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 // import 'package:geolocator/geolocator.dart';
 import 'package:flutter/widgets.dart';
@@ -20,12 +20,14 @@ import 'package:path_provider/path_provider.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
+import 'package:shared_preferences_settings/shared_preferences_settings.dart';
+
 // import 'package:dio/dio.dart';
 // import 'package:image/image.dart' as img;
 
 import 'track.dart';
 import 'prefs.dart' as prefs;
-import 'package:shared_preferences_settings/shared_preferences_settings.dart';
+import 'config.dart';
 
 void main() {
   // Avoid errors caused by flutter upgrade.
@@ -166,6 +168,8 @@ class MovingAverager {
 class _MyHomePageState extends State<MyHomePage> {
   String _deviceUUID = "";
   String _deviceName = "";
+  String _deviceAppVersion = "";
+
   // int _counter = 0;
   // String geolocation_text = '<ip.somewhere>';
   // String geolocation_api_text = '<api.somewhere>';
@@ -336,6 +340,11 @@ class _MyHomePageState extends State<MyHomePage> {
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
     _initCameras();
+
+    getAppVersion().then((value) {
+      _deviceAppVersion = value;
+      print("device app version: " + value);
+    });
 
     // Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
     // /*
@@ -546,6 +555,7 @@ class _MyHomePageState extends State<MyHomePage> {
       c['tripStarted'] = _appStarted.toUtc().toIso8601String();
       c['uuid'] = _deviceUUID;
       c['name'] = _deviceName;
+      c['version'] = _deviceAppVersion;
 
       return c;
     });

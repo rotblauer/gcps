@@ -1,4 +1,5 @@
 // import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gcps/config.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 import 'package:flutter/material.dart';
 
@@ -134,7 +135,25 @@ class MySettingsScreen extends StatelessWidget {
           defaultValue: false,
         ),
         SettingsContainer(
-          child: Text('Locate', style: Theme.of(context).textTheme.overline),
+          children: [
+            Text('App Version', style: Theme.of(context).textTheme.overline),
+            new FutureBuilder<String>(
+              future: getAppVersion(), // a Future<String> or null
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.none:
+                    return new Text('Really unknown...');
+                  case ConnectionState.waiting:
+                    return new Text('Unknown...');
+                  default:
+                    if (snapshot.hasError)
+                      return new Text('Error: ${snapshot.error}');
+                    else
+                      return new Text('${snapshot.data}');
+                }
+              },
+            )
+          ],
         ),
       ],
     );
