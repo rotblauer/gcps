@@ -53,6 +53,7 @@ flutter_icons:
   image_path: "assets/icon/icon.png"
   # The next two attributes are only used when generating Android launcher icon
   adaptive_icon_background: "#FFFF5742"
+  adaptive_icon_foreground: "assets/icon/icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

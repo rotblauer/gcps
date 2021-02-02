@@ -51,6 +51,17 @@ const String kPushBatchSize = "pushBatchSize";
 // }
 
 class MySettingsScreen extends StatelessWidget {
+  final String deviceUUID;
+  final String deviceName;
+  final String deviceVersion;
+
+  const MySettingsScreen({
+    Key key,
+    this.deviceUUID,
+    this.deviceName,
+    this.deviceVersion,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return SettingsScreen(
@@ -136,23 +147,12 @@ class MySettingsScreen extends StatelessWidget {
         ),
         SettingsContainer(
           children: [
-            Text('App Version', style: Theme.of(context).textTheme.overline),
-            new FutureBuilder<String>(
-              future: getAppVersion(), // a Future<String> or null
-              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.none:
-                    return new Text('Really unknown...');
-                  case ConnectionState.waiting:
-                    return new Text('Unknown...');
-                  default:
-                    if (snapshot.hasError)
-                      return new Text('Error: ${snapshot.error}');
-                    else
-                      return new Text('${snapshot.data}');
-                }
-              },
-            )
+            Text('App version', style: Theme.of(context).textTheme.overline),
+            Text(deviceVersion),
+            Text('UUID', style: Theme.of(context).textTheme.overline),
+            Text(deviceUUID),
+            Text('Name', style: Theme.of(context).textTheme.overline),
+            Text(deviceName),
           ],
         ),
       ],

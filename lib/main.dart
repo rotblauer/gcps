@@ -803,7 +803,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => prefs.MySettingsScreen(),
+                          builder: (context) => prefs.MySettingsScreen(
+                            deviceUUID: _deviceUUID,
+                            deviceName: _deviceName,
+                            deviceVersion: _deviceAppVersion,
+                          ),
                         ),
                       );
                     },
