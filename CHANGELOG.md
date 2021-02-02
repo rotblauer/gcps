@@ -1,3 +1,6 @@
+## 1.0.1+23
+- 19058d4 working on versioning
+
 ## Version 10
 
 - Maybe location efficiency tweaks, including not forcing SUPERALWAYS on.
