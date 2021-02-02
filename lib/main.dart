@@ -653,26 +653,18 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
+    if (_connectionResult == null) return;
+
+    var connectedWifi = _connectionResult == ConnectivityResult.wifi;
+    var connectedMobile = _connectionResult == ConnectivityResult.mobile;
+
     var allowWifi = await Settings().getBool(prefs.kAllowPushWithWifi, true);
     var allowMobile =
         await Settings().getBool(prefs.kAllowPushWithMobile, true);
 
-    if (!allowWifi && !allowMobile) {
-      return;
+    if ((connectedWifi && allowWifi) || (connectedMobile && allowMobile)) {
+      await _pushTracksBatching();
     }
-    if (_connectionResult == null) return;
-
-    var connectedWifi = _connectionResult == ConnectivityResult.wifi;
-    if (connectedWifi && !(allowWifi)) {
-      return;
-    }
-
-    var connectedMobile = _connectionResult == ConnectivityResult.mobile;
-    if (connectedMobile && !(allowMobile)) {
-      return;
-    }
-
-    await _pushTracksBatching();
   }
 
   // void _startStream() {
