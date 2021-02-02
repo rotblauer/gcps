@@ -1395,7 +1395,7 @@ class DisplayPictureScreen extends StatelessWidget {
                     child: ElevatedButton(
                       style: ButtonStyle(
                           backgroundColor:
-                              MaterialStateProperty.all<Color>(Colors.green)),
+                              MaterialStateProperty.all<Color>(Colors.lime)),
                       onPressed: () async {
                         // Get location.
                         var location =
@@ -1429,12 +1429,10 @@ class DisplayPictureScreen extends StatelessWidget {
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Text('Track it',
-                                style: Theme.of(context).textTheme.overline),
                             Icon(
-                              Icons.add_location_alt_outlined,
+                              Icons.save_outlined,
                               size: 48,
-                              color: Colors.lightGreenAccent, // green
+                              color: Colors.green, // green
                             ),
                           ]),
                     )))
