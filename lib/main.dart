@@ -443,11 +443,17 @@ class _MyHomePageState extends State<MyHomePage> {
         // 3.  Start the plugin.
         //
         bg.BackgroundGeolocation.start();
+        bg.BackgroundGeolocation.setOdometer(0);
       }
     });
 
     eachSecond();
   }
+
+  // Future<void> sensors() async {
+  //   var sensors = await bg.BackgroundGeolocation.sensors;
+  //   sensors.
+  // }
 
   @override
   void dispose() {

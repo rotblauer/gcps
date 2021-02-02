@@ -1,3 +1,7 @@
+## Version 10
+
+- Maybe location efficiency tweaks, including not forcing SUPERALWAYS on.
+
 ## Version 9
 
 - Might tame the cat precision mongers by only listening for location updates 3 meters apart. Terrible, terrible.
