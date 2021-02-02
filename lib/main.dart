@@ -321,8 +321,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  // just a random comment here... don't mind me...
-
   @override
   void initState() {
     super.initState();
