@@ -30,8 +30,6 @@ import 'track.dart';
 import 'prefs.dart' as prefs;
 import 'config.dart';
 
-import 'package:haversine/haversine.dart' as haversine;
-
 void main() {
   // Avoid errors cased by flutter upgrade
   // Importing 'package:flutter/widgets.dart' is required.
