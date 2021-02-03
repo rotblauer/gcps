@@ -84,6 +84,7 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
     ]);
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'global cat positioning system',
       theme: ThemeData(
         // This is the theme of your application.
