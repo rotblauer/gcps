@@ -586,12 +586,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final List<Map<String, dynamic>> pushable =
         List.generate(tracks.length, (index) {
-      var c = tracks[index].toCattrackJSON();
+      var c = tracks[index].toCattrackJSON(
+        uuid: _deviceUUID,
+        name: _deviceName,
+        version: _deviceAppVersion,
+        tripStarted: _appStarted.toUtc().toIso8601String(),
+        distance: _distanceTracker.distance.toPrecision(1),
+      );
 
-      c['tripStarted'] = _appStarted.toUtc().toIso8601String();
-      c['uuid'] = _deviceUUID;
-      c['name'] = _deviceName;
-      c['version'] = _deviceAppVersion;
+      // c['tripStarted'] = _appStarted.toUtc().toIso8601String();
+      // c['uuid'] = _deviceUUID;
+      // c['name'] = _deviceName;
+      // c['version'] = _deviceAppVersion;
 
       return c;
     });

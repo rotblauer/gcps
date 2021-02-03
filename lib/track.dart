@@ -244,7 +244,12 @@ class AppPoint {
   }
 
   // toCattrackJSON creates a dynamic map for JSON (push).
-  Map<String, dynamic> toCattrackJSON() {
+  Map<String, dynamic> toCattrackJSON(
+      {String uuid = "",
+      String name = "",
+      String version = "",
+      String tripStarted = "",
+      double distance = 0}) {
     /*
     type TrackPoint struct {
       Uuid       string    `json:"uuid"`
@@ -282,7 +287,7 @@ class AppPoint {
       'activity': activityTypeApp(activity_type),
       'activity_confidence': activity_confidence,
       'numberOfSteps': odometer.toInt(),
-      'distance': 0,
+      'distance': distance,
       'batteryStatus': batteryStatusString,
     };
     if (_tripStarted != null) {
@@ -293,8 +298,10 @@ class AppPoint {
     }
     notesString = jsonEncode(notes);
     return {
-      'uuid': _uuid,
-      // 'version': appVersion,
+      'uuid': uuid,
+      'name': name,
+      'version': version,
+      'tripStarted': tripStarted,
       'time': time.toUtc().toIso8601String(),
       'timestamp': timestamp,
       'lat': latitude.toPrecision(9),
