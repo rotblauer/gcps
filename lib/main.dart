@@ -653,7 +653,8 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    if (_connectionResult == null) return;
+    if (_connectionResult == null ||
+        _connectionResult == ConnectivityResult.none) return;
 
     var connectedWifi = _connectionResult == ConnectivityResult.wifi;
     var connectedMobile = _connectionResult == ConnectivityResult.mobile;
