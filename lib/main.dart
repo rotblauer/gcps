@@ -30,7 +30,7 @@ import 'prefs.dart' as prefs;
 import 'config.dart';
 
 void main() {
-  // Avoid errors caused by flutter upgrade.
+  // Avoid errors cased by flutter upgrade
   // Importing 'package:flutter/widgets.dart' is required.
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -596,17 +596,19 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     var count = await countTracks();
+    int snapCount;
     if (count == 0) {
-      _countSnaps = 0;
+      snapCount = 0;
       bg.BackgroundGeolocation.sync(); // delete from database
     } else {
-      _countSnaps = await countSnaps();
+      snapCount = await countSnaps();
     }
 
     // Awkwardly placed but whatever.
     // Update the persistent-state display.
     setState(() {
       _countStored = count;
+      _countSnaps = snapCount;
     });
   }
 
@@ -782,6 +784,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 padding: EdgeInsets.all(8.0),
                 // child: Expanded(
                 child: ElevatedButton(
+                    // MaterialStateProperty.all<Color>(Colors.lime)),
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Colors.cyan)),
                     onPressed: () {
                       // snaps().then((value) {
                       //   print("stored snapsy");
@@ -792,7 +798,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       this._pushTracksBatching();
                     },
                     child: Icon(Icons.cloud_upload,
-                        semanticLabel: 'Push', color: Colors.blue)),
+                        semanticLabel: 'Push', color: Colors.white)),
               )),
               Expanded(
                   child: Container(
