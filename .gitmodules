@@ -1,0 +1,3 @@
+[submodule "lib/haversine.dart"]
+	path = lib/haversine.dart
+	url = https://github.com/yeradis/haversine.dart.git

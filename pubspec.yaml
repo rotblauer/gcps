@@ -41,6 +41,9 @@ dependencies:
   # shared_preferences: ^0.4.2
   shared_preferences_settings: ^1.2.0
   package_info: '>=0.4.3+4 <2.0.0'
+  haversine:
+    path: ./lib/haversine.dart
+
 dev_dependencies:
   flutter_launcher_icons: "^0.8.0"
   flutter_test:

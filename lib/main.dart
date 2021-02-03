@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert'; // jsonEncode
 // import 'package:english_words/english_words.dart' as ew;
 import 'package:flutter/services.dart';
+import 'package:gcps/haversine.dart/lib/src/haversine_base.dart';
 
 import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 // import 'package:geolocator/geolocator.dart';
@@ -28,6 +29,8 @@ import 'package:image/image.dart' as img;
 import 'track.dart';
 import 'prefs.dart' as prefs;
 import 'config.dart';
+
+import 'package:haversine/haversine.dart' as haversine;
 
 void main() {
   // Avoid errors cased by flutter upgrade
@@ -165,10 +168,43 @@ class MovingAverager {
   }
 }
 
+class DistanceTracker {
+  double distance = 0;
+  double _last_lon;
+  double _last_lat;
+
+  final bool filterStill;
+
+  DistanceTracker({this.filterStill});
+
+  double add({double lon, double lat, bool isMoving}) {
+    print("lon=" +
+        lon.toString() +
+        " lat=" +
+        lat.toString() +
+        " isMoving=" +
+        isMoving.toString());
+
+    if (!filterStill || isMoving) {
+      distance += Haversine.fromDegrees(
+              latitude1: _last_lat ?? lat,
+              longitude1: _last_lon ?? lon,
+              latitude2: lat,
+              longitude2: lon)
+          .distance();
+    }
+    _last_lon = lon;
+    _last_lat = lat;
+    return distance;
+  }
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   String _deviceUUID = "";
   String _deviceName = "";
   String _deviceAppVersion = "";
+
+  DistanceTracker _distanceTracker = DistanceTracker(filterStill: true);
 
   // int _counter = 0;
   // String geolocation_text = '<ip.somewhere>';
@@ -420,7 +456,7 @@ class _MyHomePageState extends State<MyHomePage> {
             speedJumpFilter: 100,
 
             //
-            isMoving: true,
+            // isMoving: true,
             stopTimeout: 2, // minutes... right?
             minimumActivityRecognitionConfidence: 25, // default: 75
 
@@ -616,7 +652,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // Short circuit if position is null or timestamp is null.
     if (location == null ||
         location.timestamp == null ||
-        location.timestamp == "") {
+        location.timestamp == "" ||
+        location.coords == null) {
       print("streamed position: unknown or null timestamp");
       // setState(() {
       //   geolocation_api_stream_text = 'Unknown';
@@ -639,6 +676,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // Persist the position.
     print("saving position");
     await insertTrack(AppPoint.fromLocationProvider(location));
+
+    _distanceTracker.add(
+        lon: location.coords.longitude,
+        lat: location.coords.latitude,
+        isMoving: location.isMoving && location.activity.type != "still");
+
     var countStored = await countTracks();
     var vcountSnaps = await countSnaps();
 
@@ -779,6 +822,30 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
+              Expanded(
+                  child: Container(
+                padding: EdgeInsets.all(8.0),
+                // child: Expanded(
+                child: ElevatedButton(
+                    // MaterialStateProperty.all<Color>(Colors.lime)),
+                    style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            Colors.green[300])),
+                    onPressed: () async {
+                      // snaps().then((value) {
+                      //   print("stored snapsy");
+                      //   for (var item in value) {
+                      //     print(jsonEncode(item.toCattrackJSON()));
+                      //   }
+                      // });
+                      // this._pushTracksBatching();
+                      var loc =
+                          await bg.BackgroundGeolocation.getCurrentPosition();
+                      _handleStreamLocationUpdate(loc);
+                    },
+                    child: Icon(Icons.plus_one,
+                        semanticLabel: 'Point', color: Colors.white)),
+              )),
               Expanded(
                   child: Container(
                 padding: EdgeInsets.all(8.0),
@@ -929,12 +996,28 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               InfoDisplay(
                   keyname: "accuracy", value: glocation.coords.accuracy),
+              InfoDisplay(
+                keyname: "since last point",
+                value: (_secondsSinceLastPoint),
+              )
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              InfoDisplay(keyname: "speed", value: glocation.coords.speed),
+              InfoDisplay(
+                  keyname: "km/h",
+                  value: glocation.coords.speed <= 0
+                      ? 0
+                      : ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1)
+
+                  /*
+                  () {
+                    if (glocation.coords.speed == 0) return 0;
+                    return ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1);
+                  }()
+                  */
+                  ),
               InfoDisplay(
                   keyname: "speed accuracy",
                   value: glocation.coords.speedAccuracy),
@@ -943,7 +1026,9 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              InfoDisplay(keyname: "heading", value: glocation.coords.heading),
+              InfoDisplay(
+                  keyname: "heading",
+                  value: degreeToCardinalDirection(glocation.coords.heading)),
               InfoDisplay(
                   keyname: "heading accuracy",
                   value: glocation.coords.headingAccuracy),
@@ -965,9 +1050,7 @@ class _MyHomePageState extends State<MyHomePage> {
               InfoDisplay(
                   keyname: "odometer", value: glocation.odometer.toInt()),
               InfoDisplay(
-                keyname: "since last point",
-                value: (_secondsSinceLastPoint),
-              )
+                  keyname: "distance", value: _distanceTracker.distance ~/ 1),
             ],
           ),
           Row(
@@ -1474,4 +1557,56 @@ class DisplayPictureScreen extends StatelessWidget {
       // ),
     );
   }
+}
+
+String degreeToCardinalDirection(double heading) {
+/*
+    --- Return wind direction as a string.
+    local function to_direction(degrees)
+        -- Ref: https://www.campbellsci.eu/blog/convert-wind-directions
+        if degrees == nil then
+            return "Unknown dir"
+        end
+        local directions = {
+            "N",
+            "NNE",
+            "NE",
+            "ENE",
+            "E",
+            "ESE",
+            "SE",
+            "SSE",
+            "S",
+            "SSW",
+            "SW",
+            "WSW",
+            "W",
+            "WNW",
+            "NW",
+            "NNW",
+            "N",
+        }
+        return directions[math.floor((degrees % 360) / 22.5) + 1]
+    end
+*/
+  var directions = [
+    "N",
+    "NNE",
+    "NE",
+    "ENE",
+    "E",
+    "ESE",
+    "SE",
+    "SSE",
+    "S",
+    "SSW",
+    "SW",
+    "WSW",
+    "W",
+    "WNW",
+    "NW",
+    "NNW",
+    "N",
+  ];
+  return directions[((heading % 360) ~/ 22.5) + 1];
 }

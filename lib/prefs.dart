@@ -68,7 +68,8 @@ class MySettingsScreen extends StatelessWidget {
       title: "Settings",
       children: [
         SettingsContainer(
-          child: Text('Push', style: Theme.of(context).textTheme.overline),
+          child: Text('Push (upload) configuration',
+              style: Theme.of(context).textTheme.overline),
         ),
         Settings().onDoubleChanged(
             settingKey: kPushInterval,

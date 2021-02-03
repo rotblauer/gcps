@@ -236,6 +236,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.8"
+  haversine:
+    dependency: "direct main"
+    description:
+      path: "lib/haversine.dart"
+      relative: true
+    source: path
+    version: "1.0.2"
   http:
     dependency: "direct main"
     description:
