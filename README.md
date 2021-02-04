@@ -1,23 +1,27 @@
-# gcps
+<img src="./assets/icon/catdroid-icon.png" width='256' height='256' align='right'/>
 
-Global Cat Positioning System
+# Global Cat Postioning System
 
+
+### TODO
+
+- [x] app icon
 - [x] battery status
-- [ ] wifi/radio context information
-- [x] activity, healthkit stuff?
+- [x] activity, healthkit stuff
 - [x] only attempt push when wifi or data available
 - [x] catsnaps!
 - [x] settings
   - [x] push every n
   - [x] push batch size n
   - [x] desired accuracy
+- [ ] radio context information
 - [ ] offline map?
 - [ ] fitness features
   - [ ] lap recording
   - [ ] distance, pace recording
-- [x] app icon
 
-## Flutter console
+## Development
+### Flutter console
 
 ```
 p - toggle printing layout borders
@@ -35,10 +39,10 @@ Then enable the USB Debugging option. Tip: You might also want to enable the Sta
 ```
 > https://www.google.com/search?channel=fs&q=android+enable+usb+debugging
 
-:alert: Need to set `USB Preferences > Use USB For = PTP`
+:warning: __Android__ Need to set `USB Preferences > Use USB For = PTP`
 
 
-## Problems/+Solutions
+### Problems/+Solutions
 
 ---
 
