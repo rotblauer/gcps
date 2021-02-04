@@ -602,13 +602,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     print("body.length: " + body.length.toString());
     print(jsonEncode(body));
-    return http.post(
-      postEndpoint,
-      headers: headers,
-      encoding: Encoding.getByName("utf-8"),
-      body: jsonEncode(body),
-    );
-    // .timeout(const Duration(seconds: 60));
+    return http
+        .post(
+          postEndpoint,
+          headers: headers,
+          encoding: Encoding.getByName("utf-8"),
+          body: jsonEncode(body),
+        )
+        .timeout(const Duration(seconds: 60));
 
     // return res.statusCode;
   }
