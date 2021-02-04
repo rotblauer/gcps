@@ -44,6 +44,8 @@ jobs:
           touch release_notes_body.md
           echo "Date: $(date --iso-8601=m)" >> release_notes_body.md
           echo "Build number: $GITHUB_RUN_NUMBER" >> release_notes_body.md
+          echo >> release_notes_body.md
+          git --no-pager log $(git describe --tags --abbrev=0 HEAD~2)..HEAD --oneline --pretty='format:- %cD %h: %s %n' >> release_notes_body.md
 
       - name: Create release
         id: create_release
