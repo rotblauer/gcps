@@ -69,6 +69,15 @@ Future<String> _getName() async {
   }
 }
 
+SnackBar _buildSnackBar(Widget content, {MaterialColor backgroundColor}) {
+  return SnackBar(
+      content: content,
+      elevation: 1,
+      behavior: SnackBarBehavior.floating,
+      margin: EdgeInsets.all(8.0),
+      backgroundColor: backgroundColor ?? Colors.lightBlue);
+}
+
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -207,9 +216,11 @@ class DistanceTracker {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String _appErrorStatus = "";
   String _deviceUUID = "";
   String _deviceName = "";
   String _deviceAppVersion = "";
+  bool _isPushing = false;
 
   DistanceTracker _distanceTracker = DistanceTracker(filterStill: true);
 
@@ -256,6 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _countStored = 0;
   int _countSnaps = 0;
   int _countPushed = 0;
+  int _pushEvery = 100;
 
   // Future<void> initPrefs() async {
   //   var v = await SharedPreferencesHelper().getPushBatchSize();
@@ -621,14 +633,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _pushTracksBatching() async {
     print("=====> Attempting push");
+    setState(() {
+      _isPushing = true;
+    });
 
     // All conditions passed, attempt to push all stored points.
+    int resCode = 0;
     for (var count = await countTracks();
         count > 0;
         count = await countTracks()) {
       var tracks = await firstTracksWithLimit(
           (await Settings().getDouble(prefs.kPushBatchSize, 100)).toInt());
-      var resCode = await _pushTracks(tracks);
+      resCode = await _pushTracks(tracks);
 
       if (resCode == HttpStatus.ok) {
         // Push yielded success, delete the tracks we just pushed.
@@ -658,7 +674,31 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _countStored = count;
       _countSnaps = snapCount;
+      _isPushing = false;
     });
+
+    if (resCode == 200) {
+      setState(() {
+        _appErrorStatus = "";
+      });
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   _buildSnackBar(Text('Push successful'), backgroundColor: Colors.green),
+      // );
+    } else {
+      setState(() {
+        _appErrorStatus = 'Push failed. Status code: ' + resCode.toString();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        _buildSnackBar(Text(_appErrorStatus), backgroundColor: Colors.red),
+      );
+
+      //   _buildSnackBar(Text('Push failed. Status code: ' + resCode.toString()),
+      //       backgroundColor: Colors.red),
+      // );
+
+    }
   }
 
   void _handleStreamLocationUpdate(bg.Location location) async {
@@ -705,9 +745,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // If we're not at a push mod, we're done.
-    if (countStored %
-            ((await Settings().getDouble(prefs.kPushInterval, 100))).toInt() !=
-        0) {
+    var pushevery =
+        (await Settings().getDouble(prefs.kPushInterval, 100)).toInt();
+
+    setState(() {
+      _pushEvery = pushevery;
+    });
+    if (countStored % pushevery != 0) {
       return;
     }
 
@@ -802,8 +846,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _exampleStuff() {
     return Center(
-      // Center is a layout widget. It takes a single child and positions it
-      // in the middle of the parent.
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: SafeArea(
       child: Column(
         // Column is also a layout widget. It takes a list of children and
         // arranges them vertically. By default, it sizes itself to fit its
@@ -822,9 +867,6 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Row(
-            children: [Container(height: 24, child: null)],
-          ),
           // Row(
           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
           //   children: [
@@ -832,6 +874,31 @@ class _MyHomePageState extends State<MyHomePage> {
           //         style: Theme.of(context).textTheme.bodyText2),
           //   ],
           // ),
+
+          // Visibility(
+          //   visible: _isPushing,
+          //   child: LinearProgressIndicator(
+          //     backgroundColor: Colors.deepOrange,
+          //     minHeight: 3,
+          //   ),
+          // ),
+
+          Visibility(
+            visible: _appErrorStatus != "",
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [Text(_appErrorStatus)],
+            ),
+          ),
+
+          LinearProgressIndicator(
+            minHeight: 3,
+            value: _isPushing
+                ? null
+                : _countStored.toDouble() / _pushEvery.toDouble(),
+            backgroundColor: Colors.red,
+          ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -845,16 +912,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         backgroundColor: MaterialStateProperty.all<Color>(
                             Colors.green[300])),
                     onPressed: () async {
-                      // snaps().then((value) {
-                      //   print("stored snapsy");
-                      //   for (var item in value) {
-                      //     print(jsonEncode(item.toCattrackJSON()));
-                      //   }
-                      // });
-                      // this._pushTracksBatching();
                       var loc =
                           await bg.BackgroundGeolocation.getCurrentPosition();
                       _handleStreamLocationUpdate(loc);
+
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   _buildSnackBar(Text('Points!'),
+                      //       backgroundColor: Colors.green),
+                      // );
                     },
                     child: Icon(Icons.plus_one,
                         semanticLabel: 'Point', color: Colors.white)),
@@ -901,6 +966,7 @@ class _MyHomePageState extends State<MyHomePage> {
               )),
             ],
           ),
+
           // Row(
           //   // children: () {
           //   //   List<Widget> out = [];
@@ -920,6 +986,7 @@ class _MyHomePageState extends State<MyHomePage> {
           //     )
           //   ],
           // ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -946,6 +1013,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
+
           Row(
             // primary: false,
             // padding: const EdgeInsets.all(20),
@@ -1166,7 +1234,7 @@ class _MyHomePageState extends State<MyHomePage> {
           //     child: Text("Camera!"))
         ],
       ),
-    );
+    ));
   }
 
   // int _currentIndex = 0;
