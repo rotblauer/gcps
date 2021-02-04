@@ -69,6 +69,7 @@ Future<String> _getName() async {
   }
 }
 
+/// _buildSnackBar builds the app flavored snackbars for alertable status updates.
 SnackBar _buildSnackBar(Widget content, {MaterialColor backgroundColor}) {
   return SnackBar(
       content: content,
