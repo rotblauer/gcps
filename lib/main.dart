@@ -215,6 +215,19 @@ class DistanceTracker {
   }
 }
 
+String secondsToPrettyDuration(double seconds) {
+  int secondsRound = seconds ~/ 1;
+  int hours = secondsRound ~/ 3600;
+  secondsRound = secondsRound % 3600;
+  int minutes = secondsRound ~/ 60;
+  secondsRound = secondsRound % 60;
+  String out = "";
+  hours > 0 ? out += hours.toString() + 'h ' : null;
+  minutes > 0 ? out += minutes.toString() + 'm ' : null;
+  out += secondsRound.toString() + 's';
+  return out;
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   String _appErrorStatus = "";
   String _deviceUUID = "";
@@ -229,7 +242,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // String geolocation_api_text = '<api.somewhere>';
   // String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
-  DateTime _appStarted = DateTime.now().toUtc();
+  DateTime _appStarted;
 
   String _connectionStatus = 'Unknown';
   ConnectivityResult _connectionResult;
@@ -378,6 +391,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
+    _appStarted = DateTime.now().toUtc();
     super.initState();
     // this.getIp();
     _getId().then((value) {
@@ -455,8 +469,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     bg.BackgroundGeolocation.registerHeadlessTask(headlessTask);
-
-    bg.BackgroundGeolocation.stop();
 
     ////
     // 2.  Configure the plugin
@@ -1081,7 +1093,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   keyname: "accuracy", value: glocation.coords.accuracy),
               InfoDisplay(
                 keyname: "since last point",
-                value: (_secondsSinceLastPoint),
+                value:
+                    secondsToPrettyDuration(_secondsSinceLastPoint.toDouble()),
               )
             ],
           ),
@@ -1114,7 +1127,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   value: degreeToCardinalDirection(glocation.coords.heading)),
               InfoDisplay(
                   keyname: "heading accuracy",
-                  value: glocation.coords.headingAccuracy),
+                  value: glocation.coords.headingAccuracy != null
+                      ? glocation.coords.headingAccuracy.toPrecision(1)
+                      : -1),
             ],
           ),
           Row(
