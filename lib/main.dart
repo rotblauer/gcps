@@ -1040,7 +1040,9 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               InfoDisplay(
                 keyname: "connection",
-                value: _connectionStatus.split('.')[1],
+                value: _connectionStatus.split(".").length > 1
+                    ? _connectionStatus.split('.')[1]
+                    : _connectionStatus,
                 options: {
                   't2.font': Theme.of(context).textTheme.bodyText2,
                 },
