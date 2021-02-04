@@ -42,9 +42,7 @@ jobs:
       - name: Draft release notes
         run: |
           touch release_notes_body.md
-          echo "App: GCPS" >> release_notes_body.md
           echo "Date: $(date --iso-8601=m)" >> release_notes_body.md
-          echo "Version: $GITHUB_REF" >> release_notes_body.md
           echo "Build number: $GITHUB_RUN_NUMBER" >> release_notes_body.md
 
       - name: Create release
