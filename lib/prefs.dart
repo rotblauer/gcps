@@ -67,7 +67,8 @@ class MySettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
-        backgroundColor: Colors.amber,
+        // backgroundColor: Colors.amber,
+        backgroundColor: Colors.indigo,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

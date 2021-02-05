@@ -73,7 +73,7 @@ Icon buildActivityIcon(BuildContext context, String activity, double size) {
         Icons.circle,
         size: size,
         // color: Theme.of(context).primaryColor,
-        color: Colors.red,
+        color: Colors.deepOrange,
       );
     case 'on_foot':
       return Icon(
@@ -153,37 +153,41 @@ SnackBar _buildSnackBar(Widget content, {MaterialColor backgroundColor}) {
       backgroundColor: backgroundColor ?? Colors.lightBlue);
 }
 
+final ThemeData MyTheme = ThemeData(
+  // This is the theme of your application.
+  //
+  // Try running your application with "flutter run". You'll see the
+  // application has a blue toolbar. Then, without quitting the app, try
+  // changing the primarySwatch below to Colors.green and then invoke
+  // "hot reload" (press "r" in the console where you ran "flutter run",
+  // or simply save your changes to "hot reload" in a Flutter IDE).
+  // Notice that the counter didn't reset back to zero; the application
+  // is not restarted.
+  brightness: Brightness.dark,
+  canvasColor: Colors.blueGrey[900],
+  // primarySwatch: Colors.lightGreen, // Colors.amber,
+  // backgroundColor: Colors.limeAccent,
+  // canvasColor: Colors.deepOrange,
+  // primaryColor: Colors.white,
+);
+
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.deepOrange,
-        statusBarColor: Colors.deepOrange));
+      statusBarIconBrightness: Brightness.light,
+      statusBarColor: MyTheme.canvasColor,
+      systemNavigationBarIconBrightness: Theme.of(context).brightness,
+      systemNavigationBarColor: MyTheme.canvasColor,
+    ));
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'global cat positioning system',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        brightness: Brightness.light,
-        primarySwatch: Colors.lightGreen, // Colors.amber,
-        backgroundColor: Colors.limeAccent,
-        canvasColor: Colors.deepOrange,
-        // primaryColor: Colors.white,
-      ),
+      theme: MyTheme,
       home: MyHomePage(title: 'Global Cat Positioning System'),
       showPerformanceOverlay: false,
       debugShowMaterialGrid: false,
@@ -1056,7 +1060,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Row(
                       children: [
                         Icon(Icons.add_location_alt_outlined,
-                            color: Colors.green, size: 16),
+                            color: MyTheme.accentColor, size: 16),
                         Container(
                           width: 4,
                         ),
@@ -1068,7 +1072,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     decoration: BoxDecoration(
                         border: Border(
-                            bottom: BorderSide(color: Colors.green, width: 4))),
+                            bottom: BorderSide(
+                                color: MyTheme.accentColor, width: 4))),
                   ),
                   Container(
                     padding: EdgeInsets.all(4),
@@ -1076,7 +1081,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: [
                         Icon(
                           Icons.cloud_done_outlined,
-                          color: Colors.lightBlue,
+                          color: MyTheme.buttonColor,
                           size: 16,
                         ),
                         Container(
@@ -1090,8 +1095,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     decoration: BoxDecoration(
                         border: Border(
-                            bottom:
-                                BorderSide(color: Colors.lightBlue, width: 4))),
+                            bottom: BorderSide(
+                                color: MyTheme.buttonColor, width: 4))),
                   ),
                   Container(
                     padding: EdgeInsets.all(4),
@@ -1129,7 +1134,7 @@ class _MyHomePageState extends State<MyHomePage> {
             value: _isPushing
                 ? null
                 : _countStored.toDouble() / _pushEvery.toDouble(),
-            backgroundColor: Colors.red,
+            // backgroundColor: ,
           ),
 
           Row(
@@ -1143,7 +1148,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     // MaterialStateProperty.all<Color>(Colors.lime)),
                     style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
-                            Colors.green[300])),
+                            MyTheme.accentColor)),
                     onPressed: () async {
                       var loc =
                           await bg.BackgroundGeolocation.getCurrentPosition();
@@ -1155,7 +1160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       // );
                     },
                     child: Icon(Icons.plus_one,
-                        semanticLabel: 'Point', color: Colors.white)),
+                        semanticLabel: 'Point', color: Colors.green)),
               )),
               Expanded(
                   child: Container(
@@ -1168,7 +1173,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       backgroundColor: _countStored > 0 &&
                               (_connectionStatus.contains('wifi') ||
                                   _connectionStatus.contains('mobile'))
-                          ? MaterialStateProperty.all<Color>(Colors.cyan)
+                          ? MaterialStateProperty.all<Color>(
+                              MyTheme.buttonColor)
                           : MaterialStateProperty.all<Color>(Colors.grey),
                     ),
                     onPressed: _countStored > 0 &&
@@ -1188,18 +1194,21 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.cloud_upload,
-                              semanticLabel: 'Push', color: Colors.white),
+                          Icon(Icons.cloud_upload, semanticLabel: 'Push'),
                           Container(
                             width: 8,
                             alignment: Alignment.center,
                             child: Text(':',
-                                style: TextStyle(color: Colors.white)),
+                                style: TextStyle(/*color: Colors.white*/)),
                           ),
-                          buildConnectStatusIcon(_connectionStatus,
-                              color: Colors.white),
+                          buildConnectStatusIcon(
+                            _connectionStatus,
+                            /*color: Colors.white*/
+                          ),
                         ])),
               )),
+
+              // To settings.
               Expanded(
                   child: Container(
                 padding: EdgeInsets.all(8.0),
@@ -1207,7 +1216,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: ElevatedButton(
                     style: ButtonStyle(
                         backgroundColor:
-                            MaterialStateProperty.all<Color>(Colors.amber)),
+                            MaterialStateProperty.all<Color>(Colors.indigo)),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -1222,7 +1231,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                     child: Icon(
                       Icons.settings,
-                      color: Colors.deepOrange,
+                      // color: Colors.deepOrange,
                     )),
               )),
             ],
@@ -1716,8 +1725,14 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cat snap'),
-        backgroundColor: Colors.lime,
+        title: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+          Icon(Icons.add_a_photo_outlined),
+          // Container(
+          //   width: 16,
+          // ),
+          // Text('Cat snap')
+        ]),
+        // backgroundColor: Colors.lime,
       ),
       // Wait until the controller is initialized before displaying the
       // camera preview. Use a FutureBuilder to display a loading spinner
@@ -1790,7 +1805,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                               //     style: Theme.of(context).textTheme.overline),
                               Icon(
                                 Icons.camera,
-                                size: 48,
+                                size: 64,
                                 color: Colors.green, // green
                               ),
                             ]),
@@ -1854,8 +1869,15 @@ class DisplayPictureScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reviewing cat snap'),
-        backgroundColor: Colors.lime,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Icon(Icons.add_a_photo_outlined),
+            Icon(Icons.library_add_check),
+          ],
+        ),
+
+        // backgroundColor: Colors.lime,
       ),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
@@ -1905,8 +1927,8 @@ class DisplayPictureScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Icon(
-                              Icons.save_outlined,
-                              size: 48,
+                              Icons.check_circle_outline,
+                              size: 64,
                               color: Colors.green, // green
                             ),
                           ]),
