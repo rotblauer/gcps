@@ -43,6 +43,7 @@ dependencies:
   package_info: '>=0.4.3+4 <2.0.0'
   haversine:
     path: ./lib/haversine.dart
+  # mapbox_gl: ^0.9.0
 
 dev_dependencies:
   flutter_launcher_icons: "^0.8.0"

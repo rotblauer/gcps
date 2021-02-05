@@ -14,7 +14,7 @@ import 'package:device_info/device_info.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity/connectivity.dart';
 import 'package:camera/camera.dart';
-import 'package:particles_flutter/particles_flutter.dart';
+// import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 // import 'package:workmanager/workmanager.dart';
@@ -344,6 +344,9 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isPushing = false;
   double _tripDistance = 0.0;
 
+  // MapboxMapController mapController;
+  // bool _mapboxStyleLoaded = false;
+
   DistanceTracker _distanceTracker = DistanceTracker(filterStill: true);
 
   // int _counter = 0;
@@ -593,8 +596,6 @@ class _MyHomePageState extends State<MyHomePage> {
       print('[providerchange] - $event');
     });
 
-    bg.BackgroundGeolocation.registerHeadlessTask(headlessTask);
-
     ////
     // 2.  Configure the plugin
     //
@@ -639,6 +640,7 @@ class _MyHomePageState extends State<MyHomePage> {
             debug: false,
             logLevel: bg.Config.LOG_LEVEL_INFO))
         .then((bg.State state) {
+      bg.BackgroundGeolocation.registerHeadlessTask(headlessTask);
       if (!state.enabled) {
         ////
         // 3.  Start the plugin.
@@ -884,6 +886,17 @@ class _MyHomePageState extends State<MyHomePage> {
         lon: location.coords.longitude,
         lat: location.coords.latitude,
         isMoving: location.isMoving && location.activity.type != "still");
+
+    // if (mapController != null && _mapboxStyleLoaded) {
+    //   mapController.addCircle(CircleOptions(
+    //     geometry: LatLng(location.coords.latitude, location.coords.longitude),
+    //     circleColor: '#ff0000',
+    //     // circleRadius: 4,
+    //   ));
+
+    //   mapController.animateCamera(CameraUpdate.newLatLng(
+    //       LatLng(location.coords.latitude, location.coords.longitude)));
+    // }
 
     var countStored = await countTracks();
     var vcountSnaps = await countSnaps();
@@ -1332,6 +1345,30 @@ class _MyHomePageState extends State<MyHomePage> {
                       ? 64 - _secondsSinceLastPoint.toDouble()
                       : 16),
             ),
+
+            // Container(
+            //   height: 100.0,
+            //   child: MapboxMap(
+            //       accessToken:
+            //           'pk.eyJ1Ijoicm90YmxhdWVyIiwiYSI6ImNra3NpZnBodTEyN3Ayb21yYWJqZHRvaGUifQ.eWb9jXPcJ4QiECzE1sydvA',
+            //       styleString:
+            //           'mapbox://styles/rotblauer/cjnlrb8hq0jgh2rozuxxzopgx',
+            //       // '',
+            //       // '{"version": 8, "name": "none", "layers": [], "glyphs": [], "sprite": "mapbox://sprites/mapbox/bright-v8", "sources": {}}',
+            //       onStyleLoadedCallback: () {
+            //         print('mapbox style loaded');
+            //         setState(() {
+            //           _mapboxStyleLoaded = true;
+            //         });
+            //       },
+            //       onMapCreated: (MapboxMapController controller) {
+            //         mapController = controller;
+            //       },
+            //       initialCameraPosition: new CameraPosition(
+            //           target: LatLng(glocation.coords.latitude,
+            //               glocation.coords.longitude),
+            //           zoom: 17)),
+            // ),
 
             InfoDisplay(
               keyname: '',
