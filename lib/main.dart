@@ -220,6 +220,9 @@ class InfoDisplay extends StatelessWidget {
                     : Theme.of(context).textTheme.headline4,
                 maxLines: 2,
               ),
+              options != null && options['third'] != null
+                  ? options['third']
+                  : Text('')
             ]));
   }
 }
@@ -583,6 +586,8 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
 
+    bg.BackgroundGeolocation.getCurrentPosition();
+
     eachSecond();
   }
 
@@ -668,7 +673,7 @@ class _MyHomePageState extends State<MyHomePage> {
           encoding: Encoding.getByName("utf-8"),
           body: jsonEncode(body),
         )
-        .timeout(const Duration(seconds: 60));
+        .timeout(const Duration(seconds: 10));
 
     // return res.statusCode;
   }
@@ -700,8 +705,17 @@ class _MyHomePageState extends State<MyHomePage> {
         pushable.length.toString());
 
     // print(jsonEncode(pushable));
-    final res = await postTracks(pushable);
-    return res.statusCode;
+
+    int resCode = 9696;
+    try {
+      final res = await postTracks(pushable);
+      resCode = res.statusCode;
+    } catch (err) {
+      setState(() {
+        _appErrorStatus = err.toString();
+      });
+    }
+    return resCode;
   }
 
   Future<void> _pushTracksBatching() async {
@@ -758,6 +772,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   _buildSnackBar(Text('Push successful'), backgroundColor: Colors.green),
       // );
+    } else if (resCode == 9696) {
     } else {
       setState(() {
         _appErrorStatus = 'Push failed. Status code: ' + resCode.toString();
@@ -937,7 +952,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // center the children vertically; the main axis here is the vertical
         // axis because Columns are vertical (the cross axis would be
         // horizontal).
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           // Row(
@@ -959,25 +974,28 @@ class _MyHomePageState extends State<MyHomePage> {
           Visibility(
             visible: _appErrorStatus != "",
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [Text(_appErrorStatus)],
+              children: [
+                Flexible(
+                    child: Text(
+                  _appErrorStatus,
+                  style: TextStyle(),
+                ))
+              ],
             ),
           ),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    children: [],
-                  )),
               Expanded(
                   // padding: EdgeInsets.symmetric(horizontal: 8.0),
                   child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  buildConnectStatusIcon(_connectionStatus),
+                  Container(
+                    padding: EdgeInsets.only(left: 12.0),
+                    child: buildConnectStatusIcon(_connectionStatus),
+                  ),
                   Chip(
                     label: Row(
                       children: [
@@ -1185,8 +1203,10 @@ class _MyHomePageState extends State<MyHomePage> {
           //   ],
           // ),
 
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            buildActivityIcon(context, glocation.activity.type, 64)
+          Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            buildActivityIcon(context, glocation.activity.type, 64),
+            Text(glocation.activity.type,
+                style: Theme.of(context).textTheme.headline4),
           ]),
 
           Row(
@@ -1217,6 +1237,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
               InfoDisplay(
                   keyname: "accuracy", value: glocation.coords.accuracy),
+
+              InfoDisplay(
+                keyname: "elevation",
+                value: glocation.coords.altitude,
+                options: {
+                  'third': Text(glocation.coords.altitudeAccuracy
+                      ?.toPrecision(1)
+                      .toString())
+                },
+              ),
 
               // InfoDisplay(
               //   keyname: "since last point",
@@ -1273,46 +1303,43 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               InfoDisplay(
-                  keyname: "km/h",
-                  value: glocation.coords.speed <= 0
-                      ? 0
-                      : ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1)
+                keyname: "km/h",
+                value: glocation.coords.speed <= 0
+                    ? 0
+                    : ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1),
+                options: {
+                  'third': Text(glocation.coords.speedAccuracy?.toString())
+                },
+              ),
+              InfoDisplay(
+                keyname: "heading",
+                value: degreeToCardinalDirection(glocation.coords.heading),
+                options: {
+                  'third': Text(glocation.coords.headingAccuracy
+                      ?.toPrecision(1)
+                      .toString())
+                },
+              ),
+            ],
+          ),
 
-                  /*
-                  () {
-                    if (glocation.coords.speed == 0) return 0;
-                    return ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1);
-                  }()
-                  */
-                  ),
-              InfoDisplay(
-                  keyname: "speed accuracy",
-                  value: glocation.coords.speedAccuracy),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              InfoDisplay(
-                  keyname: "heading",
-                  value: degreeToCardinalDirection(glocation.coords.heading)),
-              InfoDisplay(
-                  keyname: "heading accuracy",
-                  value: glocation.coords.headingAccuracy != null
-                      ? glocation.coords.headingAccuracy.toPrecision(1)
-                      : -1),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              InfoDisplay(
-                  keyname: "elevation", value: glocation.coords.altitude),
-              InfoDisplay(
-                  keyname: "elevation accuracy",
-                  value: glocation.coords.altitudeAccuracy),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //   children: [
+          //     InfoDisplay(
+          //         keyname: "speed accuracy",
+          //         value: glocation.coords.speedAccuracy),
+          //     InfoDisplay(
+          //         keyname: "heading accuracy",
+          //         value: glocation.coords.headingAccuracy != null
+          //             ? glocation.coords.headingAccuracy.toPrecision(1)
+          //             : -1),
+          //     InfoDisplay(
+          //         keyname: "elevation accuracy",
+          //         value: glocation.coords.altitudeAccuracy),
+          //   ],
+          // ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
