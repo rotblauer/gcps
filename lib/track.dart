@@ -391,6 +391,16 @@ Future<List<AppPoint>> firstTracksWithLimit(int limit) async {
   });
 }
 
+Future<List<AppPoint>> lastTracksWithLimit(int limit) async {
+  final Database db = await database();
+  final List<Map<String, dynamic>> maps =
+      await db.query('$_cTableName', limit: limit, orderBy: 'id DESC');
+
+  return List.generate(maps.length, (i) {
+    return AppPoint.fromMap(maps[i]);
+  });
+}
+
 Future<void> deleteTracksBeforeInclusive(int ts) async {
   final Database db = await database();
   await db.delete(_cTableName, where: 'timestamp <= ?', whereArgs: [ts]);

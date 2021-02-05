@@ -68,7 +68,7 @@ Icon buildConnectStatusIcon(String status, {Color color}) {
 }
 
 class ShapesPainter extends CustomPainter {
-  List<bg.Location> locations = [];
+  List<AppPoint> locations = [];
 
   ShapesPainter({this.locations});
 
@@ -78,21 +78,24 @@ class ShapesPainter extends CustomPainter {
 
     double minLat, minLon, maxLat, maxLon;
     for (var loc in locations) {
-      if (minLat == null || loc.coords.latitude < minLat)
-        minLat = loc.coords.latitude;
-      if (maxLat == null || loc.coords.latitude > maxLat)
-        maxLat = loc.coords.latitude;
-      if (minLon == null || loc.coords.longitude < minLon)
-        minLon = loc.coords.longitude;
-      if (maxLon == null || loc.coords.longitude > maxLon)
-        maxLon = loc.coords.longitude;
+      // print('paint loc.x=' +
+      //     loc.longitude.toString() +
+      //     ' loc.y=' +
+      //     loc.latitude.toString());
+      if (minLat == null || loc.latitude < minLat) minLat = loc.latitude;
+      if (maxLat == null || loc.latitude > maxLat) maxLat = loc.latitude;
+      if (minLon == null || loc.longitude < minLon) minLon = loc.longitude;
+      if (maxLon == null || loc.longitude > maxLon) maxLon = loc.longitude;
     }
 
     var dH = maxLon - minLon;
     var dW = maxLat - minLat;
 
-    var scaleH = dH / size.height;
-    var scaleW = dW / size.width;
+    if (dH == 0) dH = 10 / 111111;
+    if (dW == 0) dW = 10 / 111111;
+
+    var scaleH = size.height / dH;
+    var scaleW = size.width / dW;
     double scale = size.height < size.width ? scaleH : scaleW;
     // TODO: fit bounds
 
@@ -100,30 +103,33 @@ class ShapesPainter extends CustomPainter {
     paint.color = Colors.deepOrange;
 
     var ref = locations.last;
-    var refX = ref.coords.longitude;
-    var refY = ref.coords.latitude;
+    var refX = ref.longitude;
+    var refY = ref.latitude;
 
     // center of the canvas is (x,y) => (width/2, height/2)
     var center = Offset(size.width / 2, size.height / 2);
 
     int i = 0;
     for (var loc in locations) {
-      if (i == locations.length - 1) paint.color = Colors.blue;
+      bool isLast = i == locations.length - 1;
+      if (isLast) paint.color = Colors.limeAccent;
       i++;
-      var x = loc.coords.longitude;
-      var y = loc.coords.latitude;
+      var x = loc.longitude;
+      var y = loc.latitude;
 
-      var relX = scale * (refX - x) + center.dx;
-      var relY = scale * (refY - y) + center.dy;
-      print('painting: scale=' +
-          scale.toString() +
-          ' relX=' +
-          relX.toString() +
-          ' relY=' +
-          relY.toString());
+      var relX =
+          center.dx + (scale * (refX - x)); // top -> bottom => 0 -> height
+      var relY =
+          center.dy - (scale * (refY - y)); // left -> right => 0 - > width
+      // print('painting: scale=' +
+      //     scale.toString() +
+      //     ' relX=' +
+      //     relX.toString() +
+      //     ' relY=' +
+      //     relY.toString());
 
       // draw the circle on centre of canvas having radius 75.0
-      canvas.drawCircle(Offset(relX, relY), 2.0, paint);
+      canvas.drawCircle(Offset(relX, relY), isLast ? 3.0 : 2.0, paint);
     }
   }
 
@@ -407,7 +413,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _deviceAppVersion = "";
   bool _isPushing = false;
   double _tripDistance = 0.0;
-  List<bg.Location> _paintList = [];
+  List<AppPoint> _paintList = [];
 
   // MapboxMapController mapController;
   // bool _mapboxStyleLoaded = false;
@@ -592,6 +598,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _initCameras();
 
+    lastTracksWithLimit(100).then((value) {
+      _paintList = value;
+    });
     // Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
     // /*
     // fuck
@@ -945,7 +954,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Persist the position.
     print("saving position");
-    await insertTrack(AppPoint.fromLocationProvider(location));
+    var ap = AppPoint.fromLocationProvider(location);
+    await insertTrack(ap);
 
     _distanceTracker.add(
         lon: location.coords.longitude,
@@ -971,7 +981,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _tripDistance = _distanceTracker.distance;
       _countStored = countStored;
       _countSnaps = vcountSnaps;
-      _paintList.add(location);
+      _paintList.add(ap);
       if (_paintList.length > 100) {
         _paintList.removeAt(0);
       }
@@ -1373,104 +1383,87 @@ class _MyHomePageState extends State<MyHomePage> {
           //   ],
           // ),
 
-          Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Container(
-              padding: EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+          Row(
+            children: [
+              Expanded(
+                child: CustomPaint(
+                    // size: Size.infinite,
+                    painter: ShapesPainter(locations: _paintList),
+                    child: Container(height: 200)),
+              )
+            ],
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Icon(Icons.timelapse,
-                      color: colorForDurationSinceLastPoint(
-                          _secondsSinceLastPoint),
-                      size: 16),
+                  // cativity icon
                   Container(
-                    width: 4,
+                    width: 64,
+                    height: 64,
+                    child: buildActivityIcon(
+                        context,
+                        glocation.activity.type,
+                        64 - _secondsSinceLastPoint.toDouble() > 16
+                            ? 64 - _secondsSinceLastPoint.toDouble()
+                            : 16),
                   ),
-                  Text(
-                    '-' +
-                        secondsToPrettyDuration(
-                            _secondsSinceLastPoint.toDouble()),
-                    style: TextStyle(color: Colors.white),
-                  )
-                ],
-              ),
-              // decoration: BoxDecoration(
-              //     border: Border(
-              //         bottom: BorderSide(
-              //             color: colorForDurationSinceLastPoint(
-              //                 _secondsSinceLastPoint),
-              //             width: 4))),
-            ),
-
-            // cativity icon
-            Container(
-              width: 64,
-              height: 64,
-              child: buildActivityIcon(
-                  context,
-                  glocation.activity.type,
-                  64 - _secondsSinceLastPoint.toDouble() > 16
-                      ? 64 - _secondsSinceLastPoint.toDouble()
-                      : 16),
-            ),
-
-            Row(
-              children: [
-                Expanded(
-                    child: CustomPaint(
-                        painter: ShapesPainter(locations: _paintList),
-                        child: Container(height: 100))),
-              ],
-            ),
-
-            // Container(
-            //   height: 100.0,
-            //   child: MapboxMap(
-            //       accessToken:
-            //           'pk.eyJ1Ijoicm90YmxhdWVyIiwiYSI6ImNra3NpZnBodTEyN3Ayb21yYWJqZHRvaGUifQ.eWb9jXPcJ4QiECzE1sydvA',
-            //       styleString:
-            //           'mapbox://styles/rotblauer/cjnlrb8hq0jgh2rozuxxzopgx',
-            //       // '',
-            //       // '{"version": 8, "name": "none", "layers": [], "glyphs": [], "sprite": "mapbox://sprites/mapbox/bright-v8", "sources": {}}',
-            //       onStyleLoadedCallback: () {
-            //         print('mapbox style loaded');
-            //         setState(() {
-            //           _mapboxStyleLoaded = true;
-            //         });
-            //       },
-            //       onMapCreated: (MapboxMapController controller) {
-            //         mapController = controller;
-            //       },
-            //       initialCameraPosition: new CameraPosition(
-            //           target: LatLng(glocation.coords.latitude,
-            //               glocation.coords.longitude),
-            //           zoom: 17)),
-            // ),
-
-            InfoDisplay(
-              keyname: '',
-              value: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Image(
-                    image: AssetImage('assets/catdroid-icon-cat-only.png'),
-                    width: 48,
-                  ),
-                  Text(
-                    ' is ' + glocation.activity.type.replaceAll('_', ' '),
-                    style: Theme.of(context).textTheme.headline4,
+                  Container(
+                    padding:
+                        EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.timelapse,
+                            color: colorForDurationSinceLastPoint(
+                                _secondsSinceLastPoint),
+                            size: 16),
+                        Container(
+                          width: 4,
+                        ),
+                        Text(
+                          '-' +
+                              secondsToPrettyDuration(
+                                  _secondsSinceLastPoint.toDouble()),
+                          style: TextStyle(color: Colors.white),
+                        )
+                      ],
+                    ),
+                    // decoration: BoxDecoration(
+                    //     border: Border(
+                    //         bottom: BorderSide(
+                    //             color: colorForDurationSinceLastPoint(
+                    //                 _secondsSinceLastPoint),
+                    //             width: 4))),
                   ),
                 ],
               ),
-              options: {
-                'third': Text(glocation.activity.confidence.toString())
-              },
-            )
-            // Text(glocation.activity.type,
-            // style: Theme.of(context).textTheme.headline4),
-          ]),
+              InfoDisplay(
+                keyname: '',
+                value: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Image(
+                      image: AssetImage('assets/catdroid-icon-cat-only.png'),
+                      width: 48,
+                    ),
+                    Text(
+                      ' is ' + glocation.activity.type.replaceAll('_', ' '),
+                      style: Theme.of(context).textTheme.headline4,
+                    ),
+                  ],
+                ),
+                options: {
+                  'third': Text(glocation.activity.confidence.toString())
+                },
+              ),
+            ],
+          ),
 
           Row(
             // primary: false,
@@ -1637,7 +1630,8 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                   child: Container(
                       // height: 128,
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 8),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             elevation: 3.0,
