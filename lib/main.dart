@@ -14,6 +14,7 @@ import 'package:device_info/device_info.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity/connectivity.dart';
 import 'package:camera/camera.dart';
+import 'package:particles_flutter/particles_flutter.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 // import 'package:workmanager/workmanager.dart';
@@ -70,7 +71,7 @@ Icon buildActivityIcon(BuildContext context, String activity, double size) {
   switch (activity) {
     case 'still':
       return Icon(
-        Icons.circle,
+        Icons.pin_drop_rounded,
         size: size,
         // color: Theme.of(context).primaryColor,
         color: Colors.deepOrange,
@@ -1321,7 +1322,16 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
             // cativity icon
-            buildActivityIcon(context, glocation.activity.type, 64),
+            Container(
+              width: 64,
+              height: 64,
+              child: buildActivityIcon(
+                  context,
+                  glocation.activity.type,
+                  64 - _secondsSinceLastPoint.toDouble() > 16
+                      ? 64 - _secondsSinceLastPoint.toDouble()
+                      : 16),
+            ),
 
             InfoDisplay(
               keyname: '',
