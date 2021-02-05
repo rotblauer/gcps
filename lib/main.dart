@@ -67,6 +67,70 @@ Icon buildConnectStatusIcon(String status, {Color color}) {
   );
 }
 
+class ShapesPainter extends CustomPainter {
+  List<bg.Location> locations = [];
+
+  ShapesPainter({this.locations});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (locations.length == 0) return;
+
+    double minLat, minLon, maxLat, maxLon;
+    for (var loc in locations) {
+      if (minLat == null || loc.coords.latitude < minLat)
+        minLat = loc.coords.latitude;
+      if (maxLat == null || loc.coords.latitude > maxLat)
+        maxLat = loc.coords.latitude;
+      if (minLon == null || loc.coords.longitude < minLon)
+        minLon = loc.coords.longitude;
+      if (maxLon == null || loc.coords.longitude > maxLon)
+        maxLon = loc.coords.longitude;
+    }
+
+    var dH = maxLon - minLon;
+    var dW = maxLat - minLat;
+
+    var scaleH = dH / size.height;
+    var scaleW = dW / size.width;
+    double scale = size.height < size.width ? scaleH : scaleW;
+    // TODO: fit bounds
+
+    final paint = Paint();
+    paint.color = Colors.deepOrange;
+
+    var ref = locations.last;
+    var refX = ref.coords.longitude;
+    var refY = ref.coords.latitude;
+
+    // center of the canvas is (x,y) => (width/2, height/2)
+    var center = Offset(size.width / 2, size.height / 2);
+
+    int i = 0;
+    for (var loc in locations) {
+      if (i == locations.length - 1) paint.color = Colors.blue;
+      i++;
+      var x = loc.coords.longitude;
+      var y = loc.coords.latitude;
+
+      var relX = scale * (refX - x) + center.dx;
+      var relY = scale * (refY - y) + center.dy;
+      print('painting: scale=' +
+          scale.toString() +
+          ' relX=' +
+          relX.toString() +
+          ' relY=' +
+          relY.toString());
+
+      // draw the circle on centre of canvas having radius 75.0
+      canvas.drawCircle(Offset(relX, relY), 2.0, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
 Icon buildActivityIcon(BuildContext context, String activity, double size) {
   switch (activity) {
     case 'still':
@@ -343,6 +407,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _deviceAppVersion = "";
   bool _isPushing = false;
   double _tripDistance = 0.0;
+  List<bg.Location> _paintList = [];
 
   // MapboxMapController mapController;
   // bool _mapboxStyleLoaded = false;
@@ -906,6 +971,10 @@ class _MyHomePageState extends State<MyHomePage> {
       _tripDistance = _distanceTracker.distance;
       _countStored = countStored;
       _countSnaps = vcountSnaps;
+      _paintList.add(location);
+      if (_paintList.length > 100) {
+        _paintList.removeAt(0);
+      }
     });
 
     // If we're not at a push mod, we're done.
@@ -1344,6 +1413,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   64 - _secondsSinceLastPoint.toDouble() > 16
                       ? 64 - _secondsSinceLastPoint.toDouble()
                       : 16),
+            ),
+
+            Row(
+              children: [
+                Expanded(
+                    child: CustomPaint(
+                        painter: ShapesPainter(locations: _paintList),
+                        child: Container(height: 100))),
+              ],
             ),
 
             // Container(
