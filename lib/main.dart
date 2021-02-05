@@ -122,6 +122,10 @@ class ShapesPainter extends CustomPainter {
           center.dx - (scale * (refX - x)); // top -> bottom => 0 -> height
       var relY =
           center.dy + (scale * (refY - y)); // left -> right => 0 - > width
+
+      // var relX = (scale * (x - refX)); // top -> bottom => 0 -> height
+      // var relY = (scale * (y - refY)); // left -> right => 0 - > width
+
       // print('painting: scale=' +
       //     scale.toString() +
       //     ' relX=' +
