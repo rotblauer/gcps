@@ -97,6 +97,7 @@ class ShapesPainter extends CustomPainter {
     var scaleH = size.height / dH;
     var scaleW = size.width / dW;
     double scale = size.height < size.width ? scaleH : scaleW;
+    scale /= 2;
     // TODO: fit bounds
 
     final paint = Paint();
@@ -118,9 +119,9 @@ class ShapesPainter extends CustomPainter {
       var y = loc.latitude;
 
       var relX =
-          center.dx + (scale * (refX - x)); // top -> bottom => 0 -> height
+          center.dx - (scale * (refX - x)); // top -> bottom => 0 -> height
       var relY =
-          center.dy - (scale * (refY - y)); // left -> right => 0 - > width
+          center.dy + (scale * (refY - y)); // left -> right => 0 - > width
       // print('painting: scale=' +
       //     scale.toString() +
       //     ' relX=' +
@@ -598,7 +599,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _initCameras();
 
-    lastTracksWithLimit(100).then((value) {
+    lastTracksWithLimit(3600).then((value) {
       _paintList = value;
     });
     // Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
@@ -982,7 +983,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _countStored = countStored;
       _countSnaps = vcountSnaps;
       _paintList.add(ap);
-      if (_paintList.length > 100) {
+      if (_paintList.length > 3600) {
         _paintList.removeAt(0);
       }
     });
@@ -1387,23 +1388,26 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Expanded(
                 child: CustomPaint(
-                    // size: Size.infinite,
-                    painter: ShapesPainter(locations: _paintList),
-                    child: Container(height: 200)),
+                  // size: Size.infinite,
+                  painter: ShapesPainter(locations: _paintList),
+                  child: Container(
+                    height: 200,
+                  ),
+                ),
               )
             ],
           ),
 
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   // cativity icon
                   Container(
-                    width: 64,
-                    height: 64,
+                    // width: 64,
+                    // height: 64,
                     child: buildActivityIcon(
                         context,
                         glocation.activity.type,
@@ -1471,7 +1475,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // crossAxisSpacing: 10,
             // mainAxisSpacing: 10,
             // crossAxisCount: 2,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               // InfoDisplay(
               //   keyname: "uuid",
@@ -1631,7 +1635,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Container(
                       // height: 128,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 8),
+                          horizontal: 24, vertical: 0),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             elevation: 3.0,
