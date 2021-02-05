@@ -1371,7 +1371,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ? 0
                     : ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1),
                 options: {
-                  'third': Text(glocation.coords.speedAccuracy?.toString())
+                  'third': Text(glocation.coords.speedAccuracy != null
+                      ? glocation.coords.speedAccuracy.toString()
+                      : '')
                 },
               ),
               InfoDisplay(
