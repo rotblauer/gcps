@@ -544,6 +544,22 @@ class _MyHomePageState extends State<MyHomePage> {
       _handleStreamLocationUpdate(location);
     });
 
+    bg.BackgroundGeolocation.onActivityChange((bg.ActivityChangeEvent event) {
+      print('[activityChange]');
+      if (glocation.uuid != 'abc') {
+        glocation.timestamp = DateTime.now().toUtc().toIso8601String();
+        glocation.activity.type = event.activity;
+        glocation.activity.confidence = event.confidence;
+      }
+      _handleStreamLocationUpdate(glocation);
+    });
+
+    bg.BackgroundGeolocation.onHeartbeat((bg.HeartbeatEvent event) {
+      bg.BackgroundGeolocation.getCurrentPosition().then((location) {
+        _handleStreamLocationUpdate(location);
+      });
+    });
+
     // Fired whenever the state of location-services changes.  Always fired at boot
     bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
       print('[providerchange] - $event');
