@@ -42,6 +42,65 @@ void main() {
   runApp(MyApp());
 }
 
+Icon buildConnectStatusIcon(String status) {
+  /*
+
+                value: _connectionStatus.split(".").length > 1
+                    ? _connectionStatus.split('.')[1]
+                    : _connectionStatus,
+                options: {
+  */
+  if (status.toLowerCase().contains('wifi')) return Icon(Icons.wifi);
+  if (status.toLowerCase().contains('mobile'))
+    return Icon(Icons.signal_cellular_alt);
+  return Icon(Icons.do_disturb_alt_outlined);
+}
+
+Icon buildActivityIcon(BuildContext context, String activity, double size) {
+  switch (activity) {
+    case 'still':
+      return Icon(Icons.circle,
+          size: size, color: Theme.of(context).primaryColor);
+    case 'on_foot':
+      return Icon(
+        Icons.directions_walk,
+        size: size,
+        color: Theme.of(context).primaryColor,
+      );
+    case 'walking':
+      return Icon(
+        Icons.directions_walk,
+        size: size,
+        color: Theme.of(context).primaryColor,
+      );
+    case 'on_bicycle':
+      return Icon(
+        Icons.directions_bike,
+        size: size,
+        color: Theme.of(context).primaryColor,
+      );
+    case 'running':
+      return Icon(
+        Icons.directions_run,
+        size: size,
+        color: Theme.of(context).primaryColor,
+      );
+    case 'in_vehicle':
+      return Icon(
+        Icons.directions_car,
+        size: size,
+        color: Theme.of(context).primaryColor,
+      );
+
+    default:
+      return Icon(
+        Icons.do_disturb_on_rounded,
+        size: size,
+        color: Theme.of(context).primaryColor,
+      );
+  }
+}
+
 Future<String> _getId() async {
   var deviceInfo = DeviceInfoPlugin();
   if (Platform.isIOS) {
@@ -105,7 +164,7 @@ class MyApp extends StatelessWidget {
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
         brightness: Brightness.light,
-        primarySwatch: Colors.amber,
+        primarySwatch: Colors.lightGreen, // Colors.amber,
         backgroundColor: Colors.limeAccent,
         canvasColor: Colors.deepOrange,
       ),
@@ -245,7 +304,7 @@ class _MyHomePageState extends State<MyHomePage> {
   GeolocationData geolocationData;
   DateTime _appStarted;
 
-  String _connectionStatus = 'Unknown';
+  String _connectionStatus = '-';
   ConnectivityResult _connectionResult;
   final Connectivity _connectivity = Connectivity();
 
@@ -905,6 +964,98 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
 
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    children: [],
+                  )),
+              Expanded(
+                  // padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  buildConnectStatusIcon(_connectionStatus),
+                  Chip(
+                    label: Row(
+                      children: [
+                        Icon(Icons.camera_alt_outlined,
+                            color: Colors.green, size: 16),
+                        Container(
+                          width: 4,
+                        ),
+                        Text(
+                          _countSnaps.toString(),
+                          style: TextStyle(color: Colors.green),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.lime,
+                  ),
+                  Chip(
+                    label: Row(
+                      children: [
+                        Icon(Icons.add_location_alt_outlined,
+                            color: Colors.white, size: 16),
+                        Container(
+                          width: 4,
+                        ),
+                        Text(
+                          _countStored.toString(),
+                          style: TextStyle(color: Colors.white),
+                        )
+                      ],
+                    ),
+                    backgroundColor: Colors.lightGreen,
+                  ),
+                  Chip(
+                    label: Row(
+                      children: [
+                        Icon(
+                          Icons.cloud_done_outlined,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        Container(
+                          width: 4,
+                        ),
+                        Text(
+                          _countPushed.toString(),
+                          style: TextStyle(color: Colors.white),
+                        )
+                      ],
+                    ),
+                    backgroundColor: Colors.lightBlue,
+                  ),
+                  Chip(
+                    label: Row(
+                      children: [
+                        Icon(Icons.timelapse, color: Colors.red),
+                        Container(
+                          width: 4,
+                        ),
+                        Text(
+                          secondsToPrettyDuration(
+                              _secondsSinceLastPoint.toDouble()),
+                          style: TextStyle(color: Colors.white),
+                        )
+                      ],
+                    ),
+                    backgroundColor: Colors.orange,
+                  )
+                ],
+              )),
+              Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                      child: Row(
+                    children: [],
+                  )))
+            ],
+          ),
+
           LinearProgressIndicator(
             minHeight: 3,
             value: _isPushing
@@ -964,6 +1115,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 padding: EdgeInsets.all(8.0),
                 // child: Expanded(
                 child: ElevatedButton(
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Colors.amber)),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -976,7 +1130,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       );
                     },
-                    child: Text('Settings')),
+                    child: Icon(
+                      Icons.settings,
+                      color: Colors.deepOrange,
+                    )),
               )),
             ],
           ),
@@ -1001,32 +1158,36 @@ class _MyHomePageState extends State<MyHomePage> {
           //   ],
           // ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              InfoDisplay(
-                keyname: "snaps",
-                value: _countSnaps,
-                options: {
-                  // 't2.font': Theme.of(context).textTheme.bodyText2,
-                },
-              ),
-              InfoDisplay(
-                keyname: "points",
-                value: _countStored,
-                options: {
-                  // 't2.font': Theme.of(context).textTheme.bodyText2,
-                },
-              ),
-              InfoDisplay(
-                keyname: "pushed",
-                value: _countPushed,
-                options: {
-                  // 't2.font': Theme.of(context).textTheme.bodyText2,
-                },
-              ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     InfoDisplay(
+          //       keyname: "snaps",
+          //       value: _countSnaps,
+          //       options: {
+          //         // 't2.font': Theme.of(context).textTheme.bodyText2,
+          //       },
+          //     ),
+          //     InfoDisplay(
+          //       keyname: "points",
+          //       value: _countStored,
+          //       options: {
+          //         // 't2.font': Theme.of(context).textTheme.bodyText2,
+          //       },
+          //     ),
+          //     InfoDisplay(
+          //       keyname: "pushed",
+          //       value: _countPushed,
+          //       options: {
+          //         // 't2.font': Theme.of(context).textTheme.bodyText2,
+          //       },
+          //     ),
+          //   ],
+          // ),
+
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            buildActivityIcon(context, glocation.activity.type, 64)
+          ]),
 
           Row(
             // primary: false,
@@ -1034,7 +1195,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // crossAxisSpacing: 10,
             // mainAxisSpacing: 10,
             // crossAxisCount: 2,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               // InfoDisplay(
               //   keyname: "uuid",
@@ -1043,24 +1204,38 @@ class _MyHomePageState extends State<MyHomePage> {
               //     't2.font': Theme.of(context).textTheme.bodyText2,
               //   },
               // ),
+
+              // InfoDisplay(
+              //   keyname: "connection",
+              //   value: _connectionStatus.split(".").length > 1
+              //       ? _connectionStatus.split('.')[1]
+              //       : _connectionStatus,
+              //   options: {
+              //     't2.font': Theme.of(context).textTheme.bodyText2,
+              //   },
+              // ),
+
               InfoDisplay(
-                keyname: "longitude,latitude",
-                value: '${glocation.coords.longitude}' +
-                    ',' +
-                    '${glocation.coords.latitude}',
-                options: {
-                  't2.font': Theme.of(context).textTheme.bodyText2,
-                },
-              ),
-              InfoDisplay(
-                keyname: "connection",
-                value: _connectionStatus.split(".").length > 1
-                    ? _connectionStatus.split('.')[1]
-                    : _connectionStatus,
-                options: {
-                  't2.font': Theme.of(context).textTheme.bodyText2,
-                },
-              ),
+                  keyname: "accuracy", value: glocation.coords.accuracy),
+
+              // InfoDisplay(
+              //   keyname: "since last point",
+              //   value:
+              //       secondsToPrettyDuration(_secondsSinceLastPoint.toDouble()),
+              //   options: {
+              //     't2.font': Theme.of(context).textTheme.bodyText2,
+              //   },
+              // ),
+
+              // InfoDisplay(
+              //   keyname: "longitude,latitude",
+              //   value: '${glocation.coords.longitude}' +
+              //       ',' +
+              //       '${glocation.coords.latitude}',
+              //   options: {
+              //     't2.font': Theme.of(context).textTheme.bodyText2,
+              //   },
+              // ),
             ],
           ),
           // Row(
@@ -1088,18 +1263,12 @@ class _MyHomePageState extends State<MyHomePage> {
           //     ),
           //   ],
           // ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              InfoDisplay(
-                  keyname: "accuracy", value: glocation.coords.accuracy),
-              InfoDisplay(
-                keyname: "since last point",
-                value:
-                    secondsToPrettyDuration(_secondsSinceLastPoint.toDouble()),
-              )
-            ],
-          ),
+
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //   children: [],
+          // ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -1150,18 +1319,25 @@ class _MyHomePageState extends State<MyHomePage> {
               InfoDisplay(
                   keyname: "odometer", value: glocation.odometer.toInt()),
               InfoDisplay(
-                  keyname: "distance", value: _distanceTracker.distance ~/ 1),
+                  keyname: "distance",
+                  value: _distanceTracker.distance < 1000
+                      ? (_distanceTracker.distance ~/ 1).toString() + 'm'
+                      : ((_distanceTracker.distance / 1000).toPrecision(2))
+                              .toString() +
+                          'km'),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              InfoDisplay(keyname: "activity", value: glocation.activity.type),
-              InfoDisplay(
-                  keyname: "activity confidence",
-                  value: glocation.activity.confidence),
-            ],
-          ),
+
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //   children: [
+          //     InfoDisplay(keyname: "activity", value: glocation.activity.type),
+          //     InfoDisplay(
+          //         keyname: "activity confidence",
+          //         value: glocation.activity.confidence),
+          //   ],
+          // ),
+
           // Row(children: []),
           // Row(children: []),
           // Row(children: []),
@@ -1170,9 +1346,10 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                   child: Container(
                       height: 128,
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(16),
                       child: ElevatedButton(
                         style: ButtonStyle(
+                            elevation: MaterialStateProperty.all<double>(5.0),
                             backgroundColor:
                                 MaterialStateProperty.all<Color>(Colors.lime)),
                         onPressed: () {
@@ -1187,11 +1364,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Text('Cat snap',
-                                  style: Theme.of(context).textTheme.overline),
+                              // Text('Cat snap',
+                              //     style: Theme.of(context).textTheme.overline),
                               Icon(
                                 Icons.camera_alt,
-                                size: 48,
+                                size: 64,
                                 color: Colors.green, // green
                               ),
                             ]),
