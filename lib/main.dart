@@ -42,7 +42,7 @@ void main() {
   runApp(MyApp());
 }
 
-Icon buildConnectStatusIcon(String status) {
+Icon buildConnectStatusIcon(String status, {Color color}) {
   /*
 
                 value: _connectionStatus.split(".").length > 1
@@ -50,17 +50,31 @@ Icon buildConnectStatusIcon(String status) {
                     : _connectionStatus,
                 options: {
   */
-  if (status.toLowerCase().contains('wifi')) return Icon(Icons.wifi);
+  if (status.toLowerCase().contains('wifi'))
+    return Icon(
+      Icons.wifi,
+      color: color,
+    );
   if (status.toLowerCase().contains('mobile'))
-    return Icon(Icons.signal_cellular_alt);
-  return Icon(Icons.do_disturb_alt_outlined);
+    return Icon(
+      Icons.signal_cellular_alt,
+      color: color,
+    );
+  return Icon(
+    Icons.do_disturb_alt_outlined,
+    color: color,
+  );
 }
 
 Icon buildActivityIcon(BuildContext context, String activity, double size) {
   switch (activity) {
     case 'still':
-      return Icon(Icons.circle,
-          size: size, color: Theme.of(context).primaryColor);
+      return Icon(
+        Icons.circle,
+        size: size,
+        // color: Theme.of(context).primaryColor,
+        color: Colors.red,
+      );
     case 'on_foot':
       return Icon(
         Icons.directions_walk,
@@ -89,7 +103,8 @@ Icon buildActivityIcon(BuildContext context, String activity, double size) {
       return Icon(
         Icons.directions_car,
         size: size,
-        color: Theme.of(context).primaryColor,
+        // color: Theme.of(context).primaryColor,
+        color: Colors.amber, // boring and lame...
       );
 
     default:
@@ -167,6 +182,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.lightGreen, // Colors.amber,
         backgroundColor: Colors.limeAccent,
         canvasColor: Colors.deepOrange,
+        // primaryColor: Colors.white,
       ),
       home: MyHomePage(title: 'Global Cat Positioning System'),
       showPerformanceOverlay: false,
@@ -202,6 +218,8 @@ class InfoDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var mytheme = Theme.of(context).textTheme.overline;
+    mytheme = mytheme.apply(color: Colors.white70);
     return Container(
         padding: const EdgeInsets.all(8),
         // color: Colors.green[500],
@@ -211,7 +229,7 @@ class InfoDisplay extends StatelessWidget {
             children: [
               Text(
                 '$keyname',
-                style: Theme.of(context).textTheme.overline,
+                style: mytheme,
               ),
               Text(
                 '$value',
@@ -973,50 +991,56 @@ class _MyHomePageState extends State<MyHomePage> {
 
           Visibility(
             visible: _appErrorStatus != "",
-            child: Row(
-              children: [
-                Flexible(
-                    child: Text(
-                  _appErrorStatus,
-                  style: TextStyle(),
-                ))
-              ],
+            child: Container(
+              padding: EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  Flexible(
+                      child: Text(
+                    _appErrorStatus,
+                    style: TextStyle(),
+                  ))
+                ],
+              ),
             ),
           ),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                   // padding: EdgeInsets.symmetric(horizontal: 8.0),
                   child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  // Container(
+                  //   padding: EdgeInsets.only(left: 12.0),
+                  //   child: buildConnectStatusIcon(_connectionStatus),
+                  // ),
                   Container(
-                    padding: EdgeInsets.only(left: 12.0),
-                    child: buildConnectStatusIcon(_connectionStatus),
-                  ),
-                  Chip(
-                    label: Row(
+                    padding: EdgeInsets.all(4),
+                    child: Row(
                       children: [
                         Icon(Icons.camera_alt_outlined,
-                            color: Colors.green, size: 16),
+                            color: Colors.lime, size: 16),
                         Container(
                           width: 4,
                         ),
                         Text(
                           _countSnaps.toString(),
-                          style: TextStyle(color: Colors.green),
+                          style: TextStyle(color: Colors.white),
                         ),
                       ],
                     ),
-                    backgroundColor: Colors.lime,
+                    decoration: BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.lime, width: 4))),
                   ),
-                  Chip(
-                    label: Row(
+                  Container(
+                    padding: EdgeInsets.all(4),
+                    child: Row(
                       children: [
                         Icon(Icons.add_location_alt_outlined,
-                            color: Colors.white, size: 16),
+                            color: Colors.green, size: 16),
                         Container(
                           width: 4,
                         ),
@@ -1026,14 +1050,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         )
                       ],
                     ),
-                    backgroundColor: Colors.lightGreen,
+                    decoration: BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.green, width: 4))),
                   ),
-                  Chip(
-                    label: Row(
+                  Container(
+                    padding: EdgeInsets.all(4),
+                    child: Row(
                       children: [
                         Icon(
                           Icons.cloud_done_outlined,
-                          color: Colors.white,
+                          color: Colors.lightBlue,
                           size: 16,
                         ),
                         Container(
@@ -1045,12 +1072,16 @@ class _MyHomePageState extends State<MyHomePage> {
                         )
                       ],
                     ),
-                    backgroundColor: Colors.lightBlue,
+                    decoration: BoxDecoration(
+                        border: Border(
+                            bottom:
+                                BorderSide(color: Colors.lightBlue, width: 4))),
                   ),
-                  Chip(
-                    label: Row(
+                  Container(
+                    padding: EdgeInsets.all(4),
+                    child: Row(
                       children: [
-                        Icon(Icons.timelapse, color: Colors.red),
+                        Icon(Icons.timelapse, color: Colors.red, size: 16),
                         Container(
                           width: 4,
                         ),
@@ -1061,16 +1092,19 @@ class _MyHomePageState extends State<MyHomePage> {
                         )
                       ],
                     ),
-                    backgroundColor: Colors.orange,
+                    decoration: BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.red, width: 4))),
                   )
                 ],
               )),
-              Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Container(
-                      child: Row(
-                    children: [],
-                  )))
+
+              // Container(
+              //     padding: EdgeInsets.symmetric(horizontal: 8.0),
+              //     child: Container(
+              //         child: Row(
+              //       children: [],
+              //     )))
             ],
           ),
 
@@ -1113,20 +1147,42 @@ class _MyHomePageState extends State<MyHomePage> {
                 // child: Expanded(
                 child: ElevatedButton(
                     // MaterialStateProperty.all<Color>(Colors.lime)),
+
                     style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Colors.cyan)),
-                    onPressed: () {
-                      // snaps().then((value) {
-                      //   print("stored snapsy");
-                      //   for (var item in value) {
-                      //     print(jsonEncode(item.toCattrackJSON()));
-                      //   }
-                      // });
-                      this._pushTracksBatching();
-                    },
-                    child: Icon(Icons.cloud_upload,
-                        semanticLabel: 'Push', color: Colors.white)),
+                      backgroundColor: _countStored > 0 &&
+                              (_connectionStatus.contains('wifi') ||
+                                  _connectionStatus.contains('mobile'))
+                          ? MaterialStateProperty.all<Color>(Colors.cyan)
+                          : MaterialStateProperty.all<Color>(Colors.grey),
+                    ),
+                    onPressed: _countStored > 0 &&
+                            (_connectionStatus.contains('wifi') ||
+                                _connectionStatus.contains('mobile'))
+                        ? () {
+                            if (_countStored == 0) return;
+                            // snaps().then((value) {
+                            //   print("stored snapsy");
+                            //   for (var item in value) {
+                            //     print(jsonEncode(item.toCattrackJSON()));
+                            //   }
+                            // });
+                            this._pushTracksBatching();
+                          }
+                        : null,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.cloud_upload,
+                              semanticLabel: 'Push', color: Colors.white),
+                          Container(
+                            width: 8,
+                            alignment: Alignment.center,
+                            child: Text(':',
+                                style: TextStyle(color: Colors.white)),
+                          ),
+                          buildConnectStatusIcon(_connectionStatus,
+                              color: Colors.white),
+                        ])),
               )),
               Expanded(
                   child: Container(
@@ -1205,8 +1261,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
           Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             buildActivityIcon(context, glocation.activity.type, 64),
-            Text(glocation.activity.type,
-                style: Theme.of(context).textTheme.headline4),
+            InfoDisplay(
+              keyname: 'activity',
+              value: 'cat is ' + glocation.activity.type.replaceAll('_', ' '),
+              options: {
+                'third': Text(glocation.activity.confidence.toString())
+              },
+            )
+            // Text(glocation.activity.type,
+            // style: Theme.of(context).textTheme.headline4),
           ]),
 
           Row(
@@ -1372,13 +1435,13 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Expanded(
                   child: Container(
-                      height: 128,
-                      padding: const EdgeInsets.all(16),
+                      // height: 128,
+                      padding: const EdgeInsets.all(24),
                       child: ElevatedButton(
-                        style: ButtonStyle(
-                            elevation: MaterialStateProperty.all<double>(5.0),
-                            backgroundColor:
-                                MaterialStateProperty.all<Color>(Colors.lime)),
+                        style: ElevatedButton.styleFrom(
+                            elevation: 3.0,
+                            primary: Colors.limeAccent,
+                            padding: EdgeInsets.all(8)),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -1388,16 +1451,19 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           );
                         },
-                        child: Column(
+                        child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               // Text('Cat snap',
                               //     style: Theme.of(context).textTheme.overline),
-                              Icon(
-                                Icons.camera_alt,
-                                size: 64,
-                                color: Colors.green, // green
-                              ),
+                              Icon(Icons.add_a_photo_outlined,
+                                  size: 64, color: Colors.green[300]),
+
+                              // Icon(
+                              //   Icons.camera_alt,
+                              //   size: 64,
+                              //   color: Colors.lime, // green
+                              // ),
                             ]),
                       )))
             ],

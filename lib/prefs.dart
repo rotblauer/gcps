@@ -64,99 +64,105 @@ class MySettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SettingsScreen(
-      title: "Settings",
-      children: [
-        SettingsContainer(
-          child: Text('Push (upload) configuration',
-              style: Theme.of(context).textTheme.overline),
-        ),
-        Settings().onDoubleChanged(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Settings'),
+        backgroundColor: Colors.amber,
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SettingsContainer(
+            child: Text('Push (upload) configuration',
+                style: Theme.of(context).textTheme.overline),
+          ),
+          Settings().onDoubleChanged(
+              settingKey: kPushInterval,
+              defaultValue: 100,
+              childBuilder: (BuildContext context, double value) {
+                return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SettingsContainer(
+                        children: [
+                          // Text('Push interval',
+                          //     style: Theme.of(context).textTheme.bodyText2),
+                          Text(
+                            value.toStringAsFixed(0),
+                            style: Theme.of(context).textTheme.headline4,
+                          ),
+                        ],
+                      )
+                    ]);
+              }),
+          SliderSettingsTile(
             settingKey: kPushInterval,
+            title: 'Push interval',
+            // title: 'How often to maybe push points',
+            subtitle: 'How often to maybe push points',
+            icon: Icon(Icons.timelapse_rounded),
+            minValue: 100.0,
             defaultValue: 100,
-            childBuilder: (BuildContext context, double value) {
-              return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SettingsContainer(
-                      children: [
-                        // Text('Push interval',
-                        //     style: Theme.of(context).textTheme.bodyText2),
-                        Text(
-                          value.toStringAsFixed(0),
-                          style: Theme.of(context).textTheme.headline4,
-                        ),
-                      ],
-                    )
-                  ]);
-            }),
-        SliderSettingsTile(
-          settingKey: kPushInterval,
-          title: 'Push interval',
-          // title: 'How often to maybe push points',
-          subtitle: 'How often to maybe push points',
-          icon: Icon(Icons.timelapse_rounded),
-          minValue: 100.0,
-          defaultValue: 100,
-          maxValue: 3600.0,
-          step: 100.0,
-          maxIcon: Icon(Icons.arrow_upward),
-          minIcon: Icon(Icons.arrow_downward),
-        ),
-        Settings().onDoubleChanged(
+            maxValue: 3600.0,
+            step: 100.0,
+            maxIcon: Icon(Icons.arrow_upward),
+            minIcon: Icon(Icons.arrow_downward),
+          ),
+          Settings().onDoubleChanged(
+              settingKey: kPushBatchSize,
+              defaultValue: 100,
+              childBuilder: (BuildContext context, double value) {
+                return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SettingsContainer(
+                        children: [
+                          // Text('Batch size',
+                          //     style: Theme.of(context).textTheme.bodyText2),
+                          Text(
+                            value.toStringAsFixed(0),
+                            style: Theme.of(context).textTheme.headline4,
+                          ),
+                        ],
+                      )
+                    ]);
+              }),
+          SliderSettingsTile(
             settingKey: kPushBatchSize,
+            title: 'Push batch size',
+            subtitle: 'Max number of points to push with each upload',
+            icon: Icon(Icons.file_upload),
+            minValue: 100.0,
             defaultValue: 100,
-            childBuilder: (BuildContext context, double value) {
-              return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SettingsContainer(
-                      children: [
-                        // Text('Batch size',
-                        //     style: Theme.of(context).textTheme.bodyText2),
-                        Text(
-                          value.toStringAsFixed(0),
-                          style: Theme.of(context).textTheme.headline4,
-                        ),
-                      ],
-                    )
-                  ]);
-            }),
-        SliderSettingsTile(
-          settingKey: kPushBatchSize,
-          title: 'Push batch size',
-          subtitle: 'Max number of points to push with each upload',
-          icon: Icon(Icons.file_upload),
-          minValue: 100.0,
-          defaultValue: 100,
-          maxValue: 3600.0,
-          step: 100.0,
-          maxIcon: Icon(Icons.arrow_upward),
-          minIcon: Icon(Icons.arrow_downward),
-        ),
-        SwitchSettingsTile(
-          settingKey: kAllowPushWithWifi,
-          title: 'Push with wifi data',
-          icon: Icon(Icons.wifi),
-          defaultValue: true,
-        ),
-        SwitchSettingsTile(
-          settingKey: kAllowPushWithMobile,
-          title: 'Push with mobile data',
-          icon: Icon(Icons.settings_cell_outlined),
-          defaultValue: false,
-        ),
-        SettingsContainer(
-          children: [
-            Text('App version', style: Theme.of(context).textTheme.overline),
-            Text(deviceVersion),
-            Text('UUID', style: Theme.of(context).textTheme.overline),
-            Text(deviceUUID),
-            Text('Name', style: Theme.of(context).textTheme.overline),
-            Text(deviceName),
-          ],
-        ),
-      ],
+            maxValue: 3600.0,
+            step: 100.0,
+            maxIcon: Icon(Icons.arrow_upward),
+            minIcon: Icon(Icons.arrow_downward),
+          ),
+          SwitchSettingsTile(
+            settingKey: kAllowPushWithWifi,
+            title: 'Push with wifi data',
+            icon: Icon(Icons.wifi),
+            defaultValue: true,
+          ),
+          SwitchSettingsTile(
+            settingKey: kAllowPushWithMobile,
+            title: 'Push with mobile data',
+            icon: Icon(Icons.settings_cell_outlined),
+            defaultValue: false,
+          ),
+          SettingsContainer(
+            children: [
+              Text('App version', style: Theme.of(context).textTheme.overline),
+              Text(deviceVersion),
+              Text('UUID', style: Theme.of(context).textTheme.overline),
+              Text(deviceUUID),
+              Text('Name', style: Theme.of(context).textTheme.overline),
+              Text(deviceName),
+            ],
+          ),
+        ],
+      ),
     );
     // return Scaffold(
     //   appBar: AppBar(title: Text('Settings')),
