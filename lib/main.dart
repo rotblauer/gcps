@@ -154,22 +154,24 @@ SnackBar _buildSnackBar(Widget content, {MaterialColor backgroundColor}) {
 }
 
 final ThemeData MyTheme = ThemeData(
-  // This is the theme of your application.
-  //
-  // Try running your application with "flutter run". You'll see the
-  // application has a blue toolbar. Then, without quitting the app, try
-  // changing the primarySwatch below to Colors.green and then invoke
-  // "hot reload" (press "r" in the console where you ran "flutter run",
-  // or simply save your changes to "hot reload" in a Flutter IDE).
-  // Notice that the counter didn't reset back to zero; the application
-  // is not restarted.
-  brightness: Brightness.dark,
-  canvasColor: Colors.blueGrey[900],
-  // primarySwatch: Colors.lightGreen, // Colors.amber,
-  // backgroundColor: Colors.limeAccent,
-  // canvasColor: Colors.deepOrange,
-  // primaryColor: Colors.white,
-);
+    // This is the theme of your application.
+    //
+    // Try running your application with "flutter run". You'll see the
+    // application has a blue toolbar. Then, without quitting the app, try
+    // changing the primarySwatch below to Colors.green and then invoke
+    // "hot reload" (press "r" in the console where you ran "flutter run",
+    // or simply save your changes to "hot reload" in a Flutter IDE).
+    // Notice that the counter didn't reset back to zero; the application
+    // is not restarted.
+    brightness: Brightness.dark,
+    // canvasColor: Colors.blueGrey[900],
+    canvasColor: Color.fromRGBO(18, 18, 36, 1), // Colors.blueGrey[900],
+    textTheme: TextTheme(headline4: TextStyle(fontFamily: 'mono'))
+    // primarySwatch: Colors.lightGreen, // Colors.amber,
+    // backgroundColor: Colors.limeAccent,
+    // canvasColor: Colors.deepOrange,
+    // primaryColor: Colors.white,
+    );
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -222,8 +224,8 @@ class InfoDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var mytheme = Theme.of(context).textTheme.overline;
-    mytheme = mytheme.apply(color: Colors.white70);
+    // var mytheme = Theme.of(context).textTheme.overline;
+    // mytheme = mytheme.apply(color: Colors.white70);
     return Container(
         padding: const EdgeInsets.all(8),
         // color: Colors.green[500],
@@ -232,16 +234,21 @@ class InfoDisplay extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '$keyname',
-                style: mytheme,
+                '$keyname', style: Theme.of(context).textTheme.overline,
+                // style: mytheme,
               ),
-              Text(
-                '$value',
-                style: options != null && options.containsKey('t2.font')
-                    ? options['t2.font']
-                    : Theme.of(context).textTheme.headline4,
-                maxLines: 2,
-              ),
+              value.runtimeType == String ||
+                      value.runtimeType == double ||
+                      value.runtimeType == int ||
+                      value.runtimeType == DateTime
+                  ? Text(
+                      '$value',
+                      style: options != null && options.containsKey('t2.font')
+                          ? options['t2.font']
+                          : Theme.of(context).textTheme.headline4,
+                      maxLines: 2,
+                    )
+                  : value,
               options != null && options['third'] != null
                   ? options['third']
                   : Text('')
@@ -1288,7 +1295,20 @@ class _MyHomePageState extends State<MyHomePage> {
             buildActivityIcon(context, glocation.activity.type, 64),
             InfoDisplay(
               keyname: 'activity',
-              value: 'cat is ' + glocation.activity.type.replaceAll('_', ' '),
+              value: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Image(
+                    image: AssetImage('assets/catdroid-icon-cat-only.png'),
+                    width: 48,
+                  ),
+                  Text(
+                    ' is ' + glocation.activity.type.replaceAll('_', ' '),
+                    style: Theme.of(context).textTheme.headline4,
+                  ),
+                ],
+              ),
               options: {
                 'third': Text(glocation.activity.confidence.toString())
               },
