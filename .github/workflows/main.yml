@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive 
-      - run: git fetch --tags
+      - run: git fetch --tags -f
 
       - uses: subosito/flutter-action@v1
         with:
