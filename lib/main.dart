@@ -74,30 +74,31 @@ Icon buildActivityIcon(BuildContext context, String activity, double size) {
         size: size,
         // color: Theme.of(context).primaryColor,
         color: Colors.deepOrange,
+        // color: Theme.of(context).accentColor,
       );
     case 'on_foot':
       return Icon(
         Icons.directions_walk,
         size: size,
-        color: Theme.of(context).primaryColor,
+        color: Theme.of(context).accentColor,
       );
     case 'walking':
       return Icon(
         Icons.directions_walk,
         size: size,
-        color: Theme.of(context).primaryColor,
+        color: Theme.of(context).accentColor,
       );
     case 'on_bicycle':
       return Icon(
         Icons.directions_bike,
         size: size,
-        color: Theme.of(context).primaryColor,
+        color: Theme.of(context).accentColor,
       );
     case 'running':
       return Icon(
         Icons.directions_run,
         size: size,
-        color: Theme.of(context).primaryColor,
+        color: Theme.of(context).accentColor,
       );
     case 'in_vehicle':
       return Icon(
@@ -166,6 +167,7 @@ final ThemeData MyTheme = ThemeData(
     brightness: Brightness.dark,
     // canvasColor: Colors.blueGrey[900],
     canvasColor: Color.fromRGBO(18, 18, 36, 1), // Colors.blueGrey[900],
+    accentColor: Colors.lightGreenAccent,
     textTheme: TextTheme(headline4: TextStyle(fontFamily: 'mono'))
     // primarySwatch: Colors.lightGreen, // Colors.amber,
     // backgroundColor: Colors.limeAccent,
@@ -320,12 +322,26 @@ String secondsToPrettyDuration(double seconds) {
   return out;
 }
 
+Color colorForDurationSinceLastPoint(int duration) {
+  if (duration < 3) return Colors.white;
+  if (duration < 10) return Colors.red[100];
+  if (duration < 20) return Colors.red[200];
+  if (duration < 60) return Colors.red[300];
+  if (duration < 120) return Colors.red[400];
+  if (duration < 360) return Colors.red[500];
+  if (duration < 720) return Colors.red[600];
+  if (duration < 1200) return Colors.red[700];
+  if (duration < 2400) return Colors.red[800];
+  return Colors.red[900];
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   String _appErrorStatus = "";
   String _deviceUUID = "";
   String _deviceName = "";
   String _deviceAppVersion = "";
   bool _isPushing = false;
+  double _tripDistance = 0.0;
 
   DistanceTracker _distanceTracker = DistanceTracker(filterStill: true);
 
@@ -565,11 +581,11 @@ class _MyHomePageState extends State<MyHomePage> {
       _handleStreamLocationUpdate(glocation);
     });
 
-    bg.BackgroundGeolocation.onHeartbeat((bg.HeartbeatEvent event) {
-      bg.BackgroundGeolocation.getCurrentPosition().then((location) {
-        _handleStreamLocationUpdate(location);
-      });
-    });
+    // bg.BackgroundGeolocation.onHeartbeat((bg.HeartbeatEvent event) {
+    //   bg.BackgroundGeolocation.getCurrentPosition().then((location) {
+    //     _handleStreamLocationUpdate(location);
+    //   });
+    // });
 
     // Fired whenever the state of location-services changes.  Always fired at boot
     bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
@@ -733,7 +749,7 @@ class _MyHomePageState extends State<MyHomePage> {
         name: _deviceName,
         version: _deviceAppVersion,
         tripStarted: _appStarted.toUtc().toIso8601String(),
-        distance: _distanceTracker.distance.toPrecision(1),
+        distance: _tripDistance.toPrecision(1),
       );
 
       // c['tripStarted'] = _appStarted.toUtc().toIso8601String();
@@ -873,6 +889,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Update the persistent-state display.
     setState(() {
+      _tripDistance = _distanceTracker.distance;
       _countStored = countStored;
       _countSnaps = vcountSnaps;
     });
@@ -1048,7 +1065,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Row(
                       children: [
                         Icon(Icons.camera_alt_outlined,
-                            color: Colors.lime, size: 16),
+                            color: Colors.yellow, size: 16),
                         Container(
                           width: 4,
                         ),
@@ -1060,7 +1077,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     decoration: BoxDecoration(
                         border: Border(
-                            bottom: BorderSide(color: Colors.lime, width: 4))),
+                            bottom:
+                                BorderSide(color: Colors.yellow, width: 4))),
                   ),
                   Container(
                     padding: EdgeInsets.all(4),
@@ -1105,25 +1123,6 @@ class _MyHomePageState extends State<MyHomePage> {
                             bottom: BorderSide(
                                 color: MyTheme.buttonColor, width: 4))),
                   ),
-                  Container(
-                    padding: EdgeInsets.all(4),
-                    child: Row(
-                      children: [
-                        Icon(Icons.timelapse, color: Colors.red, size: 16),
-                        Container(
-                          width: 4,
-                        ),
-                        Text(
-                          secondsToPrettyDuration(
-                              _secondsSinceLastPoint.toDouble()),
-                          style: TextStyle(color: Colors.white),
-                        )
-                      ],
-                    ),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(color: Colors.red, width: 4))),
-                  )
                 ],
               )),
 
@@ -1155,7 +1154,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     // MaterialStateProperty.all<Color>(Colors.lime)),
                     style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
-                            MyTheme.accentColor)),
+                            Colors.deepOrange)),
                     onPressed: () async {
                       var loc =
                           await bg.BackgroundGeolocation.getCurrentPosition();
@@ -1167,7 +1166,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       // );
                     },
                     child: Icon(Icons.plus_one,
-                        semanticLabel: 'Point', color: Colors.green)),
+                        semanticLabel: 'Point', color: MyTheme.accentColor)),
               )),
               Expanded(
                   child: Container(
@@ -1292,9 +1291,40 @@ class _MyHomePageState extends State<MyHomePage> {
           // ),
 
           Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Container(
+              padding: EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.timelapse,
+                      color: colorForDurationSinceLastPoint(
+                          _secondsSinceLastPoint),
+                      size: 16),
+                  Container(
+                    width: 4,
+                  ),
+                  Text(
+                    '-' +
+                        secondsToPrettyDuration(
+                            _secondsSinceLastPoint.toDouble()),
+                    style: TextStyle(color: Colors.white),
+                  )
+                ],
+              ),
+              // decoration: BoxDecoration(
+              //     border: Border(
+              //         bottom: BorderSide(
+              //             color: colorForDurationSinceLastPoint(
+              //                 _secondsSinceLastPoint),
+              //             width: 4))),
+            ),
+
+            // cativity icon
             buildActivityIcon(context, glocation.activity.type, 64),
+
             InfoDisplay(
-              keyname: 'activity',
+              keyname: '',
               value: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -1457,10 +1487,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   keyname: "odometer", value: glocation.odometer.toInt()),
               InfoDisplay(
                   keyname: "distance",
-                  value: _distanceTracker.distance < 1000
-                      ? (_distanceTracker.distance ~/ 1).toString() + 'm'
-                      : ((_distanceTracker.distance / 1000).toPrecision(2))
-                              .toString() +
+                  value: _tripDistance < 1000
+                      ? (_tripDistance ~/ 1).toString() + 'm'
+                      : ((_tripDistance / 1000).toPrecision(2)).toString() +
                           'km'),
             ],
           ),
@@ -1487,7 +1516,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             elevation: 3.0,
-                            primary: Colors.limeAccent,
+                            primary: Colors.yellow,
                             padding: EdgeInsets.all(8)),
                         onPressed: () {
                           Navigator.push(
@@ -1504,7 +1533,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               // Text('Cat snap',
                               //     style: Theme.of(context).textTheme.overline),
                               Icon(Icons.add_a_photo_outlined,
-                                  size: 64, color: Colors.green[300]),
+                                  size: 64,
+                                  color: Colors.deepOrange /*green[300]*/),
 
                               // Icon(
                               //   Icons.camera_alt,
@@ -1727,11 +1757,45 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       // Get a specific camera from the list of available cameras.
       widget.camera,
       // Define the resolution to use.
-      ResolutionPreset.medium,
+      ResolutionPreset.veryHigh,
     );
 
     // Next, initialize the controller. This returns a Future.
     _initializeControllerFuture = _controller.initialize();
+  }
+
+  takePicture() async {
+    // catch the error.
+    try {
+      // Ensure that the camera is initialized.
+      await _initializeControllerFuture;
+
+      // Construct the path where the image should be saved using the
+      // pattern package.
+      final path = join(
+        // Store the picture in the temp directory.
+        // Find the temp directory using the `path_provider` plugin.
+        (await getTemporaryDirectory()).path,
+        '${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+
+      // Attempt to take a picture and log where it's been saved.
+      // var xpath =
+      await _controller.takePicture().then((value) => value.saveTo(path));
+      // _controller.setFlashMode(FlashMode.off);
+      // xpath.saveTo(path);
+
+      // If the picture was taken, display it on a new screen.
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DisplayPictureScreen(imagePath: path),
+        ),
+      );
+    } catch (e) {
+      // If an error occurs, log the error to the console.
+      print(e);
+    }
   }
 
   @override
@@ -1759,7 +1823,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       // until the controller has finished initializing.
       body: Column(
         children: [
-          FutureBuilder<void>(
+          Flexible(
+              child: FutureBuilder<void>(
             future: _initializeControllerFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
@@ -1770,70 +1835,41 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 return Center(child: CircularProgressIndicator());
               }
             },
-          ),
-          Row(
-            children: [
-              Expanded(
-                  child: Container(
-                      height: 128,
-                      padding: const EdgeInsets.all(8),
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                            backgroundColor:
-                                MaterialStateProperty.all<Color>(Colors.lime)),
-                        onPressed: () async {
-                          // Take the Picture in a try / catch block. If anything goes wrong,
-                          // catch the error.
-                          try {
-                            // Ensure that the camera is initialized.
-                            await _initializeControllerFuture;
-
-                            // Construct the path where the image should be saved using the
-                            // pattern package.
-                            final path = join(
-                              // Store the picture in the temp directory.
-                              // Find the temp directory using the `path_provider` plugin.
-                              (await getTemporaryDirectory()).path,
-                              '${DateTime.now().millisecondsSinceEpoch}.jpg',
-                            );
-
-                            // Attempt to take a picture and log where it's been saved.
-                            // var xpath =
-                            await _controller
-                                .takePicture()
-                                .then((value) => value.saveTo(path));
-                            // _controller.setFlashMode(FlashMode.off);
-                            // xpath.saveTo(path);
-
-                            // If the picture was taken, display it on a new screen.
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DisplayPictureScreen(imagePath: path),
-                              ),
-                            );
-                          } catch (e) {
-                            // If an error occurs, log the error to the console.
-                            print(e);
-                          }
-                        },
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              // Text('Cat snap',
-                              //     style: Theme.of(context).textTheme.overline),
-                              Icon(
-                                Icons.camera,
-                                size: 64,
-                                color: Colors.green, // green
-                              ),
-                            ]),
-                      )))
-            ],
-          )
+          )),
+          // Row(
+          //   children: [
+          //     Expanded(
+          //         child: Container(
+          //             height: 128,
+          //             padding: const EdgeInsets.all(8),
+          //             child: ElevatedButton(
+          //               style: ButtonStyle(
+          //                   backgroundColor: MaterialStateProperty.all<Color>(
+          //                       Colors.yellow)),
+          //               onPressed: takePicture,
+          //               child: Column(
+          //                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //                   children: [
+          //                     // Text('Cat snap',
+          //                     //     style: Theme.of(context).textTheme.overline),
+          //                     Icon(
+          //                       Icons.camera,
+          //                       size: 64,
+          //                       color: Colors.deepOrange, // green
+          //                     ),
+          //                   ]),
+          //             )))
+          //   ],
+          // )
         ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+          autofocus: true,
+          backgroundColor: Colors.deepOrange,
+          foregroundColor: Colors.yellow,
+          child: Icon(Icons.camera),
+          onPressed: takePicture),
       // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       // floatingActionButton: FloatingActionButton(
       //   backgroundColor: Colors.tealAccent,
@@ -1901,18 +1937,21 @@ class DisplayPictureScreen extends StatelessWidget {
       ),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      body: Column(children: [
-        Image.file(File(imagePath)),
+      body: Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        Container(
+          height: 8,
+        ),
+        Flexible(child: Image.file(File(imagePath))),
         Row(
           children: [
             Expanded(
                 child: Container(
                     height: 128,
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(24),
                     child: ElevatedButton(
                       style: ButtonStyle(
                           backgroundColor:
-                              MaterialStateProperty.all<Color>(Colors.lime)),
+                              MaterialStateProperty.all<Color>(Colors.yellow)),
                       onPressed: () async {
                         // Get location.
                         var location =
@@ -1941,15 +1980,19 @@ class DisplayPictureScreen extends StatelessWidget {
                         // Go back home.
                         Navigator.popUntil(context, ModalRoute.withName('/'));
 
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            _buildSnackBar(Text('Cat snap saved.'),
+                                backgroundColor: Colors.lightGreen));
+
                         return null;
                       },
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Icon(
-                              Icons.check_circle_outline,
+                              Icons.add_photo_alternate_outlined,
                               size: 64,
-                              color: Colors.green, // green
+                              color: Colors.deepOrange, // green
                             ),
                           ]),
                     )))
