@@ -364,7 +364,8 @@ class ShapesPainter extends CustomPainter {
         canvas.drawCircle(Offset(relX, relY), 6, paint);
 
         // Draw dot indicating last elevation point.
-        canvas.drawCircle(elevPoint, 4, lastElevPointPaint);
+        if (locations.length > 30 && elevSpread > 5)
+          canvas.drawCircle(elevPoint, 4, lastElevPointPaint);
       }
     }
     // Draw the elevation path.
