@@ -275,10 +275,12 @@ class ShapesPainter extends CustomPainter {
       //   // paint.style = PaintingStyle.stroke;
       // } else {
       //   // print(loc.activity_type);
-      int accFade = (loc.accuracy ~/ 1 % 155);
-      if (loc.accuracy > 155) accFade = 155;
-      paint.color =
-          getActivityColor(loc.activity_type).withAlpha(255 - accFade);
+      // int accFade = (loc.accuracy ~/ 1 % 155);
+      // if (loc.accuracy > 155) accFade = 155;
+      Color activityColor =
+          getActivityColor(loc.activity_type); //.withAlpha(255 - accFade);
+      paint.color = activityColor;
+
       // }
 
       i++;
@@ -332,8 +334,8 @@ class ShapesPainter extends CustomPainter {
         paint.style = PaintingStyle.fill;
         canvas.drawCircle(Offset(relX, relY), accRadius, paint);
 
-        paint.color = MyTheme.accentColor;
-        paint.style = PaintingStyle.fill;
+        paint.color = activityColor;
+        paint.style = PaintingStyle.stroke;
         paint.strokeWidth = 1;
         canvas.drawCircle(Offset(relX, relY), 6, paint);
       }
@@ -395,9 +397,10 @@ class ShapesPainter extends CustomPainter {
     canvas.drawLine(verticalStart, verticalStart.translate(tickSize, 0), paint);
 
     // rect!
+    paint.style = PaintingStyle.fill;
     canvas.drawRect(Rect.fromPoints(verticalStart, horizontalEnd),
-        paint..color = paint.color.withAlpha(30));
-    paint.color = paint.color.withAlpha(255);
+        paint..color = paint.color.withAlpha(20));
+    paint.color = paint.color.withAlpha(255); // reset alptha
 
     TextSpan ts = TextSpan(
         text: legendLabel,
@@ -670,6 +673,24 @@ class DistanceTracker {
 
   double elev_rel() {
     return elev_up - elev_dn;
+  }
+
+  get up {
+    return elev_up.toInt();
+  }
+
+  get dn {
+    return elev_dn.toInt();
+  }
+
+  reset() {
+    distance = 0;
+    elev_0 = 0;
+    elev_up = 0;
+    elev_dn = 0;
+    _last_lon = null;
+    _last_lat = null;
+    _last_elev = null;
   }
 
   double _last_lon;
@@ -1486,7 +1507,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     AlertDialog alert = AlertDialog(
                                       title: Text("Confirm upload"),
                                       content: Text(
-                                          "Would you like to attempt an upload?"),
+                                          'Would you like to upload ${_countStored} tracks?'),
                                       actions: [
                                         cancelButton,
                                         continueButton,
@@ -1856,9 +1877,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 ),
                 InfoDisplay(
-                    keyname: "elevation",
-                    value:
-                        '+${_distanceTracker.elev_up.toInt()}-${_distanceTracker.elev_dn.toInt()}',
+                    keyname: "elevation Δ",
+                    value: '+${_distanceTracker.up}-${_distanceTracker.dn}',
                     options: {
                       't2.font': Theme.of(context).textTheme.headline6,
                       'third': Text(
@@ -1882,7 +1902,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () {
                   setState(() {
                     bg.BackgroundGeolocation.setOdometer(0);
-                    _distanceTracker.distance = 0;
+                    _distanceTracker.reset();
                     _paintList = [];
                     _tripStarted = DateTime.now().toUtc();
                   });
