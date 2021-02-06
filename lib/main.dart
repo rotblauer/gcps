@@ -1538,7 +1538,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: EdgeInsets.all(4),
                     child: Row(
                       children: [
-                        Icon(Icons.add_location_alt_outlined,
+                        Icon(Icons.storage,
                             color: MyTheme.accentColor, size: 16),
                         Container(
                           width: 4,
