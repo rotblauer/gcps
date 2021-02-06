@@ -367,7 +367,8 @@ class ShapesPainter extends CustomPainter {
         if (locations.length > 30 && elevSpread > 5)
           canvas.drawCircle(elevPoint, 4, lastElevPointPaint);
       }
-    }
+    } // for loc in locations
+
     // Draw the elevation path.
     if (locations.length > 30 && elevSpread > 5)
       canvas.drawPath(elevPath, elevPaint);
