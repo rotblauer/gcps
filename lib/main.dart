@@ -681,46 +681,47 @@ class _MyHomePageState extends State<MyHomePage> {
     // 2.  Configure the plugin
     //
     bg.BackgroundGeolocation.ready(bg.Config(
-            desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
+      desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
 
-            // This OVERRIDES the locationUpdateInterval, which otherwise
-            // wants to do some sort-of-configurable dynamic things.
-            distanceFilter: 1.0,
-            disableElasticity: true,
-            // locationUpdateInterval: 1000,
-            fastestLocationUpdateInterval: 1000,
+      // This OVERRIDES the locationUpdateInterval, which otherwise
+      // wants to do some sort-of-configurable dynamic things.
+      distanceFilter: 1.0,
+      disableElasticity: true,
+      // locationUpdateInterval: 1000,
+      fastestLocationUpdateInterval: 1000,
 
-            // 100 m/s ~> 223 mi/h; planes grounded.
-            speedJumpFilter: 100,
+      // 100 m/s ~> 223 mi/h; planes grounded.
+      speedJumpFilter: 100,
 
-            //
-            // isMoving: true,
-            stopTimeout: 2, // minutes... right?
-            minimumActivityRecognitionConfidence: 25, // default: 75
+      //
+      // isMoving: true,
+      stopTimeout: 2, // minutes... right?
+      minimumActivityRecognitionConfidence: 25, // default: 75
 
-            // We must know what we're doing.
-            disableStopDetection: true,
-            stopOnStationary: false,
-            pausesLocationUpdatesAutomatically: false,
+      // We must know what we're doing.
+      disableStopDetection: true,
+      stopOnStationary: false,
+      pausesLocationUpdatesAutomatically: false,
 
-            // But we probably don't really know what we're doing.
-            // preventSuspend: true,
+      // But we probably don't really know what we're doing.
+      // preventSuspend: true,
 
-            disableAutoSyncOnCellular: true,
-            maxRecordsToPersist: 3600,
-            activityRecognitionInterval: 10000, // default=10000=10s
-            allowIdenticalLocations: false,
+      disableAutoSyncOnCellular: true,
+      maxRecordsToPersist: 3600,
+      activityRecognitionInterval: 10000, // default=10000=10s
+      allowIdenticalLocations: false,
 
-            // I can't believe they let you do this.
-            stopOnTerminate: false,
-            enableHeadless: true,
-            startOnBoot: true,
-            heartbeatInterval: 1200,
+      // I can't believe they let you do this.
+      stopOnTerminate: false,
+      enableHeadless: true,
+      startOnBoot: true,
+      heartbeatInterval: 1200,
 
-            // Buggers.
-            debug: false,
-            logLevel: bg.Config.LOG_LEVEL_INFO))
-        .then((bg.State state) {
+      // Buggers.
+      debug: false,
+      logLevel: bg.Config.LOG_LEVEL_INFO,
+      persistMode: bg.Config.PERSIST_MODE_NONE,
+    )).then((bg.State state) {
       bg.BackgroundGeolocation.registerHeadlessTask(headlessTask);
       if (!state.enabled) {
         ////
@@ -731,11 +732,11 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
 
-    _isManuallyRequestingLocation = true;
-    bg.BackgroundGeolocation.getCurrentPosition().then((value) {
-      _handleStreamLocationUpdate(value);
-      _isManuallyRequestingLocation = false;
-    });
+    // _isManuallyRequestingLocation = true;
+    // bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+    //   _handleStreamLocationUpdate(value);
+    //   _isManuallyRequestingLocation = false;
+    // });
 
     eachSecond();
   }
@@ -1368,7 +1369,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   // size: Size.infinite,
                   painter: ShapesPainter(locations: _paintList),
                   child: Container(
-                    height: 300,
+                    height: 269,
                   ),
                 ),
               )
@@ -1510,18 +1511,50 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              InfoDisplay(
-                  keyname: "odometer", value: glocation.odometer.toInt()),
-              InfoDisplay(
-                  keyname: "distance",
-                  value: _tripDistance < 1000
-                      ? (_tripDistance ~/ 1).toString() + 'm'
-                      : ((_tripDistance / 1000).toPrecision(2)).toString() +
-                          'km'),
-            ],
+          InkWell(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                InfoDisplay(
+                    keyname: "odometer", value: glocation.odometer.toInt()),
+                InfoDisplay(
+                    keyname: "distance",
+                    value: _tripDistance < 1000
+                        ? (_tripDistance ~/ 1).toString() + 'm'
+                        : ((_tripDistance / 1000).toPrecision(2)).toString() +
+                            'km'),
+              ],
+            ),
+            onLongPress: () {
+              // set up the buttons
+              Widget continueButton = ElevatedButton(
+                child: Text('Yes, reset.'),
+                onPressed: () {
+                  bg.BackgroundGeolocation.setOdometer(0);
+                  _distanceTracker.distance = 0;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    _buildSnackBar(Text('Trip has been reset.'),
+                        backgroundColor: Colors.green),
+                  );
+                },
+              ); // set up the AlertDialog
+              AlertDialog alert = AlertDialog(
+                title: Text("Trip reset confirmation"),
+                content: Text(
+                    "Would you like to reset the odometer and distance measurements?\nTap outside this box to cancel."),
+                actions: [
+                  // cancelButton,
+                  continueButton,
+                ],
+              ); // show the dialog
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return alert;
+                },
+              );
+            },
           ),
 
           Row(
