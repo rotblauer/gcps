@@ -368,7 +368,8 @@ class ShapesPainter extends CustomPainter {
       }
     }
     // Draw the elevation path.
-    if (locations.length > 30) canvas.drawPath(elevPath, elevPaint);
+    if (locations.length > 30 && elevSpread > 5)
+      canvas.drawPath(elevPath, elevPaint);
 
     // elevPaint.style = PaintingStyle.fill;
     // elevPaint.color = elevPaint.color.withAlpha(30);
@@ -447,18 +448,21 @@ class ShapesPainter extends CustomPainter {
     tp.paint(canvas, Offset(wMargin, size.height /*- hMargin - 16*/));
 
     // Elevation legend.
-    canvas.drawLine(Offset(sizeW + wMargin, 0),
-        Offset(sizeW + wMargin, sizeAltH), lastElevPointPaint);
+    if (locations.length > 30 && elevSpread > 5) {
+      canvas.drawLine(Offset(sizeW + wMargin, 0),
+          Offset(sizeW + wMargin, sizeAltH), lastElevPointPaint);
 
-    TextSpan tsa = TextSpan(
-        text: '${elevSpread ~/ 1}',
-        style: MyTheme.copyWith()
-            .textTheme
-            .apply(bodyColor: lastElevPointPaint.color.withAlpha(155))
-            .overline);
-    tp.text = tsa;
-    tp.layout();
-    tp.paint(canvas, Offset(wMargin + sizeW - (tp.width), -tp.height - 4 / 2));
+      TextSpan tsa = TextSpan(
+          text: '${elevSpread ~/ 1}',
+          style: MyTheme.copyWith()
+              .textTheme
+              .apply(bodyColor: lastElevPointPaint.color.withAlpha(155))
+              .overline);
+      tp.text = tsa;
+      tp.layout();
+      tp.paint(
+          canvas, Offset(wMargin + sizeW - (tp.width), -tp.height - 4 / 2));
+    }
 
     // Color legend.
     paint.style = PaintingStyle.fill;
