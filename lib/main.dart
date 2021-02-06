@@ -324,7 +324,7 @@ class InfoDisplay extends StatelessWidget {
                       '$value',
                       style: options != null && options.containsKey('t2.font')
                           ? options['t2.font']
-                          : Theme.of(context).textTheme.headline4,
+                          : Theme.of(context).textTheme.headline5,
                       maxLines: 2,
                     )
                   : value,
@@ -1253,13 +1253,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   )),
                 ],
               ),
-              LinearProgressIndicator(
-                minHeight: 4,
-                value: _isPushing
-                    ? null
-                    : _countStored.toDouble() / _pushEvery.toDouble(),
-                // backgroundColor: ,
-              ),
+
+              // LinearProgressIndicator(
+              //   minHeight: 4,
+              //   value: _isPushing
+              //       ? null
+              //       : _countStored.toDouble() / _pushEvery.toDouble(),
+              //   // backgroundColor: ,
+              // ),
             ],
           ),
 
@@ -1280,7 +1281,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Row(
                       children: [
                         Icon(Icons.camera_alt_outlined,
-                            color: Colors.yellow, size: 16),
+                            color: Colors.deepPurple[700], size: 16),
                         Container(
                           width: 4,
                         ),
@@ -1292,8 +1293,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     decoration: BoxDecoration(
                         border: Border(
-                            bottom:
-                                BorderSide(color: Colors.yellow, width: 4))),
+                            bottom: BorderSide(
+                                color: Colors.deepPurple[700], width: 4))),
                   ),
                   Container(
                     padding: EdgeInsets.all(4),
@@ -1350,7 +1351,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   // size: Size.infinite,
                   painter: ShapesPainter(locations: _paintList),
                   child: Container(
-                    height: 200,
+                    height: 300,
                   ),
                 ),
               )
@@ -1510,7 +1511,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             elevation: 3.0,
-                            primary: Colors.yellow,
+                            primary: Colors.deepPurple[700],
                             padding: EdgeInsets.all(8)),
                         onPressed: () {
                           Navigator.push(
@@ -1839,7 +1840,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
           //             child: ElevatedButton(
           //               style: ButtonStyle(
           //                   backgroundColor: MaterialStateProperty.all<Color>(
-          //                       Colors.yellow)),
+          //                       Colors.deepPurple[700])),
           //               onPressed: takePicture,
           //               child: Column(
           //                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1861,7 +1862,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       floatingActionButton: FloatingActionButton(
           autofocus: true,
           backgroundColor: Colors.deepOrange,
-          foregroundColor: Colors.yellow,
+          foregroundColor: Colors.deepPurple[700],
           child: Icon(Icons.camera),
           onPressed: takePicture),
       // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -1944,8 +1945,8 @@ class DisplayPictureScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(24),
                     child: ElevatedButton(
                       style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all<Color>(Colors.yellow)),
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Colors.deepPurple[700])),
                       onPressed: () async {
                         // Get location.
                         var location =
