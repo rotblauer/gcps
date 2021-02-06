@@ -256,7 +256,7 @@ class ShapesPainter extends CustomPainter {
 
     List<String> uniqActivities = [
       // 'still',
-      // 'on_foot',
+      // 'walking',
       // 'on_bicycle',
       // 'running',
       // 'in_vehicle'
@@ -415,25 +415,33 @@ class ShapesPainter extends CustomPainter {
 
     int ii = -1;
     double activityLegendItemHeight = 16;
+    double withTextWidth = 0;
     Offset activityColorLegendOrigin = Offset(sizeW, size.height);
     for (var act in uniqActivities) {
       ii++;
       paint.color = getActivityColor(act);
+
+      // Offset circleOffset = activityColorLegendOrigin.translate(
+      //     0, ii * activityLegendItemHeight); // -4 is extra space
+
       Offset circleOffset = activityColorLegendOrigin.translate(
-          0, ii * activityLegendItemHeight); // -4 is extra space
+          -ii * activityLegendItemHeight / 3 * 2 - withTextWidth,
+          activityLegendItemHeight / 2); // -4 is extra space
+
       canvas.drawCircle(circleOffset, activityLegendItemHeight / 4, paint);
 
       TextSpan tss = TextSpan(
-          text: act,
+          text: act.replaceAll('in_', '').replaceAll('on_', ''),
           style: MyTheme.copyWith()
               .textTheme
-              .apply(bodyColor: paint.color)
+              .apply(bodyColor: paint.color.withAlpha(155))
               .overline);
       tp.text = tss;
       tp.layout();
+      withTextWidth += tp.width + activityLegendItemHeight / 2;
       tp.paint(
           canvas,
-          circleOffset.translate(-tp.width - activityLegendItemHeight / 2 - 4,
+          circleOffset.translate(-tp.width - activityLegendItemHeight / 2,
               -activityLegendItemHeight / 4 * 2));
     }
   }
@@ -1666,7 +1674,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   // size: Size.infinite,
                   painter: ShapesPainter(locations: _paintList),
                   child: Container(
-                    height: 269,
+                    height: 300,
                   ),
                 ),
               )
@@ -1676,6 +1684,135 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
+              // InkWell(
+              //   onTap: () async {
+              //     setState(() {
+              //       _isManuallyRequestingLocation = true;
+              //     });
+              //     var loc = await bg.BackgroundGeolocation.getCurrentPosition();
+              //     _handleStreamLocationUpdate(loc);
+              //     setState(() {
+              //       _isManuallyRequestingLocation = false;
+              //     });
+
+              //     // ScaffoldMessenger.of(context).showSnackBar(
+              //     //   _buildSnackBar(Text('Points!'),
+              //     //       backgroundColor: Colors.green),
+              //     // );
+              //   },
+              //   child: Column(
+              //     mainAxisAlignment: MainAxisAlignment.end,
+              //     children: [
+              //       // cativity icon
+              //       Container(
+              //         width: 96,
+              //         height: 64,
+              //         child: buildActivityIcon(
+              //             context,
+              //             glocation.activity.type,
+              //             64 - _secondsSinceLastPoint.toDouble() > 16
+              //                 ? 64 - _secondsSinceLastPoint.toDouble()
+              //                 : 16),
+              //       ),
+              //       Container(
+              //         padding:
+              //             EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 8),
+              //         child: Row(
+              //           mainAxisAlignment: MainAxisAlignment.center,
+              //           mainAxisSize: MainAxisSize.min,
+              //           children: [
+              //             Visibility(
+              //               visible: _secondsSinceLastPoint > 3,
+              //               child: Row(
+              //                 children: [
+              //                   Icon(Icons.timelapse,
+              //                       color: colorForDurationSinceLastPoint(
+              //                           _secondsSinceLastPoint),
+              //                       size: 16),
+              //                   Container(
+              //                     width: 4,
+              //                   ),
+              //                   Text(
+              //                     '-' +
+              //                         secondsToPrettyDuration(
+              //                             _secondsSinceLastPoint.toDouble()),
+              //                     style: TextStyle(color: Colors.white),
+              //                   ),
+              //                   Container(
+              //                     width: 4,
+              //                   ),
+              //                 ],
+              //               ),
+              //             ),
+              //             Visibility(
+              //                 visible: true,
+              //                 child: (glocation?.isMoving ?? false)
+              //                     ? Container(
+              //                         // margin: EdgeInsets.only(left: 6),
+              //                         child: Icon(
+              //                         Icons.circle,
+              //                         color: MyTheme.accentColor,
+              //                       ))
+              //                     : Container(
+              //                         margin:
+              //                             EdgeInsets.symmetric(horizontal: 6),
+              //                         child: Icon(
+              //                           Icons.trip_origin,
+              //                           color: Colors.red[700],
+              //                         ))),
+              //           ],
+              //         ),
+              //         decoration: BoxDecoration(
+              //             border: Border(
+              //                 bottom: BorderSide(
+              //                     color: colorForDurationSinceLastPoint(
+              //                         _secondsSinceLastPoint),
+              //                     width: 4))),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+
+              // InfoDisplay(
+              //   keyname: '',
+              //   value: Row(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     crossAxisAlignment: CrossAxisAlignment.end,
+              //     children: [
+              //       Image(
+              //         image: AssetImage('assets/catdroid-icon-cat-only.png'),
+              //         width: 48,
+              //       ),
+              //       Text(
+              //         ' is ' +
+              //             glocation.activity.type
+              //                 .replaceAll('still', 'napping')
+              //                 .replaceAll('_', ' '),
+              //         style: Theme.of(context).textTheme.headline4,
+              //       ),
+              //     ],
+              //   ),
+              //   options: {
+              //     'third': Text(glocation.activity.confidence.toString())
+              //   },
+              // ),
+            ],
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InfoDisplay(
+                keyname: "km/h",
+                value: glocation.coords.speed <= 0
+                    ? 0
+                    : ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1),
+                options: {
+                  'third': Text(glocation.coords.speedAccuracy != null
+                      ? glocation.coords.speedAccuracy.toString()
+                      : '')
+                },
+              ),
               InkWell(
                 onTap: () async {
                   setState(() {
@@ -1706,6 +1843,45 @@ class _MyHomePageState extends State<MyHomePage> {
                               ? 64 - _secondsSinceLastPoint.toDouble()
                               : 16),
                     ),
+                  ],
+                ),
+              ),
+              InfoDisplay(
+                keyname: "heading",
+                value: degreeToCardinalDirection(glocation.coords.heading),
+                options: {
+                  'third': Text(glocation.coords.headingAccuracy
+                      ?.toPrecision(1)
+                      .toString())
+                },
+              ),
+            ],
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              InfoDisplay(
+                  keyname: "accuracy", value: glocation.coords.accuracy),
+              InkWell(
+                onTap: () async {
+                  setState(() {
+                    _isManuallyRequestingLocation = true;
+                  });
+                  var loc = await bg.BackgroundGeolocation.getCurrentPosition();
+                  _handleStreamLocationUpdate(loc);
+                  setState(() {
+                    _isManuallyRequestingLocation = false;
+                  });
+
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   _buildSnackBar(Text('Points!'),
+                  //       backgroundColor: Colors.green),
+                  // );
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
                     Container(
                       padding:
                           EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 8),
@@ -1764,64 +1940,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
               ),
-
-              // InfoDisplay(
-              //   keyname: '',
-              //   value: Row(
-              //     mainAxisAlignment: MainAxisAlignment.center,
-              //     crossAxisAlignment: CrossAxisAlignment.end,
-              //     children: [
-              //       Image(
-              //         image: AssetImage('assets/catdroid-icon-cat-only.png'),
-              //         width: 48,
-              //       ),
-              //       Text(
-              //         ' is ' +
-              //             glocation.activity.type
-              //                 .replaceAll('still', 'napping')
-              //                 .replaceAll('_', ' '),
-              //         style: Theme.of(context).textTheme.headline4,
-              //       ),
-              //     ],
-              //   ),
-              //   options: {
-              //     'third': Text(glocation.activity.confidence.toString())
-              //   },
-              // ),
-            ],
-          ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              InfoDisplay(
-                keyname: "km/h",
-                value: glocation.coords.speed <= 0
-                    ? 0
-                    : ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1),
-                options: {
-                  'third': Text(glocation.coords.speedAccuracy != null
-                      ? glocation.coords.speedAccuracy.toString()
-                      : '')
-                },
-              ),
-              InfoDisplay(
-                keyname: "heading",
-                value: degreeToCardinalDirection(glocation.coords.heading),
-                options: {
-                  'third': Text(glocation.coords.headingAccuracy
-                      ?.toPrecision(1)
-                      .toString())
-                },
-              ),
-            ],
-          ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              InfoDisplay(
-                  keyname: "accuracy", value: glocation.coords.accuracy),
               InfoDisplay(
                 keyname: "elevation",
                 value: glocation.coords.altitude,
