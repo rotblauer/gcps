@@ -68,7 +68,7 @@ void _handleStreamLocationSave(bg.Location location) async {
 
 /// Receives all events from BackgroundGeolocation while app is terminated:
 void headlessTask(bg.HeadlessEvent headlessEvent) async {
-  print('[HeadlessTask]: ${headlessEvent}');
+  // print('[HeadlessTask]: ${headlessEvent}');
 
   // Implement a `case` for only those events you're interested in.
   switch (headlessEvent.name) {
@@ -82,12 +82,12 @@ void headlessTask(bg.HeadlessEvent headlessEvent) async {
     //   break;
     case bg.Event.LOCATION:
       bg.Location location = headlessEvent.event;
-      print('- Location: ${location}');
+      // print('- Location: ${location}');
       _handleStreamLocationSave(location);
       break;
     case bg.Event.MOTIONCHANGE:
       bg.Location location = headlessEvent.event;
-      print('- Location: ${location}');
+      // print('- Location: ${location}');
       _handleStreamLocationSave(location);
       break;
     // case bg.Event.GEOFENCE:
@@ -193,10 +193,6 @@ class ShapesPainter extends CustomPainter {
 
     double minLat, minLon, maxLat, maxLon, minAlt, maxAlt;
     for (var loc in locations) {
-      // print('paint loc.x=' +
-      //     loc.longitude.toString() +
-      //     ' loc.y=' +
-      //     loc.latitude.toString());
       if (minLat == null || loc.latitude < minLat) minLat = loc.latitude;
       if (maxLat == null || loc.latitude > maxLat) maxLat = loc.latitude;
       if (minLon == null || loc.longitude < minLon) minLon = loc.longitude;
@@ -212,14 +208,6 @@ class ShapesPainter extends CustomPainter {
 
     if (dH == 0) dH = 10 / 111111;
     if (dW == 0) dW = 10 / 111111;
-
-    // var scaleH = size.height / dH;
-    // var scaleW = size.width / dW;
-
-    // double territoryScale = (dH / dW) > 1 ? (dH / dW) : (dW / dH);
-    // double mapScale = (size.height / size.width) <= 1
-    //     ? (size.height / size.width)
-    //     : (size.width / size.height);
 
     double sizeW = size.width * 0.95;
     double sizeH = size.height * 0.95;
@@ -252,21 +240,10 @@ class ShapesPainter extends CustomPainter {
     double elevScaleX = sizeAltW / locations.length;
     Offset elevGraphOrigin = Offset(wMargin, sizeAltH);
 
-    // double scale = sizeH < sizeW ? scaleH : scaleW;
-    // scale /= 2;
-    // TODO: fit bounds
-
     final paint = Paint();
     paint.color = Colors.deepOrange;
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 2;
-
-    var ref = locations.last;
-    // var refX = ref.longitude;
-    // var refY = ref.latitude;
-
-    // // center of the canvas is (x,y) => (width/2, height/2)
-    // var center = Offset(sizeW / 2, sizeH / 2);
 
     List<String> uniqActivities = [
       // 'still',
@@ -284,13 +261,6 @@ class ShapesPainter extends CustomPainter {
       bool isLast = i == locations.length - 1;
       bool isFirst = i == 0;
 
-      // if (isLast) {
-      //   paint.color = Colors.limeAccent;
-      //   // paint.style = PaintingStyle.stroke;
-      // } else {
-      //   // print(loc.activity_type);
-      // int accFade = (loc.accuracy ~/ 1 % 155);
-      // if (loc.accuracy > 155) accFade = 155;
       Color activityColor =
           getActivityColor(loc.activity_type); //.withAlpha(255 - accFade);
       paint.color = activityColor;
@@ -309,59 +279,55 @@ class ShapesPainter extends CustomPainter {
       relX += (sizeW - (scale * (maxLon - minLon))) / 2;
       relY -= (sizeH - (scale * (maxLat - minLat))) / 2;
 
-      // var relX =
-      //     center.dx - (scale * (refX - x)); // top -> bottom => 0 -> height
-      // var relY =
-      //     center.dy + (scale * (refY - y)); // left -> right => 0 - > width
-
-      // var relX = (scale * (x - refX)); // top -> bottom => 0 -> height
-      // var relY = (scale * (y - refY)); // left -> right => 0 - > width
-
-      // print('painting: scale=' +
-      //     scale.toString() +
-      //     ' relX=' +
-      //     relX.toString() +
-      //     ' relY=' +
-      //     relY.toString());
-
-      // draw the circle
-      // canvas.drawCircle(Offset(relX, relY), isLast ? 4.0 : 2.0, paint);
-
       // shape the path
       Offset elevPoint = elevGraphOrigin.translate(
           elevScaleX * i.toDouble(), -1 * (loc.altitude - minAlt) * elevScaleY);
 
-      // Offset elevPoint = Offset(
-      //     elevScaleX * i.toDouble(),
-      //     sizeAltH -
-      //         (loc.altitude * elevScaleY)); //  ((loc.altitude * elevScaleY))
+      if (loc.activity_type == 'still') {
+      } else {}
+
       if (isFirst) {
+        if (loc.activity_type == 'still') paint.style = PaintingStyle.fill;
+        canvas.drawCircle(Offset(relX, relY), isLast ? 4.0 : 2.0, paint);
+        paint.style = PaintingStyle.stroke;
+
         path.moveTo(relX, relY);
         elevPath.moveTo(elevPoint.dx, elevPoint.dy);
       } else {
-        path.arcToPoint(Offset(relX, relY));
+        if (loc.activity_type == 'still') {
+          paint.style = PaintingStyle.fill;
+          canvas.drawCircle(Offset(relX, relY), isLast ? 4.0 : 2.0, paint);
+          paint.style = PaintingStyle.stroke;
 
-        canvas.drawPath(path, paint);
-
-        elevPath.arcToPoint(elevPoint);
-
-        if (!isLast) {
           path = Path();
           path.moveTo(relX, relY);
+        } else {
+          path.arcToPoint(Offset(relX, relY));
+
+          canvas.drawPath(path, paint);
+
+          if (!isLast) {
+            path = Path();
+            path.moveTo(relX, relY);
+          }
         }
+        elevPath.arcToPoint(elevPoint);
       }
 
       if (isLast) {
+        // draw radius fill circle
         double accRadius = loc.accuracy / 111111 * scale;
         if (accRadius > mapMinEdge / 2) accRadius = mapMinEdge / 2;
         paint.color = MyTheme.buttonColor.withAlpha(100);
         paint.style = PaintingStyle.fill;
         canvas.drawCircle(Offset(relX, relY), accRadius, paint);
 
-        paint.color = activityColor;
-        paint.style = PaintingStyle.stroke;
-        paint.strokeWidth = 1;
-        canvas.drawCircle(Offset(relX, relY), 6, paint);
+        if (loc.activity_type != 'still') {
+          paint.color = activityColor;
+          paint.style = PaintingStyle.stroke;
+          paint.strokeWidth = 1;
+          canvas.drawCircle(Offset(relX, relY), 6, paint);
+        }
 
         // Draw dot indicating last elevation point.
         if (locations.length > 30 && elevSpread > 5)
@@ -476,9 +442,6 @@ class ShapesPainter extends CustomPainter {
     for (var act in uniqActivities) {
       ii++;
       paint.color = getActivityColor(act);
-
-      // Offset circleOffset = activityColorLegendOrigin.translate(
-      //     0, ii * activityLegendItemHeight); // -4 is extra space
 
       Offset circleOffset = activityColorLegendOrigin.translate(
           -ii * activityLegendItemHeight / 3 * 2 - withTextWidth,
@@ -946,6 +909,13 @@ class _MyHomePageState extends State<MyHomePage> {
     lastTracksWithLimit(3600).then((value) {
       _paintList = value;
     });
+
+    countTracks().then((value) {
+      _countStored = value;
+    });
+    countSnaps().then((value) {
+      _countSnaps = value;
+    });
     // Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
     // /*
     // fuck
@@ -1073,11 +1043,11 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
 
-    // _isManuallyRequestingLocation = true;
-    // bg.BackgroundGeolocation.getCurrentPosition().then((value) {
-    //   _handleStreamLocationUpdate(value);
-    //   _isManuallyRequestingLocation = false;
-    // });
+    _isManuallyRequestingLocation = true;
+    bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+      _handleStreamLocationUpdate(value);
+      _isManuallyRequestingLocation = false;
+    });
 
     eachSecond();
   }
@@ -1836,15 +1806,29 @@ class _MyHomePageState extends State<MyHomePage> {
                   // );
                 },
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding:
-                          EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      padding: EdgeInsets.only(left: 4, right: 4, bottom: 8),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          Visibility(
+                              visible: true,
+                              child: (glocation?.isMoving ?? false)
+                                  ? Container(
+                                      // margin: EdgeInsets.only(left: 6),
+                                      child: Icon(
+                                      Icons.circle,
+                                      color: MyTheme.accentColor,
+                                    ))
+                                  : Container(
+                                      margin: EdgeInsets.symmetric(vertical: 6),
+                                      child: Icon(
+                                        Icons.trip_origin,
+                                        color: Colors.red[700],
+                                      ))),
                           Visibility(
                             visible: _secondsSinceLastPoint > 3,
                             child: Row(
@@ -1868,22 +1852,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               ],
                             ),
                           ),
-                          Visibility(
-                              visible: true,
-                              child: (glocation?.isMoving ?? false)
-                                  ? Container(
-                                      // margin: EdgeInsets.only(left: 6),
-                                      child: Icon(
-                                      Icons.circle,
-                                      color: MyTheme.accentColor,
-                                    ))
-                                  : Container(
-                                      margin:
-                                          EdgeInsets.symmetric(horizontal: 6),
-                                      child: Icon(
-                                        Icons.trip_origin,
-                                        color: Colors.red[700],
-                                      ))),
                         ],
                       ),
                       decoration: BoxDecoration(
