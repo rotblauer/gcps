@@ -173,6 +173,14 @@ Color getActivityColor(String activityType) {
   return Colors.deepOrange;
 }
 
+String developmentGuessActivityType(double speed) {
+  if (speed > 50 / 3.6) return 'in_vehicle';
+  if (speed > 12 / 3.6) return 'on_bicycle';
+  if (speed > 6 / 3.6) return 'running';
+  if (speed > 3 / 3.6) return 'walking';
+  return 'still';
+}
+
 class ShapesPainter extends CustomPainter {
   List<AppPoint> locations = [];
 
@@ -383,7 +391,13 @@ class ShapesPainter extends CustomPainter {
         size.height - hMargin * 0.2 - (legendScaleDist * scale / 111111));
     canvas.drawLine(
         verticalStart, Offset(wMargin, size.height - hMargin * 0.2), paint);
+    //tick
     canvas.drawLine(verticalStart, verticalStart.translate(tickSize, 0), paint);
+
+    // rect!
+    canvas.drawRect(Rect.fromPoints(verticalStart, horizontalEnd),
+        paint..color = paint.color.withAlpha(30));
+    paint.color = paint.color.withAlpha(255);
 
     TextSpan ts = TextSpan(
         text: legendLabel,
@@ -642,20 +656,30 @@ class MovingAverager {
 
 class DistanceTracker {
   double distance = 0;
+  double elev_0 = 0;
+  double elev_up = 0;
+  double elev_dn = 0;
+
+  double elev_rel() {
+    return elev_up - elev_dn;
+  }
+
   double _last_lon;
   double _last_lat;
+  double _last_elev;
 
   final bool filterStill;
 
   DistanceTracker({this.filterStill});
 
-  double add({double lon, double lat, bool isMoving}) {
+  double add({double lon, double lat, double elevation, bool isMoving}) {
     // print("lon=" +
     //     lon.toString() +
     //     " lat=" +
     //     lat.toString() +
     //     " isMoving=" +
     //     isMoving.toString());
+    if (elevation != null) elevation = elevation.roundToDouble();
 
     if (!filterStill || isMoving) {
       distance += Haversine.fromDegrees(
@@ -665,8 +689,14 @@ class DistanceTracker {
               longitude2: lon)
           .distance();
     }
+    if (elevation != null && _last_elev != null) {
+      if (elevation > _last_elev) elev_up += (elevation - _last_elev);
+      if (elevation < _last_elev) elev_dn -= (elevation - _last_elev);
+    }
+    if (elevation != null && _last_elev == null) elev_0 = elevation;
     _last_lon = lon;
     _last_lat = lat;
+    _last_elev = elevation;
     return distance;
   }
 }
@@ -1181,6 +1211,11 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
+    if (postEndpoint.contains('http://10.0.2.2')) {
+      location.activity.type =
+          developmentGuessActivityType(location.coords.speed);
+    }
+
     // // debug
     // print(
     //     jsonEncode(AppPoint.fromLocationProvider(location).toCattrackJSON()));
@@ -1201,6 +1236,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _distanceTracker.add(
         lon: location.coords.longitude,
         lat: location.coords.latitude,
+        elevation: location.coords.altitude,
         isMoving: location.isMoving && location.activity.type != "still");
 
     // if (mapController != null && _mapboxStyleLoaded) {
@@ -1694,6 +1730,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                           _secondsSinceLastPoint.toDouble()),
                                   style: TextStyle(color: Colors.white),
                                 ),
+                                Container(
+                                  width: 4,
+                                ),
                               ],
                             ),
                           ),
@@ -1701,12 +1740,18 @@ class _MyHomePageState extends State<MyHomePage> {
                               visible: true,
                               child: (glocation?.isMoving ?? false)
                                   ? Container(
-                                      margin: EdgeInsets.only(left: 6),
-                                      child: Icon(Icons.arrow_right))
+                                      // margin: EdgeInsets.only(left: 6),
+                                      child: Icon(
+                                      Icons.circle,
+                                      color: MyTheme.accentColor,
+                                    ))
                                   : Container(
                                       margin:
                                           EdgeInsets.symmetric(horizontal: 6),
-                                      child: Icon(Icons.trip_origin))),
+                                      child: Icon(
+                                        Icons.trip_origin,
+                                        color: Colors.red[700],
+                                      ))),
                         ],
                       ),
                       decoration: BoxDecoration(
@@ -1748,23 +1793,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              InfoDisplay(
-                  keyname: "accuracy", value: glocation.coords.accuracy),
-              InfoDisplay(
-                keyname: "elevation",
-                value: glocation.coords.altitude,
-                options: {
-                  'third': Text(glocation.coords.altitudeAccuracy
-                      ?.toPrecision(1)
-                      .toString())
-                },
-              ),
-            ],
-          ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               InfoDisplay(
                 keyname: "km/h",
@@ -1789,18 +1817,53 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
 
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              InfoDisplay(
+                  keyname: "accuracy", value: glocation.coords.accuracy),
+              InfoDisplay(
+                keyname: "elevation",
+                value: glocation.coords.altitude,
+                options: {
+                  'third': Text(glocation.coords.altitudeAccuracy
+                      ?.toPrecision(1)
+                      .toString())
+                },
+              ),
+            ],
+          ),
+
           InkWell(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 InfoDisplay(
-                    keyname: "odometer", value: glocation.odometer.toInt()),
+                  keyname: "odometer",
+                  value: glocation.odometer.toInt(),
+                  options: {
+                    't2.font': Theme.of(context).textTheme.headline6,
+                  },
+                ),
                 InfoDisplay(
-                    keyname: "distance",
-                    value: _tripDistance < 1000
-                        ? (_tripDistance ~/ 1).toString() + 'm'
-                        : ((_tripDistance / 1000).toPrecision(2)).toString() +
-                            'km'),
+                  keyname: "distance",
+                  value: _tripDistance < 1000
+                      ? (_tripDistance ~/ 1).toString() + 'm'
+                      : ((_tripDistance / 1000).toPrecision(2)).toString() +
+                          'km',
+                  options: {
+                    't2.font': Theme.of(context).textTheme.headline6,
+                  },
+                ),
+                InfoDisplay(
+                    keyname: "elevation",
+                    value:
+                        '+${_distanceTracker.elev_up.toInt()}-${_distanceTracker.elev_dn.toInt()}',
+                    options: {
+                      't2.font': Theme.of(context).textTheme.headline6,
+                      'third': Text(
+                          (_distanceTracker.elev_rel()).toInt().toString()),
+                    }),
               ],
             ),
             onLongPress: () {
