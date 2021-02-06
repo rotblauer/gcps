@@ -43,7 +43,7 @@ void main() {
   runApp(MyApp());
 }
 
-Icon buildConnectStatusIcon(String status, {Color color}) {
+Icon buildConnectStatusIcon(String status, {Color color, double size}) {
   /*
 
                 value: _connectionStatus.split(".").length > 1
@@ -55,6 +55,7 @@ Icon buildConnectStatusIcon(String status, {Color color}) {
     return Icon(
       Icons.wifi,
       color: color,
+      size: size,
     );
   if (status.toLowerCase().contains('mobile'))
     return Icon(
@@ -1131,6 +1132,137 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
 
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Expanded(
+                  //     // flex: 2,
+                  //     child: Container(
+                  //       // padding: EdgeInsets.all(8.0),
+                  //       // child: Expanded(
+                  //       height: 24,
+                  //       child: Container(),
+                  //       // RawMaterialButton(
+                  //       //     // MaterialStateProperty.all<Color>(Colors.lime)),
+                  //       //     elevation: 4.0,
+                  //       //     // shape: CircleBorder(),
+                  //       //     // padding: EdgeInsets.all(8.0),
+                  //       //     fillColor: Colors.deepOrange,
+                  //       //     onPressed: () async {
+                  //       //       var loc = await bg.BackgroundGeolocation
+                  //       //           .getCurrentPosition();
+                  //       //       _handleStreamLocationUpdate(loc);
+
+                  //       //       // ScaffoldMessenger.of(context).showSnackBar(
+                  //       //       //   _buildSnackBar(Text('Points!'),
+                  //       //       //       backgroundColor: Colors.green),
+                  //       //       // );
+                  //       //     },
+                  //       //     child: Icon(Icons.plus_one,
+                  //       //         semanticLabel: 'Point', size: 16)
+                  //       //         ),
+                  //     )),
+                  Expanded(
+                      flex: 1,
+                      child: Container(
+                        height: 36,
+                        // padding: EdgeInsets.all(8.0),
+                        child: RawMaterialButton(
+                            // fillColor: _countStored > 0 &&
+                            //         (_connectionStatus.contains('wifi') ||
+                            //             _connectionStatus.contains('mobile'))
+                            //     ? MyTheme.buttonColor
+                            //     : Colors.grey,
+                            onPressed: _countStored > 0 &&
+                                    (_connectionStatus.contains('wifi') ||
+                                        _connectionStatus.contains('mobile'))
+                                ? () {
+                                    if (_countStored == 0) return;
+
+                                    // set up the buttons
+                                    Widget continueButton = ElevatedButton(
+                                      child: Text("Upload"),
+                                      onPressed: () {
+                                        this._pushTracksBatching();
+                                      },
+                                    ); // set up the AlertDialog
+                                    AlertDialog alert = AlertDialog(
+                                      title: Text("Manual push confirmation"),
+                                      content: Text(
+                                          "Would you like to attempt an upload?\nTap outside this box to cancel."),
+                                      actions: [
+                                        // cancelButton,
+                                        continueButton,
+                                      ],
+                                    ); // show the dialog
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return alert;
+                                      },
+                                    );
+                                  }
+                                : null,
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.cloud_upload,
+                                    semanticLabel: 'Push',
+                                    size: 16,
+                                  ),
+                                  Container(
+                                    width: 8,
+                                    alignment: Alignment.center,
+                                    child: Text(':',
+                                        style:
+                                            TextStyle(/*color: Colors.white*/)),
+                                  ),
+                                  buildConnectStatusIcon(_connectionStatus,
+                                      size: 16),
+                                ])),
+                      )),
+
+                  // To settings.
+                  Expanded(
+                      child: Container(
+                    // padding: EdgeInsets.all(8.0),
+                    // child: Expanded(
+                    height: 36,
+                    child: RawMaterialButton(
+                        // fillColor: Colors.indigo,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => prefs.MySettingsScreen(
+                                deviceUUID: _deviceUUID,
+                                deviceName: _deviceName,
+                                deviceVersion: _deviceAppVersion,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          Icons.settings,
+                          size: 16,
+                        )),
+                  )),
+                ],
+              ),
+              LinearProgressIndicator(
+                minHeight: 4,
+                value: _isPushing
+                    ? null
+                    : _countStored.toDouble() / _pushEvery.toDouble(),
+                // backgroundColor: ,
+              ),
+            ],
+          ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1211,102 +1343,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
 
-          LinearProgressIndicator(
-            minHeight: 3,
-            value: _isPushing
-                ? null
-                : _countStored.toDouble() / _pushEvery.toDouble(),
-            // backgroundColor: ,
-          ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                  child: Container(
-                padding: EdgeInsets.all(8.0),
-                // child: Expanded(
-                child: ElevatedButton(
-                    // MaterialStateProperty.all<Color>(Colors.lime)),
-                    style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                            Colors.deepOrange)),
-                    onPressed: () async {
-                      var loc =
-                          await bg.BackgroundGeolocation.getCurrentPosition();
-                      _handleStreamLocationUpdate(loc);
-
-                      // ScaffoldMessenger.of(context).showSnackBar(
-                      //   _buildSnackBar(Text('Points!'),
-                      //       backgroundColor: Colors.green),
-                      // );
-                    },
-                    child: Icon(Icons.plus_one, semanticLabel: 'Point')),
-              )),
-              Expanded(
-                  child: Container(
-                padding: EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: _countStored > 0 &&
-                              (_connectionStatus.contains('wifi') ||
-                                  _connectionStatus.contains('mobile'))
-                          ? MaterialStateProperty.all<Color>(
-                              MyTheme.buttonColor)
-                          : MaterialStateProperty.all<Color>(Colors.grey),
-                    ),
-                    onPressed: _countStored > 0 &&
-                            (_connectionStatus.contains('wifi') ||
-                                _connectionStatus.contains('mobile'))
-                        ? () {
-                            if (_countStored == 0) return;
-                            this._pushTracksBatching();
-                          }
-                        : null,
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.cloud_upload, semanticLabel: 'Push'),
-                          Container(
-                            width: 8,
-                            alignment: Alignment.center,
-                            child: Text(':',
-                                style: TextStyle(/*color: Colors.white*/)),
-                          ),
-                          buildConnectStatusIcon(
-                            _connectionStatus,
-                          ),
-                        ])),
-              )),
-
-              // To settings.
-              Expanded(
-                  child: Container(
-                padding: EdgeInsets.all(8.0),
-                // child: Expanded(
-                child: ElevatedButton(
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Colors.indigo)),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => prefs.MySettingsScreen(
-                            deviceUUID: _deviceUUID,
-                            deviceName: _deviceName,
-                            deviceVersion: _deviceAppVersion,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Icon(
-                      Icons.settings,
-                    )),
-              )),
-            ],
-          ),
-
           Row(
             children: [
               Expanded(
@@ -1324,50 +1360,61 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // cativity icon
-                  Container(
-                    // width: 64,
-                    // height: 64,
-                    child: buildActivityIcon(
-                        context,
-                        glocation.activity.type,
-                        64 - _secondsSinceLastPoint.toDouble() > 16
-                            ? 64 - _secondsSinceLastPoint.toDouble()
-                            : 16),
-                  ),
-                  Container(
-                    padding:
-                        EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.timelapse,
-                            color: colorForDurationSinceLastPoint(
-                                _secondsSinceLastPoint),
-                            size: 16),
-                        Container(
-                          width: 4,
-                        ),
-                        Text(
-                          '-' +
-                              secondsToPrettyDuration(
-                                  _secondsSinceLastPoint.toDouble()),
-                          style: TextStyle(color: Colors.white),
-                        )
-                      ],
+              InkWell(
+                onTap: () async {
+                  var loc = await bg.BackgroundGeolocation.getCurrentPosition();
+                  _handleStreamLocationUpdate(loc);
+
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   _buildSnackBar(Text('Points!'),
+                  //       backgroundColor: Colors.green),
+                  // );
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // cativity icon
+                    Container(
+                      width: 96,
+                      height: 64,
+                      child: buildActivityIcon(
+                          context,
+                          glocation.activity.type,
+                          64 - _secondsSinceLastPoint.toDouble() > 16
+                              ? 64 - _secondsSinceLastPoint.toDouble()
+                              : 16),
                     ),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(
-                                color: colorForDurationSinceLastPoint(
-                                    _secondsSinceLastPoint),
-                                width: 4))),
-                  ),
-                ],
+                    Container(
+                      padding:
+                          EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.timelapse,
+                              color: colorForDurationSinceLastPoint(
+                                  _secondsSinceLastPoint),
+                              size: 16),
+                          Container(
+                            width: 4,
+                          ),
+                          Text(
+                            '-' +
+                                secondsToPrettyDuration(
+                                    _secondsSinceLastPoint.toDouble()),
+                            style: TextStyle(color: Colors.white),
+                          )
+                        ],
+                      ),
+                      decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                                  color: colorForDurationSinceLastPoint(
+                                      _secondsSinceLastPoint),
+                                  width: 4))),
+                    ),
+                  ],
+                ),
               ),
 
               // InfoDisplay(
