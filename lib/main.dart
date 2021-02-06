@@ -1115,22 +1115,6 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   children: [
-          //     Text('uuid:${_deviceUUID}',
-          //         style: Theme.of(context).textTheme.bodyText2),
-          //   ],
-          // ),
-
-          // Visibility(
-          //   visible: _isPushing,
-          //   child: LinearProgressIndicator(
-          //     backgroundColor: Colors.deepOrange,
-          //     minHeight: 3,
-          //   ),
-          // ),
-
           Visibility(
             visible: _appErrorStatus != "",
             child: Container(
@@ -1146,6 +1130,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1223,13 +1208,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
               )),
-
-              // Container(
-              //     padding: EdgeInsets.symmetric(horizontal: 8.0),
-              //     child: Container(
-              //         child: Row(
-              //       children: [],
-              //     )))
             ],
           ),
 
@@ -1268,10 +1246,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                   child: Container(
                 padding: EdgeInsets.all(8.0),
-                // child: Expanded(
                 child: ElevatedButton(
-                    // MaterialStateProperty.all<Color>(Colors.lime)),
-
                     style: ButtonStyle(
                       backgroundColor: _countStored > 0 &&
                               (_connectionStatus.contains('wifi') ||
@@ -1285,12 +1260,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                 _connectionStatus.contains('mobile'))
                         ? () {
                             if (_countStored == 0) return;
-                            // snaps().then((value) {
-                            //   print("stored snapsy");
-                            //   for (var item in value) {
-                            //     print(jsonEncode(item.toCattrackJSON()));
-                            //   }
-                            // });
                             this._pushTracksBatching();
                           }
                         : null,
@@ -1306,7 +1275,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           buildConnectStatusIcon(
                             _connectionStatus,
-                            /*color: Colors.white*/
                           ),
                         ])),
               )),
@@ -1334,58 +1302,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                     child: Icon(
                       Icons.settings,
-                      // color: Colors.deepOrange,
                     )),
               )),
             ],
           ),
-
-          // Row(
-          //   // children: () {
-          //   //   List<Widget> out = [];
-          //   //   for (var i = 0; i < _countStored && i < _pushEvery; i++) {
-          //   //     out.add(Icon(Icons.control_point));
-          //   //   }
-          //   //   return out;
-          //   // }(),
-          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //   children: [
-          //     Container(
-          //       padding: EdgeInsets.symmetric(horizontal: 8.0),
-          //       child: Text(('|' * (_countStored % _pushEvery) +
-          //           (_countStored <= _pushEvery
-          //               ? ('.' * (_pushEvery - _countStored))
-          //               : ''))),
-          //     )
-          //   ],
-          // ),
-
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: [
-          //     InfoDisplay(
-          //       keyname: "snaps",
-          //       value: _countSnaps,
-          //       options: {
-          //         // 't2.font': Theme.of(context).textTheme.bodyText2,
-          //       },
-          //     ),
-          //     InfoDisplay(
-          //       keyname: "points",
-          //       value: _countStored,
-          //       options: {
-          //         // 't2.font': Theme.of(context).textTheme.bodyText2,
-          //       },
-          //     ),
-          //     InfoDisplay(
-          //       keyname: "pushed",
-          //       value: _countPushed,
-          //       options: {
-          //         // 't2.font': Theme.of(context).textTheme.bodyText2,
-          //       },
-          //     ),
-          //   ],
-          // ),
 
           Row(
             children: [
@@ -1420,7 +1340,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   Container(
                     padding:
-                        EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 16),
+                        EdgeInsets.only(top: 8, left: 4, right: 4, bottom: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
@@ -1440,12 +1360,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         )
                       ],
                     ),
-                    // decoration: BoxDecoration(
-                    //     border: Border(
-                    //         bottom: BorderSide(
-                    //             color: colorForDurationSinceLastPoint(
-                    //                 _secondsSinceLastPoint),
-                    //             width: 4))),
+                    decoration: BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(
+                                color: colorForDurationSinceLastPoint(
+                                    _secondsSinceLastPoint),
+                                width: 4))),
                   ),
                 ],
               ),
@@ -1477,34 +1397,10 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
 
           Row(
-            // primary: false,
-            // padding: const EdgeInsets.all(20),
-            // crossAxisSpacing: 10,
-            // mainAxisSpacing: 10,
-            // crossAxisCount: 2,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              // InfoDisplay(
-              //   keyname: "uuid",
-              //   value: _deviceUUID,
-              //   options: {
-              //     't2.font': Theme.of(context).textTheme.bodyText2,
-              //   },
-              // ),
-
-              // InfoDisplay(
-              //   keyname: "connection",
-              //   value: _connectionStatus.split(".").length > 1
-              //       ? _connectionStatus.split('.')[1]
-              //       : _connectionStatus,
-              //   options: {
-              //     't2.font': Theme.of(context).textTheme.bodyText2,
-              //   },
-              // ),
-
               InfoDisplay(
                   keyname: "accuracy", value: glocation.coords.accuracy),
-
               InfoDisplay(
                 keyname: "elevation",
                 value: glocation.coords.altitude,
@@ -1514,57 +1410,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       .toString())
                 },
               ),
-
-              // InfoDisplay(
-              //   keyname: "since last point",
-              //   value:
-              //       secondsToPrettyDuration(_secondsSinceLastPoint.toDouble()),
-              //   options: {
-              //     't2.font': Theme.of(context).textTheme.bodyText2,
-              //   },
-              // ),
-
-              // InfoDisplay(
-              //   keyname: "longitude,latitude",
-              //   value: '${glocation.coords.longitude}' +
-              //       ',' +
-              //       '${glocation.coords.latitude}',
-              //   options: {
-              //     't2.font': Theme.of(context).textTheme.bodyText2,
-              //   },
-              // ),
             ],
           ),
-          // Row(
-          //   children: [
-          //     InfoDisplay(
-          //       keyname: "name",
-          //       value: _deviceName,
-          //       options: {
-          //         't2.font': Theme.of(context).textTheme.bodyText2,
-          //       },
-          //     ),
-          //   ],
-          // ),
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //   children: [
-          //     InfoDisplay(
-          //       keyname: "longitude,latitude",
-          //       value: '${glocation.coords.longitude}' +
-          //           ',' +
-          //           '${glocation.coords.latitude}',
-          //       options: {
-          //         't2.font': Theme.of(context).textTheme.bodyText2,
-          //       },
-          //     ),
-          //   ],
-          // ),
-
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //   children: [],
-          // ),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1592,23 +1439,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
 
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //   children: [
-          //     InfoDisplay(
-          //         keyname: "speed accuracy",
-          //         value: glocation.coords.speedAccuracy),
-          //     InfoDisplay(
-          //         keyname: "heading accuracy",
-          //         value: glocation.coords.headingAccuracy != null
-          //             ? glocation.coords.headingAccuracy.toPrecision(1)
-          //             : -1),
-          //     InfoDisplay(
-          //         keyname: "elevation accuracy",
-          //         value: glocation.coords.altitudeAccuracy),
-          //   ],
-          // ),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -1623,19 +1453,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
 
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //   children: [
-          //     InfoDisplay(keyname: "activity", value: glocation.activity.type),
-          //     InfoDisplay(
-          //         keyname: "activity confidence",
-          //         value: glocation.activity.confidence),
-          //   ],
-          // ),
-
-          // Row(children: []),
-          // Row(children: []),
-          // Row(children: []),
           Row(
             children: [
               Expanded(
