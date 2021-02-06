@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -232,11 +233,24 @@ class ShapesPainter extends CustomPainter {
 
     double scale = mapMinEdge / territoryMaxEdge;
 
-    // altitude
-    double sizeAltW = sizeW;
-    double sizeAltH = sizeH / 4;
-
     Path path = Path();
+
+    // Altitude/elevation stuff
+    double sizeAltW = sizeW;
+    double sizeAltH = sizeH / 3;
+
+    Paint lastElevPointPaint = Paint()
+      ..color = MyTheme.buttonColor
+      ..style = PaintingStyle.fill;
+    Path elevPath = Path();
+    final elevPaint = Paint();
+    elevPaint.color = Colors.white70;
+    elevPaint.style = PaintingStyle.stroke;
+    elevPaint.strokeWidth = 1;
+    double elevSpread = (maxAlt - minAlt);
+    double elevScaleY = sizeAltH / (elevSpread > 0 ? elevSpread : 1);
+    double elevScaleX = sizeAltW / locations.length;
+    Offset elevGraphOrigin = Offset(wMargin, sizeAltH);
 
     // double scale = sizeH < sizeW ? scaleH : scaleW;
     // scale /= 2;
@@ -314,12 +328,22 @@ class ShapesPainter extends CustomPainter {
       // canvas.drawCircle(Offset(relX, relY), isLast ? 4.0 : 2.0, paint);
 
       // shape the path
+      Offset elevPoint = elevGraphOrigin.translate(
+          elevScaleX * i.toDouble(), -1 * (loc.altitude - minAlt) * elevScaleY);
+
+      // Offset elevPoint = Offset(
+      //     elevScaleX * i.toDouble(),
+      //     sizeAltH -
+      //         (loc.altitude * elevScaleY)); //  ((loc.altitude * elevScaleY))
       if (isFirst) {
         path.moveTo(relX, relY);
+        elevPath.moveTo(elevPoint.dx, elevPoint.dy);
       } else {
         path.arcToPoint(Offset(relX, relY));
 
         canvas.drawPath(path, paint);
+
+        elevPath.arcToPoint(elevPoint);
 
         if (!isLast) {
           path = Path();
@@ -338,8 +362,17 @@ class ShapesPainter extends CustomPainter {
         paint.style = PaintingStyle.stroke;
         paint.strokeWidth = 1;
         canvas.drawCircle(Offset(relX, relY), 6, paint);
+
+        // Draw dot indicating last elevation point.
+        canvas.drawCircle(elevPoint, 4, lastElevPointPaint);
       }
     }
+    // Draw the elevation path.
+    if (locations.length > 30) canvas.drawPath(elevPath, elevPaint);
+
+    // elevPaint.style = PaintingStyle.fill;
+    // elevPaint.color = elevPaint.color.withAlpha(30);
+    // elevPath.close();
 
     // legend
     const double tickSize = 8;
@@ -412,6 +445,20 @@ class ShapesPainter extends CustomPainter {
         TextPainter(text: ts, maxLines: 1, textDirection: TextDirection.ltr);
     tp.layout();
     tp.paint(canvas, Offset(wMargin, size.height /*- hMargin - 16*/));
+
+    // Elevation legend.
+    canvas.drawLine(Offset(sizeW + wMargin, 0),
+        Offset(sizeW + wMargin, sizeAltH), lastElevPointPaint);
+
+    TextSpan tsa = TextSpan(
+        text: '${elevSpread ~/ 1}',
+        style: MyTheme.copyWith()
+            .textTheme
+            .apply(bodyColor: lastElevPointPaint.color.withAlpha(155))
+            .overline);
+    tp.text = tsa;
+    tp.layout();
+    tp.paint(canvas, Offset(wMargin + sizeW - (tp.width), -tp.height - 4 / 2));
 
     // Color legend.
     paint.style = PaintingStyle.fill;
