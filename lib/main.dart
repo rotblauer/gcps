@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'dart:convert'; // jsonEncode
@@ -41,6 +42,86 @@ void main() {
 
   // Run app.
   runApp(MyApp());
+
+  bg.BackgroundGeolocation.registerHeadlessTask(headlessTask);
+}
+
+void _handleStreamLocationSave(bg.Location location) async {
+  // Short circuit if position is null or timestamp is null.
+  if (location == null ||
+      location.timestamp == null ||
+      location.timestamp == "" ||
+      location.coords == null) {
+    print("streamed position: unknown or null timestamp");
+    // setState(() {
+    //   geolocation_api_stream_text = 'Unknown';
+    // });
+    return;
+  }
+
+  // Persist the position.
+  print("saving position");
+  var ap = AppPoint.fromLocationProvider(location);
+  await insertTrack(ap);
+}
+
+/// Receives all events from BackgroundGeolocation while app is terminated:
+void headlessTask(bg.HeadlessEvent headlessEvent) async {
+  print('[HeadlessTask]: ${headlessEvent}');
+
+  // Implement a `case` for only those events you're interested in.
+  switch (headlessEvent.name) {
+    // case bg.Event.TERMINATE:
+    //   bg.State state = headlessEvent.event;
+    //   print('- State: ${state}');
+    //   break;
+    // case bg.Event.HEARTBEAT:
+    //   bg.HeartbeatEvent event = headlessEvent.event;
+    //   print('- HeartbeatEvent: ${event}');
+    //   break;
+    case bg.Event.LOCATION:
+      bg.Location location = headlessEvent.event;
+      print('- Location: ${location}');
+      _handleStreamLocationSave(location);
+      break;
+    case bg.Event.MOTIONCHANGE:
+      bg.Location location = headlessEvent.event;
+      print('- Location: ${location}');
+      _handleStreamLocationSave(location);
+      break;
+    // case bg.Event.GEOFENCE:
+    //   bg.GeofenceEvent geofenceEvent = headlessEvent.event;
+    //   print('- GeofenceEvent: ${geofenceEvent}');
+    //   break;
+    // case bg.Event.GEOFENCESCHANGE:
+    //   bg.GeofencesChangeEvent event = headlessEvent.event;
+    //   print('- GeofencesChangeEvent: ${event}');
+    //   break;
+    // case bg.Event.SCHEDULE:
+    //   bg.State state = headlessEvent.event;
+    //   print('- State: ${state}');
+    //   break;
+    // case bg.Event.ACTIVITYCHANGE:
+    //   bg.ActivityChangeEvent event = headlessEvent.event;
+    //   print('ActivityChangeEvent: ${event}');
+    //   break;
+    // case bg.Event.HTTP:
+    //   bg.HttpEvent response = headlessEvent.event;
+    //   print('HttpEvent: ${response}');
+    //   break;
+    // case bg.Event.POWERSAVECHANGE:
+    //   bool enabled = headlessEvent.event;
+    //   print('ProviderChangeEvent: ${enabled}');
+    //   break;
+    // case bg.Event.CONNECTIVITYCHANGE:
+    //   bg.ConnectivityChangeEvent event = headlessEvent.event;
+    //   print('ConnectivityChangeEvent: ${event}');
+    //   break;
+    // case bg.Event.ENABLEDCHANGE:
+    //   bool enabled = headlessEvent.event;
+    //   print('EnabledChangeEvent: ${enabled}');
+    //   break;
+  }
 }
 
 Icon buildConnectStatusIcon(String status, {Color color, double size}) {
@@ -66,6 +147,30 @@ Icon buildConnectStatusIcon(String status, {Color color, double size}) {
     Icons.do_disturb_alt_outlined,
     color: color,
   );
+}
+
+const Map<String, Color> activityColors = {
+  'Stationary': Colors.deepOrange,
+  'still': Colors.deepOrange,
+  //
+  'Walking': Colors.blue,
+  'on_foot': Colors.blue,
+  'walking': Colors.blue,
+  //
+  'Running': Colors.greenAccent,
+  'running': Colors.greenAccent,
+  //
+  'Bike': Colors.yellow,
+  'on_bicycle': Colors.yellow,
+  //
+  'Automotive': Colors.purple,
+  'in_vehicle': Colors.purple,
+};
+
+Color getActivityColor(String activityType) {
+  if (activityColors.containsKey(activityType))
+    return activityColors[activityType];
+  return Colors.deepOrange;
 }
 
 class ShapesPainter extends CustomPainter {
@@ -95,34 +200,77 @@ class ShapesPainter extends CustomPainter {
     if (dH == 0) dH = 10 / 111111;
     if (dW == 0) dW = 10 / 111111;
 
-    var scaleH = size.height / dH;
-    var scaleW = size.width / dW;
-    double scale = size.height < size.width ? scaleH : scaleW;
-    scale /= 2;
+    // var scaleH = size.height / dH;
+    // var scaleW = size.width / dW;
+
+    // double territoryScale = (dH / dW) > 1 ? (dH / dW) : (dW / dH);
+    // double mapScale = (size.height / size.width) <= 1
+    //     ? (size.height / size.width)
+    //     : (size.width / size.height);
+
+    double sizeW = size.width * 0.95;
+    double sizeH = size.height * 0.95;
+    double wMargin = (size.width - sizeW) / 2;
+    double hMargin = (size.height - sizeH) / 2;
+
+    bool mapPortrait = sizeH > sizeW;
+    double mapMinEdge = mapPortrait ? sizeW : sizeH;
+    bool territoryPortrait = dH > dW;
+    double territoryMaxEdge = territoryPortrait ? dH : dW;
+
+    // double scale;
+    // if (mapPortrait && territoryPortrait) {
+    //   scale = sizeH / dH;
+    // } else if (mapPortrait && !territoryPortrait) {
+    //   scale = sizeH /
+    // }
+
+    double scale = mapMinEdge / territoryMaxEdge;
+
+    // double scale = sizeH < sizeW ? scaleH : scaleW;
+    // scale /= 2;
     // TODO: fit bounds
 
     final paint = Paint();
     paint.color = Colors.deepOrange;
 
     var ref = locations.last;
-    var refX = ref.longitude;
-    var refY = ref.latitude;
+    // var refX = ref.longitude;
+    // var refY = ref.latitude;
 
-    // center of the canvas is (x,y) => (width/2, height/2)
-    var center = Offset(size.width / 2, size.height / 2);
+    // // center of the canvas is (x,y) => (width/2, height/2)
+    // var center = Offset(sizeW / 2, sizeH / 2);
 
     int i = 0;
     for (var loc in locations) {
       bool isLast = i == locations.length - 1;
-      if (isLast) paint.color = Colors.limeAccent;
+      // if (isLast) {
+      //   paint.color = Colors.limeAccent;
+      //   // paint.style = PaintingStyle.stroke;
+      // } else {
+      //   // print(loc.activity_type);
+      int accFade = (loc.accuracy ~/ 1 % 155);
+      if (loc.accuracy > 155) accFade = 155;
+      paint.color =
+          getActivityColor(loc.activity_type).withAlpha(255 - accFade);
+      // }
+
       i++;
       var x = loc.longitude;
       var y = loc.latitude;
 
-      var relX =
-          center.dx - (scale * (refX - x)); // top -> bottom => 0 -> height
-      var relY =
-          center.dy + (scale * (refY - y)); // left -> right => 0 - > width
+      // Build the drawable coords.
+      double relX = scale * (x - minLon) + wMargin;
+      double relY = sizeH - (scale * (y - minLat)) + hMargin;
+
+      // Center the drawing.
+      relX += (sizeW - (scale * (maxLon - minLon))) / 2;
+      relY -= (sizeH - (scale * (maxLat - minLat))) / 2;
+
+      // var relX =
+      //     center.dx - (scale * (refX - x)); // top -> bottom => 0 -> height
+      // var relY =
+      //     center.dy + (scale * (refY - y)); // left -> right => 0 - > width
 
       // var relX = (scale * (x - refX)); // top -> bottom => 0 -> height
       // var relY = (scale * (y - refY)); // left -> right => 0 - > width
@@ -135,8 +283,87 @@ class ShapesPainter extends CustomPainter {
       //     relY.toString());
 
       // draw the circle on centre of canvas having radius 75.0
-      canvas.drawCircle(Offset(relX, relY), isLast ? 3.0 : 2.0, paint);
+      canvas.drawCircle(Offset(relX, relY), isLast ? 4.0 : 2.0, paint);
+      if (isLast) {
+        double accRadius = loc.accuracy / 111111 * scale;
+        if (accRadius > mapMinEdge / 2) accRadius = mapMinEdge / 2;
+        // paint.style = PaintingStyle.fill;
+        paint.color = MyTheme.buttonColor.withAlpha(100);
+        canvas.drawCircle(Offset(relX, relY), accRadius, paint);
+
+        paint.color = MyTheme.accentColor;
+        paint.style = PaintingStyle.stroke;
+        canvas.drawCircle(Offset(relX, relY), 8, paint);
+      }
     }
+
+    // legend
+    const double tickSize = 8;
+    double maxDistMeters = Haversine.fromDegrees(
+            latitude1: minLat,
+            latitude2: maxLat,
+            longitude1: minLon,
+            longitude2: maxLon)
+        .distance();
+
+    String legendLabel = '1m';
+    double legendScaleDist = 1;
+    if (maxDistMeters > 100000) {
+      legendScaleDist = 100000;
+      legendLabel = "100km";
+    } else if (maxDistMeters > 10000) {
+      legendScaleDist = 10000;
+      legendLabel = "10km";
+    } else if (maxDistMeters > 3000) {
+      legendScaleDist = 3000;
+      legendLabel = "3km";
+    } else if (maxDistMeters > 1000) {
+      legendScaleDist = 1000;
+      legendLabel = "1km";
+    } else if (maxDistMeters > 500) {
+      legendScaleDist = 500;
+      legendLabel = "500m";
+    } else if (maxDistMeters > 100) {
+      legendScaleDist = 100;
+      legendLabel = "100m";
+    } else if (maxDistMeters > 10) {
+      legendScaleDist = 10;
+      legendLabel = "10m";
+    }
+
+    paint.color = Colors.grey;
+
+    // horizontal
+    Offset horizontalEnd = Offset(wMargin + (legendScaleDist * scale / 111111),
+        size.height - hMargin * 0.2);
+    canvas.drawLine(
+        Offset(wMargin, size.height - hMargin * 0.2), horizontalEnd, paint);
+    //tick
+    canvas.drawLine(
+        horizontalEnd, horizontalEnd.translate(0, -tickSize), paint);
+
+    // vertical
+    Offset verticalStart = Offset(wMargin,
+        size.height - hMargin * 0.2 - (legendScaleDist * scale / 111111));
+    canvas.drawLine(
+        verticalStart, Offset(wMargin, size.height - hMargin * 0.2), paint);
+    canvas.drawLine(verticalStart, verticalStart.translate(tickSize, 0), paint);
+
+    TextSpan ts = TextSpan(
+        text: legendLabel,
+        style:
+            MyTheme.copyWith().textTheme.apply(bodyColor: paint.color).overline
+
+        // style: MyTheme.textTheme
+        //     .overline, /*MyTheme.copyWith()
+        //       .textTheme
+        //       .apply(bodyColor: paint.color)
+        //       .overline*/
+        );
+    var tp =
+        TextPainter(text: ts, maxLines: 1, textDirection: TextDirection.ltr);
+    tp.layout();
+    tp.paint(canvas, Offset(wMargin, size.height /*- hMargin - 16*/));
   }
 
   @override
@@ -150,46 +377,46 @@ Icon buildActivityIcon(BuildContext context, String activity, double size) {
         Icons.pin_drop_rounded,
         size: size,
         // color: Theme.of(context).primaryColor,
-        color: Colors.deepOrange,
+        color: getActivityColor(activity),
         // color: Theme.of(context).accentColor,
       );
     case 'on_foot':
       return Icon(
         Icons.directions_walk,
         size: size,
-        color: Theme.of(context).accentColor,
+        color: getActivityColor(activity),
       );
     case 'walking':
       return Icon(
         Icons.directions_walk,
         size: size,
-        color: Theme.of(context).accentColor,
+        color: getActivityColor(activity),
       );
     case 'on_bicycle':
       return Icon(
         Icons.directions_bike,
         size: size,
-        color: Theme.of(context).accentColor,
+        color: getActivityColor(activity),
       );
     case 'running':
       return Icon(
         Icons.directions_run,
         size: size,
-        color: Theme.of(context).accentColor,
+        color: getActivityColor(activity),
       );
     case 'in_vehicle':
       return Icon(
         Icons.directions_car,
         size: size,
         // color: Theme.of(context).primaryColor,
-        color: Colors.amber, // boring and lame...
+        color: getActivityColor(activity), // boring and lame...
       );
 
     default:
       return Icon(
         Icons.do_disturb_on_rounded,
         size: size,
-        color: Theme.of(context).primaryColor,
+        color: getActivityColor(activity),
       );
   }
 }
@@ -365,12 +592,12 @@ class DistanceTracker {
   DistanceTracker({this.filterStill});
 
   double add({double lon, double lat, bool isMoving}) {
-    print("lon=" +
-        lon.toString() +
-        " lat=" +
-        lat.toString() +
-        " isMoving=" +
-        isMoving.toString());
+    // print("lon=" +
+    //     lon.toString() +
+    //     " lat=" +
+    //     lat.toString() +
+    //     " isMoving=" +
+    //     isMoving.toString());
 
     if (!filterStill || isMoving) {
       distance += Haversine.fromDegrees(
@@ -432,7 +659,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // String geolocation_api_text = '<api.somewhere>';
   // String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
-  DateTime _appStarted;
+  DateTime _tripStarted;
 
   String _connectionStatus = '-';
   ConnectivityResult _connectionResult;
@@ -520,68 +747,9 @@ class _MyHomePageState extends State<MyHomePage> {
   //   });
   // }
 
-  /// Receives all events from BackgroundGeolocation while app is terminated:
-  void headlessTask(bg.HeadlessEvent headlessEvent) async {
-    print('[HeadlessTask]: ${headlessEvent}');
-
-    // Implement a `case` for only those events you're interested in.
-    switch (headlessEvent.name) {
-      // case bg.Event.TERMINATE:
-      //   bg.State state = headlessEvent.event;
-      //   print('- State: ${state}');
-      //   break;
-      // case bg.Event.HEARTBEAT:
-      //   bg.HeartbeatEvent event = headlessEvent.event;
-      //   print('- HeartbeatEvent: ${event}');
-      //   break;
-      case bg.Event.LOCATION:
-        bg.Location location = headlessEvent.event;
-        print('- Location: ${location}');
-        _handleStreamLocationUpdate(location);
-        break;
-      case bg.Event.MOTIONCHANGE:
-        bg.Location location = headlessEvent.event;
-        print('- Location: ${location}');
-        _handleStreamLocationUpdate(location);
-        break;
-      // case bg.Event.GEOFENCE:
-      //   bg.GeofenceEvent geofenceEvent = headlessEvent.event;
-      //   print('- GeofenceEvent: ${geofenceEvent}');
-      //   break;
-      // case bg.Event.GEOFENCESCHANGE:
-      //   bg.GeofencesChangeEvent event = headlessEvent.event;
-      //   print('- GeofencesChangeEvent: ${event}');
-      //   break;
-      // case bg.Event.SCHEDULE:
-      //   bg.State state = headlessEvent.event;
-      //   print('- State: ${state}');
-      //   break;
-      // case bg.Event.ACTIVITYCHANGE:
-      //   bg.ActivityChangeEvent event = headlessEvent.event;
-      //   print('ActivityChangeEvent: ${event}');
-      //   break;
-      // case bg.Event.HTTP:
-      //   bg.HttpEvent response = headlessEvent.event;
-      //   print('HttpEvent: ${response}');
-      //   break;
-      // case bg.Event.POWERSAVECHANGE:
-      //   bool enabled = headlessEvent.event;
-      //   print('ProviderChangeEvent: ${enabled}');
-      //   break;
-      // case bg.Event.CONNECTIVITYCHANGE:
-      //   bg.ConnectivityChangeEvent event = headlessEvent.event;
-      //   print('ConnectivityChangeEvent: ${event}');
-      //   break;
-      // case bg.Event.ENABLEDCHANGE:
-      //   bool enabled = headlessEvent.event;
-      //   print('EnabledChangeEvent: ${enabled}');
-      //   break;
-    }
-  }
-
   @override
   void initState() {
-    _appStarted = DateTime.now().toUtc();
+    _tripStarted = DateTime.now().toUtc();
     super.initState();
     // this.getIp();
     _getId().then((value) {
@@ -721,8 +889,11 @@ class _MyHomePageState extends State<MyHomePage> {
       debug: false,
       logLevel: bg.Config.LOG_LEVEL_INFO,
       persistMode: bg.Config.PERSIST_MODE_NONE,
+
+      backgroundPermissionRationale: bg.PermissionRationale(
+        message: "Cats love it",
+      ),
     )).then((bg.State state) {
-      bg.BackgroundGeolocation.registerHeadlessTask(headlessTask);
       if (!state.enabled) {
         ////
         // 3.  Start the plugin.
@@ -837,11 +1008,11 @@ class _MyHomePageState extends State<MyHomePage> {
         uuid: _deviceUUID,
         name: _deviceName,
         version: _deviceAppVersion,
-        tripStarted: _appStarted.toUtc().toIso8601String(),
+        tripStarted: _tripStarted.toUtc().toIso8601String(),
         distance: _tripDistance.toPrecision(1),
       );
 
-      // c['tripStarted'] = _appStarted.toUtc().toIso8601String();
+      // c['tripStarted'] = _tripStarted.toUtc().toIso8601String();
       // c['uuid'] = _deviceUUID;
       // c['name'] = _deviceName;
       // c['version'] = _deviceAppVersion;
@@ -965,7 +1136,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // Persist the position.
-    print("saving position");
+    // print("saving position");
     var ap = AppPoint.fromLocationProvider(location);
     await insertTrack(ap);
 
@@ -1189,18 +1360,33 @@ class _MyHomePageState extends State<MyHomePage> {
                                     if (_countStored == 0) return;
 
                                     // set up the buttons
+                                    Widget cancelButton = ElevatedButton(
+                                      child: Text("Cancel"),
+                                      style: ButtonStyle(
+                                          backgroundColor:
+                                              MaterialStateProperty.all<Color>(
+                                                  Colors.grey)),
+                                      onPressed: () {
+                                        Navigator.of(context,
+                                                rootNavigator: true)
+                                            .pop('dialog');
+                                      },
+                                    ); // set up the AlertDialog
                                     Widget continueButton = ElevatedButton(
                                       child: Text("Upload"),
-                                      onPressed: () {
+                                      onPressed: () async {
                                         this._pushTracksBatching();
+                                        Navigator.of(context,
+                                                rootNavigator: true)
+                                            .pop('dialog');
                                       },
                                     ); // set up the AlertDialog
                                     AlertDialog alert = AlertDialog(
-                                      title: Text("Manual push confirmation"),
+                                      title: Text("Confirm upload"),
                                       content: Text(
-                                          "Would you like to attempt an upload?\nTap outside this box to cancel."),
+                                          "Would you like to attempt an upload?"),
                                       actions: [
-                                        // cancelButton,
+                                        cancelButton,
                                         continueButton,
                                       ],
                                     ); // show the dialog
@@ -1334,6 +1520,23 @@ class _MyHomePageState extends State<MyHomePage> {
                             bottom: BorderSide(
                                 color: MyTheme.accentColor, width: 4))),
                   ),
+
+                  if (_isPushing)
+                    Container(
+                      width: 24,
+                      padding: EdgeInsets.all(4),
+                      child: LinearProgressIndicator(
+                        backgroundColor: MyTheme.buttonColor,
+                      ),
+                    ),
+
+                  // LinearProgressIndicator(
+                  //   minHeight: 4,
+                  //   value: _isPushing
+                  //       ? null
+                  //       : _countStored.toDouble() / _pushEvery.toDouble(),
+                  //   // backgroundColor: ,
+                  // ),
                   Container(
                     padding: EdgeInsets.all(4),
                     child: Row(
@@ -1416,19 +1619,36 @@ class _MyHomePageState extends State<MyHomePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.timelapse,
-                              color: colorForDurationSinceLastPoint(
-                                  _secondsSinceLastPoint),
-                              size: 16),
-                          Container(
-                            width: 4,
+                          Visibility(
+                            visible: _secondsSinceLastPoint > 3,
+                            child: Row(
+                              children: [
+                                Icon(Icons.timelapse,
+                                    color: colorForDurationSinceLastPoint(
+                                        _secondsSinceLastPoint),
+                                    size: 16),
+                                Container(
+                                  width: 4,
+                                ),
+                                Text(
+                                  '-' +
+                                      secondsToPrettyDuration(
+                                          _secondsSinceLastPoint.toDouble()),
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
                           ),
-                          Text(
-                            '-' +
-                                secondsToPrettyDuration(
-                                    _secondsSinceLastPoint.toDouble()),
-                            style: TextStyle(color: Colors.white),
-                          )
+                          Visibility(
+                              visible: true,
+                              child: (glocation?.isMoving ?? false)
+                                  ? Container(
+                                      margin: EdgeInsets.only(left: 6),
+                                      child: Icon(Icons.arrow_right))
+                                  : Container(
+                                      margin:
+                                          EdgeInsets.symmetric(horizontal: 6),
+                                      child: Icon(Icons.trip_origin))),
                         ],
                       ),
                       decoration: BoxDecoration(
@@ -1527,11 +1747,26 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             onLongPress: () {
               // set up the buttons
+              Widget cancelButton = ElevatedButton(
+                child: Text("Cancel"),
+                style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.grey)),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              ); // set up the AlertDialog
               Widget continueButton = ElevatedButton(
                 child: Text('Yes, reset.'),
                 onPressed: () {
-                  bg.BackgroundGeolocation.setOdometer(0);
-                  _distanceTracker.distance = 0;
+                  setState(() {
+                    bg.BackgroundGeolocation.setOdometer(0);
+                    _distanceTracker.distance = 0;
+                    _paintList = [];
+                    _tripStarted = DateTime.now().toUtc();
+                  });
+
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     _buildSnackBar(Text('Trip has been reset.'),
@@ -1540,11 +1775,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ); // set up the AlertDialog
               AlertDialog alert = AlertDialog(
-                title: Text("Trip reset confirmation"),
-                content: Text(
-                    "Would you like to reset the odometer and distance measurements?\nTap outside this box to cancel."),
+                title: Text("Confirm trip reset"),
+                content:
+                    Text("This will reset the map, odometer, and distance."),
                 actions: [
-                  // cancelButton,
+                  cancelButton,
                   continueButton,
                 ],
               ); // show the dialog
@@ -1584,7 +1819,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               // Text('Cat snap',
                               //     style: Theme.of(context).textTheme.overline),
                               Icon(Icons.add_a_photo_outlined,
-                                  size: 64,
+                                  size: 48,
                                   color: Colors.deepOrange /*green[300]*/),
 
                               // Icon(

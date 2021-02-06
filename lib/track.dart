@@ -338,7 +338,7 @@ String activityTypeApp(String original) {
     case 'running':
       return 'Running';
     case 'in_vehicle':
-      return 'Driving';
+      return 'Automotive';
     default:
       return 'Unknown';
   }
