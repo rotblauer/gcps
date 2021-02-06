@@ -418,6 +418,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _deviceName = "";
   String _deviceAppVersion = "";
   bool _isPushing = false;
+  bool _isManuallyRequestingLocation = false;
   double _tripDistance = 0.0;
   List<AppPoint> _paintList = [];
 
@@ -1226,6 +1227,18 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ])),
                       )),
 
+                  Visibility(
+                    visible: _isManuallyRequestingLocation,
+                    child: Container(
+                      height: 8,
+                      width: 24,
+                      child: LinearProgressIndicator(
+                        minHeight: 2,
+                        backgroundColor: Colors.deepOrange,
+                      ),
+                    ),
+                  ),
+
                   // To settings.
                   Expanded(
                       child: Container(
@@ -1363,8 +1376,14 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               InkWell(
                 onTap: () async {
+                  setState(() {
+                    _isManuallyRequestingLocation = true;
+                  });
                   var loc = await bg.BackgroundGeolocation.getCurrentPosition();
                   _handleStreamLocationUpdate(loc);
+                  setState(() {
+                    _isManuallyRequestingLocation = false;
+                  });
 
                   // ScaffoldMessenger.of(context).showSnackBar(
                   //   _buildSnackBar(Text('Points!'),
