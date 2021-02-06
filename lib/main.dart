@@ -241,8 +241,19 @@ class ShapesPainter extends CustomPainter {
     // // center of the canvas is (x,y) => (width/2, height/2)
     // var center = Offset(sizeW / 2, sizeH / 2);
 
+    List<String> uniqActivities = [
+      // 'still',
+      // 'on_foot',
+      // 'on_bicycle',
+      // 'running',
+      // 'in_vehicle'
+    ];
+
     int i = 0;
     for (var loc in locations) {
+      if (!uniqActivities.contains(loc.activity_type))
+        uniqActivities.add(loc.activity_type);
+
       bool isLast = i == locations.length - 1;
       // if (isLast) {
       //   paint.color = Colors.limeAccent;
@@ -331,6 +342,7 @@ class ShapesPainter extends CustomPainter {
       legendLabel = "10m";
     }
 
+    // Scale legend.
     paint.color = Colors.grey;
 
     // horizontal
@@ -351,19 +363,41 @@ class ShapesPainter extends CustomPainter {
 
     TextSpan ts = TextSpan(
         text: legendLabel,
-        style:
-            MyTheme.copyWith().textTheme.apply(bodyColor: paint.color).overline
-
-        // style: MyTheme.textTheme
-        //     .overline, /*MyTheme.copyWith()
-        //       .textTheme
-        //       .apply(bodyColor: paint.color)
-        //       .overline*/
-        );
+        style: MyTheme.copyWith()
+            .textTheme
+            .apply(bodyColor: paint.color)
+            .overline);
     var tp =
         TextPainter(text: ts, maxLines: 1, textDirection: TextDirection.ltr);
     tp.layout();
     tp.paint(canvas, Offset(wMargin, size.height /*- hMargin - 16*/));
+
+    // Color legend.
+    paint.style = PaintingStyle.fill;
+
+    int ii = -1;
+    double activityLegendItemHeight = 16;
+    Offset activityColorLegendOrigin = Offset(sizeW, size.height);
+    for (var act in uniqActivities) {
+      ii++;
+      paint.color = getActivityColor(act);
+      Offset circleOffset = activityColorLegendOrigin.translate(
+          0, ii * activityLegendItemHeight); // -4 is extra space
+      canvas.drawCircle(circleOffset, activityLegendItemHeight / 4, paint);
+
+      TextSpan tss = TextSpan(
+          text: act,
+          style: MyTheme.copyWith()
+              .textTheme
+              .apply(bodyColor: paint.color)
+              .overline);
+      tp.text = tss;
+      tp.layout();
+      tp.paint(
+          canvas,
+          circleOffset.translate(-tp.width - activityLegendItemHeight / 2 - 4,
+              -activityLegendItemHeight / 4 * 2));
+    }
   }
 
   @override
