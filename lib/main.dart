@@ -731,7 +731,11 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
 
-    bg.BackgroundGeolocation.getCurrentPosition();
+    _isManuallyRequestingLocation = true;
+    bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+      _handleStreamLocationUpdate(value);
+      _isManuallyRequestingLocation = false;
+    });
 
     eachSecond();
   }
