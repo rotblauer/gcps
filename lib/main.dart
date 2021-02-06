@@ -1263,8 +1263,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       //       backgroundColor: Colors.green),
                       // );
                     },
-                    child: Icon(Icons.plus_one,
-                        semanticLabel: 'Point', color: MyTheme.accentColor)),
+                    child: Icon(Icons.plus_one, semanticLabel: 'Point')),
               )),
               Expanded(
                   child: Container(
@@ -1450,26 +1449,30 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
               ),
-              InfoDisplay(
-                keyname: '',
-                value: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Image(
-                      image: AssetImage('assets/catdroid-icon-cat-only.png'),
-                      width: 48,
-                    ),
-                    Text(
-                      ' is ' + glocation.activity.type.replaceAll('_', ' '),
-                      style: Theme.of(context).textTheme.headline4,
-                    ),
-                  ],
-                ),
-                options: {
-                  'third': Text(glocation.activity.confidence.toString())
-                },
-              ),
+
+              // InfoDisplay(
+              //   keyname: '',
+              //   value: Row(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     crossAxisAlignment: CrossAxisAlignment.end,
+              //     children: [
+              //       Image(
+              //         image: AssetImage('assets/catdroid-icon-cat-only.png'),
+              //         width: 48,
+              //       ),
+              //       Text(
+              //         ' is ' +
+              //             glocation.activity.type
+              //                 .replaceAll('still', 'napping')
+              //                 .replaceAll('_', ' '),
+              //         style: Theme.of(context).textTheme.headline4,
+              //       ),
+              //     ],
+              //   ),
+              //   options: {
+              //     'third': Text(glocation.activity.confidence.toString())
+              //   },
+              // ),
             ],
           ),
 
