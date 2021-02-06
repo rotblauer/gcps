@@ -182,7 +182,7 @@ class ShapesPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (locations.length == 0) return;
 
-    double minLat, minLon, maxLat, maxLon;
+    double minLat, minLon, maxLat, maxLon, minAlt, maxAlt;
     for (var loc in locations) {
       // print('paint loc.x=' +
       //     loc.longitude.toString() +
@@ -192,6 +192,10 @@ class ShapesPainter extends CustomPainter {
       if (maxLat == null || loc.latitude > maxLat) maxLat = loc.latitude;
       if (minLon == null || loc.longitude < minLon) minLon = loc.longitude;
       if (maxLon == null || loc.longitude > maxLon) maxLon = loc.longitude;
+
+      // altitude
+      if (minAlt == null || loc.altitude < minAlt) minAlt = loc.altitude;
+      if (maxAlt == null || loc.altitude > maxAlt) maxAlt = loc.altitude;
     }
 
     var dH = maxLon - minLon;
@@ -218,14 +222,13 @@ class ShapesPainter extends CustomPainter {
     bool territoryPortrait = dH > dW;
     double territoryMaxEdge = territoryPortrait ? dH : dW;
 
-    // double scale;
-    // if (mapPortrait && territoryPortrait) {
-    //   scale = sizeH / dH;
-    // } else if (mapPortrait && !territoryPortrait) {
-    //   scale = sizeH /
-    // }
-
     double scale = mapMinEdge / territoryMaxEdge;
+
+    // altitude
+    double sizeAltW = sizeW;
+    double sizeAltH = sizeH / 4;
+
+    Path path = Path();
 
     // double scale = sizeH < sizeW ? scaleH : scaleW;
     // scale /= 2;
@@ -233,6 +236,8 @@ class ShapesPainter extends CustomPainter {
 
     final paint = Paint();
     paint.color = Colors.deepOrange;
+    paint.style = PaintingStyle.stroke;
+    paint.strokeWidth = 2;
 
     var ref = locations.last;
     // var refX = ref.longitude;
@@ -255,6 +260,8 @@ class ShapesPainter extends CustomPainter {
         uniqActivities.add(loc.activity_type);
 
       bool isLast = i == locations.length - 1;
+      bool isFirst = i == 0;
+
       // if (isLast) {
       //   paint.color = Colors.limeAccent;
       //   // paint.style = PaintingStyle.stroke;
@@ -293,18 +300,34 @@ class ShapesPainter extends CustomPainter {
       //     ' relY=' +
       //     relY.toString());
 
-      // draw the circle on centre of canvas having radius 75.0
-      canvas.drawCircle(Offset(relX, relY), isLast ? 4.0 : 2.0, paint);
+      // draw the circle
+      // canvas.drawCircle(Offset(relX, relY), isLast ? 4.0 : 2.0, paint);
+
+      // shape the path
+      if (isFirst) {
+        path.moveTo(relX, relY);
+      } else {
+        path.arcToPoint(Offset(relX, relY));
+
+        canvas.drawPath(path, paint);
+
+        if (!isLast) {
+          path = Path();
+          path.moveTo(relX, relY);
+        }
+      }
+
       if (isLast) {
         double accRadius = loc.accuracy / 111111 * scale;
         if (accRadius > mapMinEdge / 2) accRadius = mapMinEdge / 2;
-        // paint.style = PaintingStyle.fill;
         paint.color = MyTheme.buttonColor.withAlpha(100);
+        paint.style = PaintingStyle.fill;
         canvas.drawCircle(Offset(relX, relY), accRadius, paint);
 
         paint.color = MyTheme.accentColor;
-        paint.style = PaintingStyle.stroke;
-        canvas.drawCircle(Offset(relX, relY), 8, paint);
+        paint.style = PaintingStyle.fill;
+        paint.strokeWidth = 1;
+        canvas.drawCircle(Offset(relX, relY), 6, paint);
       }
     }
 
@@ -344,6 +367,7 @@ class ShapesPainter extends CustomPainter {
 
     // Scale legend.
     paint.color = Colors.grey;
+    paint.strokeWidth = 1;
 
     // horizontal
     Offset horizontalEnd = Offset(wMargin + (legendScaleDist * scale / 111111),
