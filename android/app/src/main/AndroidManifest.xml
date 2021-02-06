@@ -10,6 +10,8 @@
         android:label="gcps"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/launcher_icon">
+        <!-- flutter_background_geolocation licence -->
+        <meta-data android:name="com.transistorsoft.locationmanager.license" android:value="catlicensetogetcatpositions" />
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
@@ -34,6 +36,8 @@
               android:name="io.flutter.embedding.android.SplashScreenDrawable"
               android:resource="@drawable/launch_background"
               />
+
+            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
