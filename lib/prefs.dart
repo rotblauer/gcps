@@ -58,21 +58,21 @@ const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout";
 //   }
 // }
 
-// class MySettingsScreen extends StatefulWidget {
-//   const MySettingsScreen({
-//     Key key,
-//   }) : super(key: key);
+class MySettingsScreen extends StatefulWidget {
+  const MySettingsScreen({
+    Key key,
+  }) : super(key: key);
 
-//   @override
-//   _SettingsScreen createState() => _SettingsScreen();
-// }
+  @override
+  _SettingsScreen createState() => _SettingsScreen();
+}
 
-class MySettingsScreen extends StatelessWidget {
+class _SettingsScreen extends State<MySettingsScreen> {
   final String deviceUUID;
   final String deviceName;
   final String deviceVersion;
 
-  MySettingsScreen({
+  _SettingsScreen({
     Key key,
     this.deviceUUID,
     this.deviceName,
