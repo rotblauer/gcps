@@ -59,25 +59,27 @@ class MySettingsScreen extends StatelessWidget {
   final String deviceName;
   final String deviceVersion;
 
-  const MySettingsScreen({
+  MySettingsScreen({
     Key key,
     this.deviceUUID,
     this.deviceName,
     this.deviceVersion,
   }) : super(key: key);
 
+  final Settings _settings = Settings();
+
   @override
   Widget build(BuildContext context) {
-    Settings settings = Settings();
-
+    TextTheme settingsTheme =
+        Theme.of(context).textTheme.apply(bodyColor: Colors.tealAccent);
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
         // backgroundColor: Colors.amber,
         backgroundColor: Colors.indigo,
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
+        // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SettingsContainer(
             child: Text('Push (upload) configuration',
@@ -95,68 +97,144 @@ class MySettingsScreen extends StatelessWidget {
             icon: Icon(Icons.network_cell),
             defaultValue: false,
           ),
-          settings.onDoubleChanged(
-              settingKey: kPushInterval,
-              defaultValue: 100,
-              childBuilder: (BuildContext context, double value) {
-                return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SettingsContainer(
-                        children: [
-                          // Text('Push interval',
-                          //     style: Theme.of(context).textTheme.bodyText2),
-                          Text(
-                            value.toStringAsFixed(0),
-                            style: Theme.of(context).textTheme.headline5,
-                          ),
-                        ],
-                      )
-                    ]);
-              }),
-          SliderSettingsTile(
-            settingKey: kPushInterval,
-            title: 'Push interval',
-            // title: 'How often to maybe push points',
-            subtitle: 'How often to maybe push points',
-            icon: Icon(Icons.timelapse_rounded),
-            minValue: 100.0,
-            defaultValue: 100,
-            maxValue: 3600.0,
-            step: 100.0,
-            maxIcon: Icon(Icons.arrow_upward),
-            minIcon: Icon(Icons.arrow_downward),
+          Stack(
+            children: [
+              SliderSettingsTile(
+                settingKey: kPushInterval,
+                title: 'Push interval',
+                // title: 'How often to maybe push points',
+                subtitle: 'How often to maybe push points.',
+                icon: Icon(Icons.timelapse_rounded),
+                minValue: 100.0,
+                defaultValue: 100,
+                maxValue: 3600.0,
+                step: 100.0,
+                maxIcon: Icon(Icons.arrow_upward),
+                minIcon: Icon(Icons.arrow_downward),
+              ),
+              _settings.onDoubleChanged(
+                  settingKey: kPushInterval,
+                  defaultValue: 100,
+                  childBuilder: (BuildContext context, double value) {
+                    return Container(
+                        alignment: Alignment.topRight,
+                        padding: EdgeInsets.only(right: 16),
+                        child: Text(
+                          value.toStringAsFixed(0),
+                          style: settingsTheme.headline5,
+                        ));
+                  }),
+            ],
           ),
-          settings.onDoubleChanged(
-              settingKey: kPushBatchSize,
-              defaultValue: 100,
-              childBuilder: (BuildContext context, double value) {
-                return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SettingsContainer(
-                        children: [
-                          // Text('Batch size',
-                          //     style: Theme.of(context).textTheme.bodyText2),
-                          Text(
-                            value.toStringAsFixed(0),
-                            style: Theme.of(context).textTheme.headline5,
-                          ),
-                        ],
-                      )
-                    ]);
-              }),
-          SliderSettingsTile(
-            settingKey: kPushBatchSize,
-            title: 'Push batch size',
-            subtitle: 'Max number of points to push with each upload',
-            icon: Icon(Icons.file_upload),
-            minValue: 100.0,
-            defaultValue: 100,
-            maxValue: 3600.0,
-            step: 100.0,
-            maxIcon: Icon(Icons.arrow_upward),
-            minIcon: Icon(Icons.arrow_downward),
+          Stack(
+            children: [
+              SliderSettingsTile(
+                settingKey: kPushBatchSize,
+                title: 'Push batch size',
+                subtitle: 'Max points in each upload request.',
+                icon: Icon(Icons.file_upload),
+                minValue: 100.0,
+                defaultValue: 100,
+                maxValue: 3600.0,
+                step: 100.0,
+                maxIcon: Icon(Icons.arrow_upward),
+                minIcon: Icon(Icons.arrow_downward),
+              ),
+              _settings.onDoubleChanged(
+                  settingKey: kPushBatchSize,
+                  defaultValue: 100,
+                  childBuilder: (BuildContext context, double value) {
+                    return Container(
+                        alignment: Alignment.topRight,
+                        padding: EdgeInsets.only(right: 16),
+                        child: Text(
+                          value.toStringAsFixed(0),
+                          style: settingsTheme.headline5,
+                        ));
+                  }),
+            ],
+          ),
+          SettingsContainer(
+            child: Text('Location update configuration',
+                style: Theme.of(context).textTheme.overline),
+          ),
+          Stack(
+            children: [
+              SliderSettingsTile(
+                settingKey: kLocationUpdateDistanceFilter,
+                title: 'Location update: distance filter',
+                subtitle:
+                    'Meters Δ triggering a location update.\nZero causes time updates.',
+                icon: Icon(Icons.my_location_outlined),
+                minValue: 0.0,
+                defaultValue: 1,
+                maxValue: 100.0,
+                step: 1.0,
+                maxIcon: Icon(Icons.arrow_upward),
+                minIcon: Icon(Icons.arrow_downward),
+              ),
+              _settings.onDoubleChanged(
+                  settingKey: kLocationUpdateDistanceFilter,
+                  defaultValue: 1,
+                  childBuilder: (BuildContext context, double value) {
+                    if (value == 0) {
+                      _settings.save(kLocationUpdateInterval, 1.0);
+                    } else {
+                      _settings
+                          .getDouble(kLocationUpdateInterval, 1)
+                          .then((value) {
+                        if (value != 0)
+                          _settings.save(kLocationUpdateInterval, 0.0);
+                      });
+                    }
+                    return Container(
+                        alignment: Alignment.topRight,
+                        padding: EdgeInsets.only(right: 16),
+                        child: Text(
+                          value.toStringAsFixed(0),
+                          style: settingsTheme.headline5,
+                        ));
+                  }),
+            ],
+          ),
+          Stack(
+            children: [
+              SliderSettingsTile(
+                settingKey: kLocationUpdateInterval,
+                title: 'Location update: time interval',
+                subtitle:
+                    'Seconds Δ triggering a location update.\nZero causes distance updates.',
+                icon: Icon(Icons.timer),
+                minValue: 0.0,
+                defaultValue: 0,
+                maxValue: 180.0,
+                step: 1.0,
+                maxIcon: Icon(Icons.arrow_upward),
+                minIcon: Icon(Icons.arrow_downward),
+              ),
+              _settings.onDoubleChanged(
+                  settingKey: kLocationUpdateInterval,
+                  defaultValue: 1,
+                  childBuilder: (BuildContext context, double value) {
+                    if (value == 0) {
+                      _settings.save(kLocationUpdateDistanceFilter, 1.0);
+                    } else {
+                      _settings
+                          .getDouble(kLocationUpdateDistanceFilter, 1)
+                          .then((value) {
+                        if (value != 0)
+                          _settings.save(kLocationUpdateDistanceFilter, 0.0);
+                      });
+                    }
+                    return Container(
+                        alignment: Alignment.topRight,
+                        padding: EdgeInsets.only(right: 16),
+                        child: Text(
+                          value.toStringAsFixed(0),
+                          style: settingsTheme.headline5,
+                        ));
+                  }),
+            ],
           ),
           SettingsContainer(
             children: [
