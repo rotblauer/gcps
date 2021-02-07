@@ -15,7 +15,9 @@ const String kPushBatchSize = "pushBatchSize";
 const String kLocationUpdateInterval = "locationUpdateInterval";
 const String kLocationUpdateDistanceFilter = "locationUpdateDistanceFilter";
 const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout";
-const String kLocationDesiredAccuracy = 'locationDesiredAccuracy';
+const String kLocationGarneringDesiredAccuracy = 'locationDesiredAccuracy';
+const String kLocationGarneringElasticityMultiplier =
+    'locationGarneringElasticityMultiplier';
 // const String kLocationUpdateStopTimeou = "locationUpdateStopTimeout";
 
 // class SharedPreferencesHelper {
@@ -331,7 +333,7 @@ class MySettingsScreen extends StatelessWidget {
           ),
 
           RadioSettingsTile(
-            settingKey: kLocationDesiredAccuracy,
+            settingKey: kLocationGarneringDesiredAccuracy,
             icon: Icon(Icons.location_searching),
             title: 'Desired location accuracy',
             defaultKey: 'NAVIGATION',
@@ -347,14 +349,50 @@ class MySettingsScreen extends StatelessWidget {
             },
           ),
           _settings.onStringChanged(
-              settingKey: kLocationDesiredAccuracy,
+              settingKey: kLocationGarneringDesiredAccuracy,
               defaultValue: 'NAVIGATION',
               childBuilder: (BuildContext context, String value) {
                 print('i changed: ' + value);
 
+                bg.BackgroundGeolocation.setConfig(bg.Config(
+                    desiredAccuracy: prefLocationDesiredAccuracy(value)));
+
                 return Container();
               }),
 
+          Stack(
+            children: [
+              SliderSettingsTile(
+                settingKey: kLocationGarneringElasticityMultiplier,
+                title: 'Location elasticity multiplier',
+                subtitle: 'Higher values yield fewer points for fast cats.',
+                icon: Icon(Icons.speed_outlined),
+                minValue: 0.0,
+                defaultValue: 0,
+                maxValue: 8,
+                step: 1.0,
+                maxIcon: Icon(Icons.arrow_upward),
+                minIcon: Icon(Icons.arrow_downward),
+              ),
+              _settings.onDoubleChanged(
+                  settingKey: kLocationGarneringElasticityMultiplier,
+                  defaultValue: 0,
+                  childBuilder: (BuildContext context, double value) {
+                    bg.BackgroundGeolocation.setConfig(
+                        bg.Config(elasticityMultiplier: value.floorToDouble()));
+
+                    return Container(
+                        alignment: Alignment.topRight,
+                        padding: EdgeInsets.only(right: 16),
+                        child: Text(
+                          value.floorToDouble().toStringAsFixed(0),
+                          style: settingsTheme.headline5,
+                        ));
+                  }),
+            ],
+          ),
+
+          // App metadata
           //
           SettingsContainer(
             children: [

@@ -1004,7 +1004,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // This OVERRIDES the locationUpdateInterval, which otherwise
       // wants to do some sort-of-configurable dynamic things.
       distanceFilter: 1,
-      disableElasticity: true,
+      // disableElasticity: true, // == elasticityMultiplier = 0
+      elasticityMultiplier: 0,
       locationUpdateInterval: null,
       fastestLocationUpdateInterval: 1000,
 
@@ -1045,22 +1046,27 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
 
+    // doubles
     Future.wait([
       Settings().getDouble(prefs.kLocationUpdateDistanceFilter, 1),
       Settings().getDouble(prefs.kLocationUpdateInterval, 0),
-      // Settings().getString(prefs.kLocationDesiredAccuracy, 'NAVIGATION'),
+      Settings().getDouble(prefs.kLocationGarneringElasticityMultiplier, 0),
     ]).then((value) {
-      double prefLocationUpdateDistanceFilter = value.elementAt(0).toDouble();
+      double prefLocationUpdateDistanceFilter = value.elementAt(0);
       bgConfig.distanceFilter = prefLocationUpdateDistanceFilter;
 
-      double prefLocationUpdateInterval = value.elementAt(1).toDouble();
+      double prefLocationUpdateInterval = value.elementAt(1);
       bgConfig.locationUpdateInterval = prefLocationUpdateInterval == 0
           ? null
           : prefLocationUpdateInterval ~/ 1 * 1000;
+
+      bgConfig.elasticityMultiplier = value.elementAt(2);
     });
 
+    // strings
     Future.wait([
-      Settings().getString(prefs.kLocationDesiredAccuracy, 'NAVIGATION'),
+      Settings()
+          .getString(prefs.kLocationGarneringDesiredAccuracy, 'NAVIGATION'),
     ]).then((value) {
       bgConfig.desiredAccuracy =
           prefs.prefLocationDesiredAccuracy(value.elementAt(0));
