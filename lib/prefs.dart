@@ -15,6 +15,7 @@ const String kPushBatchSize = "pushBatchSize";
 const String kLocationUpdateInterval = "locationUpdateInterval";
 const String kLocationUpdateDistanceFilter = "locationUpdateDistanceFilter";
 const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout";
+const String kLocationDesiredAccuracy = 'locationDesiredAccuracy';
 // const String kLocationUpdateStopTimeou = "locationUpdateStopTimeout";
 
 // class SharedPreferencesHelper {
@@ -58,6 +59,25 @@ const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout";
 //     return prefs.setDouble(_kPushBatchSize, value);
 //   }
 // }
+
+int prefLocationDesiredAccuracy(String value) {
+  switch (value) {
+    case 'NAVIGATION':
+      return bg.Config.DESIRED_ACCURACY_NAVIGATION;
+    case 'HIGH':
+      return bg.Config.DESIRED_ACCURACY_HIGH;
+    case 'MEDIUM':
+      return bg.Config.DESIRED_ACCURACY_MEDIUM;
+    case 'LOW':
+      return bg.Config.DESIRED_ACCURACY_LOW;
+    case 'VERY_LOW':
+      return bg.Config.DESIRED_ACCURACY_VERY_LOW;
+    case 'LOWEST':
+      return bg.Config.DESIRED_ACCURACY_LOWEST;
+  }
+  return bg.Config.DESIRED_ACCURACY_NAVIGATION;
+}
+
 class MySettingsScreen extends StatelessWidget {
   final String deviceUUID;
   final String deviceName;
@@ -142,19 +162,13 @@ class MySettingsScreen extends StatelessWidget {
       );
     }
     Debounce.milliseconds(500, updateBGConfig, [newConfig]);
-
-    // // Update BackgroundLocation config.
-    // bg.BackgroundGeolocation.setConfig(bg.Config(
-    //   distanceFilter: _locationDistanceFilter,
-    //   locationUpdateInterval:
-    //       value == 0 ? null : value ~/ 1 * 1000,
-    // ));
   }
 
   @override
   Widget build(BuildContext context) {
     TextTheme settingsTheme =
         Theme.of(context).textTheme.apply(bodyColor: Colors.tealAccent);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
@@ -234,6 +248,8 @@ class MySettingsScreen extends StatelessWidget {
                   }),
             ],
           ),
+
+          //
           SettingsContainer(
             child: Text('Push (upload) configuration',
                 style: Theme.of(context).textTheme.overline),
@@ -307,6 +323,39 @@ class MySettingsScreen extends StatelessWidget {
                   }),
             ],
           ),
+
+          //
+          SettingsContainer(
+            child: Text('Location garnering configuration',
+                style: Theme.of(context).textTheme.overline),
+          ),
+
+          RadioSettingsTile(
+            settingKey: kLocationDesiredAccuracy,
+            icon: Icon(Icons.location_searching),
+            title: 'Desired location accuracy',
+            defaultKey: 'NAVIGATION',
+            expandable: true,
+            initiallyExpanded: false,
+            values: {
+              'NAVIGATION': 'Navigation',
+              'HIGH': 'High',
+              'MEDIUM': 'Medium',
+              'LOW': 'Low',
+              'VERY_LOW': 'Very low',
+              'LOWEST': 'Lowest',
+            },
+          ),
+          _settings.onStringChanged(
+              settingKey: kLocationDesiredAccuracy,
+              defaultValue: 'NAVIGATION',
+              childBuilder: (BuildContext context, String value) {
+                print('i changed: ' + value);
+
+                return Container();
+              }),
+
+          //
           SettingsContainer(
             children: [
               Text('App version', style: Theme.of(context).textTheme.overline),

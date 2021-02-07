@@ -997,69 +997,83 @@ class _MyHomePageState extends State<MyHomePage> {
     ////
     // 2.  Configure the plugin
     //
+
+    bg.Config bgConfig = bg.Config(
+      desiredAccuracy: bg.Config.DESIRED_ACCURACY_NAVIGATION,
+
+      // This OVERRIDES the locationUpdateInterval, which otherwise
+      // wants to do some sort-of-configurable dynamic things.
+      distanceFilter: 1,
+      disableElasticity: true,
+      locationUpdateInterval: null,
+      fastestLocationUpdateInterval: 1000,
+
+      // 100 m/s ~> 223 mi/h; planes grounded.
+      speedJumpFilter: 100,
+
+      //
+      isMoving: true,
+      stopTimeout: 2, // minutes... right?
+      minimumActivityRecognitionConfidence: 25, // default: 75
+
+      // We must know what we're doing.
+      disableStopDetection: true,
+      stopOnStationary: false,
+      pausesLocationUpdatesAutomatically: false,
+
+      // But we probably don't really know what we're doing.
+      // preventSuspend: true,
+
+      disableAutoSyncOnCellular: true,
+      maxRecordsToPersist: 3600,
+      activityRecognitionInterval: 10000, // default=10000=10s
+      allowIdenticalLocations: true,
+
+      // I can't believe they let you do this.
+      stopOnTerminate: false,
+      enableHeadless: true,
+      startOnBoot: true,
+      heartbeatInterval: 1800,
+
+      // Buggers.
+      debug: false,
+      logLevel: bg.Config.LOG_LEVEL_INFO,
+      persistMode: bg.Config.PERSIST_MODE_NONE,
+
+      backgroundPermissionRationale: bg.PermissionRationale(
+        message: "Cats love it",
+      ),
+    );
+
     Future.wait([
       Settings().getDouble(prefs.kLocationUpdateDistanceFilter, 1),
-      Settings().getDouble(prefs.kLocationUpdateInterval, 0)
+      Settings().getDouble(prefs.kLocationUpdateInterval, 0),
+      // Settings().getString(prefs.kLocationDesiredAccuracy, 'NAVIGATION'),
     ]).then((value) {
       double prefLocationUpdateDistanceFilter = value.elementAt(0).toDouble();
+      bgConfig.distanceFilter = prefLocationUpdateDistanceFilter;
+
       double prefLocationUpdateInterval = value.elementAt(1).toDouble();
+      bgConfig.locationUpdateInterval = prefLocationUpdateInterval == 0
+          ? null
+          : prefLocationUpdateInterval ~/ 1 * 1000;
+    });
 
-      bg.BackgroundGeolocation.ready(bg.Config(
-        desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
+    Future.wait([
+      Settings().getString(prefs.kLocationDesiredAccuracy, 'NAVIGATION'),
+    ]).then((value) {
+      bgConfig.desiredAccuracy =
+          prefs.prefLocationDesiredAccuracy(value.elementAt(0));
+    });
 
-        // This OVERRIDES the locationUpdateInterval, which otherwise
-        // wants to do some sort-of-configurable dynamic things.
-        distanceFilter: prefLocationUpdateDistanceFilter,
-        disableElasticity: true,
-        locationUpdateInterval: prefLocationUpdateInterval == 0
-            ? null
-            : prefLocationUpdateInterval ~/ 1 * 1000,
-        fastestLocationUpdateInterval: 1000,
-
-        // 100 m/s ~> 223 mi/h; planes grounded.
-        speedJumpFilter: 100,
-
+    bg.BackgroundGeolocation.ready(bgConfig).then((bg.State state) {
+      if (!state.enabled) {
+        ////
+        // 3.  Start the plugin.
         //
-        isMoving: true,
-        stopTimeout: 2, // minutes... right?
-        minimumActivityRecognitionConfidence: 25, // default: 75
-
-        // We must know what we're doing.
-        disableStopDetection: true,
-        stopOnStationary: false,
-        pausesLocationUpdatesAutomatically: false,
-
-        // But we probably don't really know what we're doing.
-        // preventSuspend: true,
-
-        disableAutoSyncOnCellular: true,
-        maxRecordsToPersist: 3600,
-        activityRecognitionInterval: 10000, // default=10000=10s
-        allowIdenticalLocations: true,
-
-        // I can't believe they let you do this.
-        stopOnTerminate: false,
-        enableHeadless: true,
-        startOnBoot: true,
-        heartbeatInterval: 1800,
-
-        // Buggers.
-        debug: false,
-        logLevel: bg.Config.LOG_LEVEL_INFO,
-        persistMode: bg.Config.PERSIST_MODE_NONE,
-
-        backgroundPermissionRationale: bg.PermissionRationale(
-          message: "Cats love it",
-        ),
-      )).then((bg.State state) {
-        if (!state.enabled) {
-          ////
-          // 3.  Start the plugin.
-          //
-          bg.BackgroundGeolocation.start();
-          // bg.BackgroundGeolocation.setOdometer(0);
-        }
-      });
+        bg.BackgroundGeolocation.start();
+        // bg.BackgroundGeolocation.setOdometer(0);
+      }
     });
 
     _isManuallyRequestingLocation = true;
