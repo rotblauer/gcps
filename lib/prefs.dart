@@ -162,8 +162,8 @@ class MySettingsScreen extends StatelessWidget {
       );
     } else {
       newConfig = bg.Config(
-        distanceFilter: 0,
-        locationUpdateInterval: _locationUpdateInterval ~/ 1 * 1000,
+        distanceFilter: null,
+        locationUpdateInterval: _locationUpdateInterval * 1000 ~/ 1,
       );
     }
     Debounce.milliseconds(500, updateBGConfig, [newConfig]);

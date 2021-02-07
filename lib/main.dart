@@ -1011,10 +1011,10 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
 
-    // Fired whenever the state of location-services changes.  Always fired at boot
-    bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
-      print('[providerchange] - $event');
-    });
+    // // Fired whenever the state of location-services changes.  Always fired at boot
+    // bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
+    //   print('[providerchange] - $event');
+    // });
 
     ////
     // 2.  Configure the plugin
@@ -1081,7 +1081,7 @@ class _MyHomePageState extends State<MyHomePage> {
       double prefLocationUpdateInterval = value.elementAt(1);
       bgConfig.locationUpdateInterval = prefLocationUpdateInterval == 0
           ? null
-          : prefLocationUpdateInterval ~/ 1 * 1000;
+          : prefLocationUpdateInterval * 1000 ~/ 1;
 
       bgConfig.elasticityMultiplier = value.elementAt(2);
       bgConfig.stopTimeout = value.elementAt(3).floor();
