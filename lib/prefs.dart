@@ -21,6 +21,7 @@ const String kLocationGarneringElasticityMultiplier =
     'locationGarneringElasticityMultiplier';
 const String kLocationGarneringStationaryTimeout =
     'locationGarneringStationaryTimeout';
+const String kLocationDisableStopDetection = 'kLocationDisableStopDetection';
 // const String kLocationUpdateStopTimeou = "locationUpdateStopTimeout";
 
 // class SharedPreferencesHelper {
@@ -289,6 +290,22 @@ class MySettingsScreen extends StatelessWidget {
                   }),
             ],
           ),
+
+          // kLocationDisableStopDetection
+          SwitchSettingsTile(
+            settingKey: kLocationDisableStopDetection,
+            title: 'Enable stop detection',
+            icon: Icon(Icons.trip_origin),
+            defaultValue: true,
+          ),
+          _settings.onBoolChanged(
+              settingKey: kLocationDisableStopDetection,
+              defaultValue: true,
+              childBuilder: (BuildContext context, bool value) {
+                bg.BackgroundGeolocation.setConfig(
+                    bg.Config(disableStopDetection: !value));
+                return Container();
+              }),
 
           //
           SettingsContainer(
