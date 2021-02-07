@@ -82,6 +82,88 @@ class MySettingsScreen extends StatelessWidget {
         // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SettingsContainer(
+            child: Text('Location update configuration',
+                style: Theme.of(context).textTheme.overline),
+          ),
+          Stack(
+            children: [
+              SliderSettingsTile(
+                settingKey: kLocationUpdateDistanceFilter,
+                title: 'Distance filter',
+                subtitle:
+                    'Δ meters triggering a location update.\nZero causes time updates.',
+                icon: Icon(Icons.my_location_outlined),
+                minValue: 0.0,
+                defaultValue: 1,
+                maxValue: 100.0,
+                step: 1.0,
+                maxIcon: Icon(Icons.arrow_upward),
+                minIcon: Icon(Icons.arrow_downward),
+              ),
+              _settings.onDoubleChanged(
+                  settingKey: kLocationUpdateDistanceFilter,
+                  defaultValue: 1,
+                  childBuilder: (BuildContext context, double value) {
+                    if (value == 0) {
+                      _settings.save(kLocationUpdateInterval, 1.0);
+                    } else {
+                      _settings
+                          .getDouble(kLocationUpdateInterval, 1)
+                          .then((value) {
+                        if (value != 0)
+                          _settings.save(kLocationUpdateInterval, 0.0);
+                      });
+                    }
+                    return Container(
+                        alignment: Alignment.topRight,
+                        padding: EdgeInsets.only(right: 16),
+                        child: Text(
+                          value.toStringAsFixed(0),
+                          style: settingsTheme.headline5,
+                        ));
+                  }),
+            ],
+          ),
+          Stack(
+            children: [
+              SliderSettingsTile(
+                settingKey: kLocationUpdateInterval,
+                title: 'Time interval',
+                subtitle:
+                    'Δ seconds triggering a location update.\nZero causes distance updates.',
+                icon: Icon(Icons.timer),
+                minValue: 0.0,
+                defaultValue: 0,
+                maxValue: 180.0,
+                step: 1.0,
+                maxIcon: Icon(Icons.arrow_upward),
+                minIcon: Icon(Icons.arrow_downward),
+              ),
+              _settings.onDoubleChanged(
+                  settingKey: kLocationUpdateInterval,
+                  defaultValue: 1,
+                  childBuilder: (BuildContext context, double value) {
+                    if (value == 0) {
+                      _settings.save(kLocationUpdateDistanceFilter, 1.0);
+                    } else {
+                      _settings
+                          .getDouble(kLocationUpdateDistanceFilter, 1)
+                          .then((value) {
+                        if (value != 0)
+                          _settings.save(kLocationUpdateDistanceFilter, 0.0);
+                      });
+                    }
+                    return Container(
+                        alignment: Alignment.topRight,
+                        padding: EdgeInsets.only(right: 16),
+                        child: Text(
+                          value.toStringAsFixed(0),
+                          style: settingsTheme.headline5,
+                        ));
+                  }),
+            ],
+          ),
+          SettingsContainer(
             child: Text('Push (upload) configuration',
                 style: Theme.of(context).textTheme.overline),
           ),
@@ -144,88 +226,6 @@ class MySettingsScreen extends StatelessWidget {
                   settingKey: kPushBatchSize,
                   defaultValue: 100,
                   childBuilder: (BuildContext context, double value) {
-                    return Container(
-                        alignment: Alignment.topRight,
-                        padding: EdgeInsets.only(right: 16),
-                        child: Text(
-                          value.toStringAsFixed(0),
-                          style: settingsTheme.headline5,
-                        ));
-                  }),
-            ],
-          ),
-          SettingsContainer(
-            child: Text('Location update configuration',
-                style: Theme.of(context).textTheme.overline),
-          ),
-          Stack(
-            children: [
-              SliderSettingsTile(
-                settingKey: kLocationUpdateDistanceFilter,
-                title: 'Location update: distance filter',
-                subtitle:
-                    'Meters Δ triggering a location update.\nZero causes time updates.',
-                icon: Icon(Icons.my_location_outlined),
-                minValue: 0.0,
-                defaultValue: 1,
-                maxValue: 100.0,
-                step: 1.0,
-                maxIcon: Icon(Icons.arrow_upward),
-                minIcon: Icon(Icons.arrow_downward),
-              ),
-              _settings.onDoubleChanged(
-                  settingKey: kLocationUpdateDistanceFilter,
-                  defaultValue: 1,
-                  childBuilder: (BuildContext context, double value) {
-                    if (value == 0) {
-                      _settings.save(kLocationUpdateInterval, 1.0);
-                    } else {
-                      _settings
-                          .getDouble(kLocationUpdateInterval, 1)
-                          .then((value) {
-                        if (value != 0)
-                          _settings.save(kLocationUpdateInterval, 0.0);
-                      });
-                    }
-                    return Container(
-                        alignment: Alignment.topRight,
-                        padding: EdgeInsets.only(right: 16),
-                        child: Text(
-                          value.toStringAsFixed(0),
-                          style: settingsTheme.headline5,
-                        ));
-                  }),
-            ],
-          ),
-          Stack(
-            children: [
-              SliderSettingsTile(
-                settingKey: kLocationUpdateInterval,
-                title: 'Location update: time interval',
-                subtitle:
-                    'Seconds Δ triggering a location update.\nZero causes distance updates.',
-                icon: Icon(Icons.timer),
-                minValue: 0.0,
-                defaultValue: 0,
-                maxValue: 180.0,
-                step: 1.0,
-                maxIcon: Icon(Icons.arrow_upward),
-                minIcon: Icon(Icons.arrow_downward),
-              ),
-              _settings.onDoubleChanged(
-                  settingKey: kLocationUpdateInterval,
-                  defaultValue: 1,
-                  childBuilder: (BuildContext context, double value) {
-                    if (value == 0) {
-                      _settings.save(kLocationUpdateDistanceFilter, 1.0);
-                    } else {
-                      _settings
-                          .getDouble(kLocationUpdateDistanceFilter, 1)
-                          .then((value) {
-                        if (value != 0)
-                          _settings.save(kLocationUpdateDistanceFilter, 0.0);
-                      });
-                    }
                     return Container(
                         alignment: Alignment.topRight,
                         padding: EdgeInsets.only(right: 16),
