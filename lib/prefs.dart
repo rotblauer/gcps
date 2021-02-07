@@ -2,6 +2,10 @@
 // import 'package:gcps/config.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
+    as bg;
 
 const String kAllowPushWithMobile = "allowPushWithMobile";
 const String kAllowPushWithWifi = "allowPushWithWifi";
@@ -54,6 +58,15 @@ const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout";
 //   }
 // }
 
+// class MySettingsScreen extends StatefulWidget {
+//   const MySettingsScreen({
+//     Key key,
+//   }) : super(key: key);
+
+//   @override
+//   _SettingsScreen createState() => _SettingsScreen();
+// }
+
 class MySettingsScreen extends StatelessWidget {
   final String deviceUUID;
   final String deviceName;
@@ -67,6 +80,57 @@ class MySettingsScreen extends StatelessWidget {
   }) : super(key: key);
 
   final Settings _settings = Settings();
+
+  double _locationUpdateDistanceFilter;
+  double _locationUpdateInterval;
+
+  handleLocationUpdateChanges(String changedKey, double newValue) {
+    // double _locationUpdateDistanceFilter;
+    // double _locationUpdateInterval;
+
+    // _settings.getDouble(kLocationUpdateDistanceFilter, 1).then((value) {
+    //   _locationUpdateDistanceFilter = value;
+    // });
+    // _settings.getDouble(kLocationUpdateInterval, 0).then((value) {
+    //   _locationUpdateInterval = value;
+    // });
+
+    if (changedKey == kLocationUpdateDistanceFilter) {
+      if (_locationUpdateDistanceFilter == newValue) return;
+      // Distance filter changed, adjust the interval.
+      _locationUpdateDistanceFilter = newValue;
+      //
+      if (newValue != 0 && _locationUpdateInterval != 0) {
+        _locationUpdateInterval = 0.0;
+        _settings.save(kLocationUpdateInterval, _locationUpdateInterval);
+      } else if (newValue == 0 && _locationUpdateInterval == 0) {
+        _locationUpdateInterval = 1.0;
+        _settings.save(kLocationUpdateInterval, _locationUpdateInterval);
+      }
+      // _settings.save(kLocationUpdateInterval, _locationUpdateInterval);
+      //
+      // _settings.pingDouble(kLocationUpdateDistanceFilter, 1);
+      // _settings.pingDouble(kLocationUpdateInterval, 0);
+    } else {
+      if (_locationUpdateInterval == newValue) return;
+      // Interval changed, adjust the distance filter.
+      _locationUpdateInterval = newValue;
+      //
+      if (newValue != 0 && _locationUpdateDistanceFilter != 0) {
+        _locationUpdateDistanceFilter = 0.0;
+        _settings.save(
+            kLocationUpdateDistanceFilter, _locationUpdateDistanceFilter);
+      } else if (newValue == 0 && _locationUpdateDistanceFilter == 0) {
+        _locationUpdateDistanceFilter = 1.0;
+        _settings.save(
+            kLocationUpdateDistanceFilter, _locationUpdateDistanceFilter);
+      }
+
+      // _settings.pingDouble(kLocationUpdateDistanceFilter, 1);
+      // _settings.pingDouble(kLocationUpdateInterval, 0);
+      //
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +158,7 @@ class MySettingsScreen extends StatelessWidget {
                     'Δ meters triggering a location update.\nZero causes time updates.',
                 icon: Icon(Icons.my_location_outlined),
                 minValue: 0.0,
-                defaultValue: 1,
+                defaultValue: 1.0,
                 maxValue: 100.0,
                 step: 1.0,
                 maxIcon: Icon(Icons.arrow_upward),
@@ -103,22 +167,24 @@ class MySettingsScreen extends StatelessWidget {
               _settings.onDoubleChanged(
                   settingKey: kLocationUpdateDistanceFilter,
                   defaultValue: 1,
-                  childBuilder: (BuildContext context, double value) {
-                    if (value == 0) {
-                      _settings.save(kLocationUpdateInterval, 1.0);
-                    } else {
-                      _settings
-                          .getDouble(kLocationUpdateInterval, 1)
-                          .then((value) {
-                        if (value != 0)
-                          _settings.save(kLocationUpdateInterval, 0.0);
-                      });
-                    }
+                  childBuilder:
+                      (BuildContext context, double newDistanceFilterValue) {
+                    handleLocationUpdateChanges(
+                        kLocationUpdateDistanceFilter, newDistanceFilterValue);
+
+                    // // Update BackgroundLocation config.
+                    // bg.BackgroundGeolocation.setConfig(bg.Config(
+                    //   distanceFilter: value,
+                    //   locationUpdateInterval: _locationUpdateInterval == 0
+                    //       ? null
+                    //       : _locationUpdateInterval ~/ 1 * 1000,
+                    // ));
+
                     return Container(
                         alignment: Alignment.topRight,
                         padding: EdgeInsets.only(right: 16),
                         child: Text(
-                          value.toStringAsFixed(0),
+                          newDistanceFilterValue.toStringAsFixed(0) + 'm',
                           style: settingsTheme.headline5,
                         ));
                   }),
@@ -133,7 +199,7 @@ class MySettingsScreen extends StatelessWidget {
                     'Δ seconds triggering a location update.\nZero causes distance updates.',
                 icon: Icon(Icons.timer),
                 minValue: 0.0,
-                defaultValue: 0,
+                defaultValue: 1.0,
                 maxValue: 180.0,
                 step: 1.0,
                 maxIcon: Icon(Icons.arrow_upward),
@@ -141,23 +207,24 @@ class MySettingsScreen extends StatelessWidget {
               ),
               _settings.onDoubleChanged(
                   settingKey: kLocationUpdateInterval,
-                  defaultValue: 1,
-                  childBuilder: (BuildContext context, double value) {
-                    if (value == 0) {
-                      _settings.save(kLocationUpdateDistanceFilter, 1.0);
-                    } else {
-                      _settings
-                          .getDouble(kLocationUpdateDistanceFilter, 1)
-                          .then((value) {
-                        if (value != 0)
-                          _settings.save(kLocationUpdateDistanceFilter, 0.0);
-                      });
-                    }
+                  defaultValue: 0,
+                  childBuilder:
+                      (BuildContext context, double newIntervalValue) {
+                    handleLocationUpdateChanges(
+                        kLocationUpdateInterval, newIntervalValue);
+
+                    // // Update BackgroundLocation config.
+                    // bg.BackgroundGeolocation.setConfig(bg.Config(
+                    //   distanceFilter: _locationDistanceFilter,
+                    //   locationUpdateInterval:
+                    //       value == 0 ? null : value ~/ 1 * 1000,
+                    // ));
+
                     return Container(
                         alignment: Alignment.topRight,
                         padding: EdgeInsets.only(right: 16),
                         child: Text(
-                          value.toStringAsFixed(0),
+                          newIntervalValue.toStringAsFixed(0) + 's',
                           style: settingsTheme.headline5,
                         ));
                   }),
