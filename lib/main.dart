@@ -351,9 +351,12 @@ class ShapesPainter extends CustomPainter {
             longitude2: maxLon)
         .distance();
 
-    String legendLabel = '1m';
-    double legendScaleDist = 1;
-    if (maxDistMeters > 100000) {
+    String legendLabel = '1cm';
+    double legendScaleDist = 0.01;
+    if (maxDistMeters > 1000000) {
+      legendScaleDist = 1000000;
+      legendLabel = "1000km";
+    } else if (maxDistMeters > 100000) {
       legendScaleDist = 100000;
       legendLabel = "100km";
     } else if (maxDistMeters > 10000) {
@@ -374,6 +377,12 @@ class ShapesPainter extends CustomPainter {
     } else if (maxDistMeters > 10) {
       legendScaleDist = 10;
       legendLabel = "10m";
+    } else if (maxDistMeters > 1) {
+      legendScaleDist = 1;
+      legendLabel = "1m";
+    } else if (maxDistMeters > 0.1) {
+      legendScaleDist = 0.1;
+      legendLabel = "10cm";
     }
 
     // Scale legend.
@@ -1518,7 +1527,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ); // set up the AlertDialog
                                     Widget continueButton = ElevatedButton(
-                                      child: Text("Upload"),
+                                      child: Text("Yes, upload"),
                                       onPressed: () async {
                                         this._pushTracksBatching();
                                         Navigator.of(context,
@@ -1924,7 +1933,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ); // set up the AlertDialog
               Widget continueButton = ElevatedButton(
-                child: Text('Yes, reset.'),
+                child: Text('Yes, reset'),
                 onPressed: () {
                   setState(() {
                     bg.BackgroundGeolocation.setOdometer(0);

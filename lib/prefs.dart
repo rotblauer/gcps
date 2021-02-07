@@ -7,6 +7,10 @@ const String kAllowPushWithMobile = "allowPushWithMobile";
 const String kAllowPushWithWifi = "allowPushWithWifi";
 const String kPushInterval = "pushIntervalNumber";
 const String kPushBatchSize = "pushBatchSize";
+const String kLocationUpdateInterval = "locationUpdateInterval";
+const String kLocationUpdateDistanceFilter = "locationUpdateDistanceFilter";
+const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout";
+// const String kLocationUpdateStopTimeou = "locationUpdateStopTimeout";
 
 // class SharedPreferencesHelper {
 //   Future<bool> getAllowPushWithMobile() async {
@@ -64,6 +68,8 @@ class MySettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Settings settings = Settings();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
@@ -77,7 +83,19 @@ class MySettingsScreen extends StatelessWidget {
             child: Text('Push (upload) configuration',
                 style: Theme.of(context).textTheme.overline),
           ),
-          Settings().onDoubleChanged(
+          SwitchSettingsTile(
+            settingKey: kAllowPushWithWifi,
+            title: 'Push with wifi data',
+            icon: Icon(Icons.wifi),
+            defaultValue: true,
+          ),
+          SwitchSettingsTile(
+            settingKey: kAllowPushWithMobile,
+            title: 'Push with mobile data',
+            icon: Icon(Icons.network_cell),
+            defaultValue: false,
+          ),
+          settings.onDoubleChanged(
               settingKey: kPushInterval,
               defaultValue: 100,
               childBuilder: (BuildContext context, double value) {
@@ -90,7 +108,7 @@ class MySettingsScreen extends StatelessWidget {
                           //     style: Theme.of(context).textTheme.bodyText2),
                           Text(
                             value.toStringAsFixed(0),
-                            style: Theme.of(context).textTheme.headline4,
+                            style: Theme.of(context).textTheme.headline5,
                           ),
                         ],
                       )
@@ -109,7 +127,7 @@ class MySettingsScreen extends StatelessWidget {
             maxIcon: Icon(Icons.arrow_upward),
             minIcon: Icon(Icons.arrow_downward),
           ),
-          Settings().onDoubleChanged(
+          settings.onDoubleChanged(
               settingKey: kPushBatchSize,
               defaultValue: 100,
               childBuilder: (BuildContext context, double value) {
@@ -122,7 +140,7 @@ class MySettingsScreen extends StatelessWidget {
                           //     style: Theme.of(context).textTheme.bodyText2),
                           Text(
                             value.toStringAsFixed(0),
-                            style: Theme.of(context).textTheme.headline4,
+                            style: Theme.of(context).textTheme.headline5,
                           ),
                         ],
                       )
@@ -139,18 +157,6 @@ class MySettingsScreen extends StatelessWidget {
             step: 100.0,
             maxIcon: Icon(Icons.arrow_upward),
             minIcon: Icon(Icons.arrow_downward),
-          ),
-          SwitchSettingsTile(
-            settingKey: kAllowPushWithWifi,
-            title: 'Push with wifi data',
-            icon: Icon(Icons.wifi),
-            defaultValue: true,
-          ),
-          SwitchSettingsTile(
-            settingKey: kAllowPushWithMobile,
-            title: 'Push with mobile data',
-            icon: Icon(Icons.network_cell),
-            defaultValue: false,
           ),
           SettingsContainer(
             children: [
