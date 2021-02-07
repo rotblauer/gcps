@@ -157,8 +157,8 @@ const Map<String, Color> activityColors = {
   'on_foot': Colors.blue,
   'walking': Colors.blue,
   //
-  'Running': Colors.greenAccent,
-  'running': Colors.greenAccent,
+  'Running': Colors.green,
+  'running': Colors.green,
   //
   'Bike': Colors.yellow,
   'on_bicycle': Colors.yellow,
@@ -224,20 +224,25 @@ class ShapesPainter extends CustomPainter {
 
     // Altitude/elevation stuff
     double sizeAltW = sizeW;
-    double sizeAltH = sizeH / 3;
+    double sizeAltH = sizeH / 4;
 
     Paint lastElevPointPaint = Paint()
       ..color = Colors.tealAccent
       ..style = PaintingStyle.fill;
     Path elevPath = Path();
     final elevPaint = Paint();
-    elevPaint.color = Colors.tealAccent.withAlpha(155);
+    elevPaint.color = Colors.cyan.withAlpha(155);
     elevPaint.style = PaintingStyle.stroke;
     elevPaint.strokeWidth = 1;
     double elevSpread = (maxAlt - minAlt);
     double elevScaleY = sizeAltH / (elevSpread > 0 ? elevSpread : 1);
     double elevScaleX = sizeAltW / locations.length;
     Offset elevGraphOrigin = Offset(wMargin, sizeAltH);
+
+    final paintStationaryConnections = Paint();
+    paintStationaryConnections.color = Colors.white24;
+    paintStationaryConnections.strokeWidth = 0.8;
+    paintStationaryConnections.style = PaintingStyle.stroke;
 
     final paint = Paint();
     paint.color = Colors.deepOrange;
@@ -287,6 +292,7 @@ class ShapesPainter extends CustomPainter {
 
       if (isFirst) {
         if (loc.activity_type == 'still') paint.style = PaintingStyle.fill;
+
         canvas.drawCircle(Offset(relX, relY), isLast ? 4.0 : 2.0, paint);
         paint.style = PaintingStyle.stroke;
 
@@ -298,6 +304,10 @@ class ShapesPainter extends CustomPainter {
           canvas.drawCircle(Offset(relX, relY), isLast ? 4.0 : 2.0, paint);
           paint.style = PaintingStyle.stroke;
 
+          // path = Path();
+          // path.moveTo(relX, relY);
+          path.arcToPoint(Offset(relX, relY));
+          canvas.drawPath(path, paintStationaryConnections);
           path = Path();
           path.moveTo(relX, relY);
         } else {
@@ -323,6 +333,11 @@ class ShapesPainter extends CustomPainter {
 
         if (loc.activity_type != 'still') {
           paint.color = activityColor;
+          paint.style = PaintingStyle.stroke;
+          paint.strokeWidth = 1;
+          canvas.drawCircle(Offset(relX, relY), 6, paint);
+        } else {
+          paint.color = MyTheme.accentColor;
           paint.style = PaintingStyle.stroke;
           paint.strokeWidth = 1;
           canvas.drawCircle(Offset(relX, relY), 6, paint);
@@ -439,6 +454,13 @@ class ShapesPainter extends CustomPainter {
       tp.layout();
       tp.paint(
           canvas, Offset(wMargin + sizeW - (tp.width), -tp.height - 4 / 2));
+
+      canvas.drawRect(
+          Rect.fromPoints(
+              Offset(wMargin, 0), Offset(sizeW + wMargin, sizeAltH)),
+          elevPaint
+            ..color = elevPaint.color.withAlpha(20)
+            ..style = PaintingStyle.fill);
     }
 
     // Color legend.
@@ -1759,7 +1781,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   // size: Size.infinite,
                   painter: ShapesPainter(locations: _paintList),
                   child: Container(
-                    height: 300,
+                    height: 400,
                   ),
                 ),
               )
@@ -1887,9 +1909,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                           _secondsSinceLastPoint.toDouble()),
                                   style: TextStyle(color: Colors.white),
                                 ),
-                                Container(
-                                  width: 4,
-                                ),
                               ],
                             ),
                           ),
@@ -1900,7 +1919,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               bottom: BorderSide(
                                   color: colorForDurationSinceLastPoint(
                                       _secondsSinceLastPoint),
-                                  width: 4))),
+                                  width: 3))),
                     ),
                   ],
                 ),
