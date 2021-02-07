@@ -57,22 +57,12 @@ const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout";
 //     return prefs.setDouble(_kPushBatchSize, value);
 //   }
 // }
-
-class MySettingsScreen extends StatefulWidget {
-  const MySettingsScreen({
-    Key key,
-  }) : super(key: key);
-
-  @override
-  _SettingsScreen createState() => _SettingsScreen();
-}
-
-class _SettingsScreen extends State<MySettingsScreen> {
+class MySettingsScreen extends StatelessWidget {
   final String deviceUUID;
   final String deviceName;
   final String deviceVersion;
 
-  _SettingsScreen({
+  MySettingsScreen({
     Key key,
     this.deviceUUID,
     this.deviceName,
@@ -81,29 +71,30 @@ class _SettingsScreen extends State<MySettingsScreen> {
 
   final Settings _settings = Settings();
 
-  double _locationUpdateDistanceFilter;
-  double _locationUpdateInterval;
+  double _locationUpdateDistanceFilter = 1;
+  double _locationUpdateInterval = 0;
 
   handleLocationUpdateChanges(String changedKey, double newValue) {
     // double _locationUpdateDistanceFilter;
     // double _locationUpdateInterval;
 
-    // _settings.getDouble(kLocationUpdateDistanceFilter, 1).then((value) {
-    //   _locationUpdateDistanceFilter = value;
-    // });
-    // _settings.getDouble(kLocationUpdateInterval, 0).then((value) {
-    //   _locationUpdateInterval = value;
-    // });
-
+    _settings.getDouble(kLocationUpdateDistanceFilter, 1).then((value) {
+      _locationUpdateDistanceFilter = value;
+    });
+    _settings.getDouble(kLocationUpdateInterval, 0).then((value) {
+      _locationUpdateInterval = value;
+    });
+    print(changedKey + ': ' + newValue?.toString());
     if (changedKey == kLocationUpdateDistanceFilter) {
-      if (_locationUpdateDistanceFilter == newValue) return;
       // Distance filter changed, adjust the interval.
+      if (_locationUpdateDistanceFilter == newValue) return;
       _locationUpdateDistanceFilter = newValue;
+
       //
-      if (newValue != 0 && _locationUpdateInterval != 0) {
+      if (newValue != 0 && _locationUpdateInterval > 0) {
         _locationUpdateInterval = 0.0;
         _settings.save(kLocationUpdateInterval, _locationUpdateInterval);
-      } else if (newValue == 0 && _locationUpdateInterval == 0) {
+      } else if (newValue == 0 && _locationUpdateInterval <= 0) {
         _locationUpdateInterval = 1.0;
         _settings.save(kLocationUpdateInterval, _locationUpdateInterval);
       }
@@ -111,16 +102,18 @@ class _SettingsScreen extends State<MySettingsScreen> {
       //
       // _settings.pingDouble(kLocationUpdateDistanceFilter, 1);
       // _settings.pingDouble(kLocationUpdateInterval, 0);
-    } else {
-      if (_locationUpdateInterval == newValue) return;
+    } else if (changedKey == kLocationUpdateInterval) {
       // Interval changed, adjust the distance filter.
+
+      if (_locationUpdateInterval == newValue) return;
       _locationUpdateInterval = newValue;
+
       //
-      if (newValue != 0 && _locationUpdateDistanceFilter != 0) {
+      if (newValue != 0 && _locationUpdateDistanceFilter > 0) {
         _locationUpdateDistanceFilter = 0.0;
         _settings.save(
             kLocationUpdateDistanceFilter, _locationUpdateDistanceFilter);
-      } else if (newValue == 0 && _locationUpdateDistanceFilter == 0) {
+      } else if (newValue == 0 && _locationUpdateDistanceFilter <= 0) {
         _locationUpdateDistanceFilter = 1.0;
         _settings.save(
             kLocationUpdateDistanceFilter, _locationUpdateDistanceFilter);
@@ -158,7 +151,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
                     'Δ meters triggering a location update.\nZero causes time updates.',
                 icon: Icon(Icons.my_location_outlined),
                 minValue: 0.0,
-                defaultValue: 1.0,
+                defaultValue: 1,
                 maxValue: 100.0,
                 step: 1.0,
                 maxIcon: Icon(Icons.arrow_upward),
@@ -199,7 +192,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
                     'Δ seconds triggering a location update.\nZero causes distance updates.',
                 icon: Icon(Icons.timer),
                 minValue: 0.0,
-                defaultValue: 1.0,
+                defaultValue: 0,
                 maxValue: 180.0,
                 step: 1.0,
                 maxIcon: Icon(Icons.arrow_upward),
