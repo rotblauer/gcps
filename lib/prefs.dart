@@ -15,9 +15,12 @@ const String kPushBatchSize = "pushBatchSize";
 const String kLocationUpdateInterval = "locationUpdateInterval";
 const String kLocationUpdateDistanceFilter = "locationUpdateDistanceFilter";
 const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout";
-const String kLocationGarneringDesiredAccuracy = 'locationDesiredAccuracy';
+const String kLocationGarneringDesiredAccuracy =
+    'kLocationGarneringDesiredAccuracy';
 const String kLocationGarneringElasticityMultiplier =
     'locationGarneringElasticityMultiplier';
+const String kLocationGarneringStationaryTimeout =
+    'locationGarneringStationaryTimeout';
 // const String kLocationUpdateStopTimeou = "locationUpdateStopTimeout";
 
 // class SharedPreferencesHelper {
@@ -181,9 +184,13 @@ class MySettingsScreen extends StatelessWidget {
         // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SettingsContainer(
-            child: Text('Location update configuration',
-                style: Theme.of(context).textTheme.overline),
-          ),
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Location update configuration',
+                  style: Theme.of(context).textTheme.overline),
+            ],
+          )),
           Stack(
             children: [
               SliderSettingsTile(
@@ -211,7 +218,7 @@ class MySettingsScreen extends StatelessWidget {
                         alignment: Alignment.topRight,
                         padding: EdgeInsets.only(right: 16),
                         child: Text(
-                          newDistanceFilterValue.toStringAsFixed(0) + 'm',
+                          newDistanceFilterValue.toStringAsFixed(0),
                           style: settingsTheme.headline5,
                         ));
                   }),
@@ -244,7 +251,39 @@ class MySettingsScreen extends StatelessWidget {
                         alignment: Alignment.topRight,
                         padding: EdgeInsets.only(right: 16),
                         child: Text(
-                          newIntervalValue.toStringAsFixed(0) + 's',
+                          newIntervalValue.toStringAsFixed(0),
+                          style: settingsTheme.headline5,
+                        ));
+                  }),
+            ],
+          ),
+
+          Stack(
+            children: [
+              SliderSettingsTile(
+                settingKey: kLocationGarneringStationaryTimeout,
+                title: 'Stationary timeout',
+                subtitle: 'Minutes without motion means cat napping.',
+                icon: Icon(Icons.airline_seat_legroom_extra_outlined),
+                minValue: 1.0,
+                defaultValue: 2,
+                maxValue: 10.0,
+                step: 1.0,
+                maxIcon: Icon(Icons.arrow_upward),
+                minIcon: Icon(Icons.arrow_downward),
+              ),
+              _settings.onDoubleChanged(
+                  settingKey: kLocationGarneringStationaryTimeout,
+                  defaultValue: 0,
+                  childBuilder: (BuildContext context, double value) {
+                    bg.BackgroundGeolocation.setConfig(
+                        bg.Config(stopTimeout: value.floor()));
+
+                    return Container(
+                        alignment: Alignment.topRight,
+                        padding: EdgeInsets.only(right: 16),
+                        child: Text(
+                          value.floorToDouble().toStringAsFixed(0),
                           style: settingsTheme.headline5,
                         ));
                   }),
@@ -253,9 +292,13 @@ class MySettingsScreen extends StatelessWidget {
 
           //
           SettingsContainer(
-            child: Text('Push (upload) configuration',
-                style: Theme.of(context).textTheme.overline),
-          ),
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Push (upload) configuration',
+                  style: Theme.of(context).textTheme.overline),
+            ],
+          )),
           SwitchSettingsTile(
             settingKey: kAllowPushWithWifi,
             title: 'Push with wifi data',
@@ -328,9 +371,13 @@ class MySettingsScreen extends StatelessWidget {
 
           //
           SettingsContainer(
-            child: Text('Location garnering configuration',
-                style: Theme.of(context).textTheme.overline),
-          ),
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Location garnering configuration',
+                  style: Theme.of(context).textTheme.overline),
+            ],
+          )),
 
           RadioSettingsTile(
             settingKey: kLocationGarneringDesiredAccuracy,
@@ -397,11 +444,20 @@ class MySettingsScreen extends StatelessWidget {
           SettingsContainer(
             children: [
               Text('App version', style: Theme.of(context).textTheme.overline),
-              Text(deviceVersion),
+              Row(
+                children: [Text(deviceVersion)],
+                mainAxisAlignment: MainAxisAlignment.end,
+              ),
               Text('UUID', style: Theme.of(context).textTheme.overline),
-              Text(deviceUUID),
+              Row(
+                children: [Text(deviceUUID)],
+                mainAxisAlignment: MainAxisAlignment.end,
+              ),
               Text('Name', style: Theme.of(context).textTheme.overline),
-              Text(deviceName),
+              Row(
+                children: [Text(deviceName)],
+                mainAxisAlignment: MainAxisAlignment.end,
+              ),
             ],
           ),
         ],

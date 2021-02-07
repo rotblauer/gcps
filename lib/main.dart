@@ -1018,7 +1018,7 @@ class _MyHomePageState extends State<MyHomePage> {
       minimumActivityRecognitionConfidence: 25, // default: 75
 
       // We must know what we're doing.
-      disableStopDetection: true,
+      disableStopDetection: false,
       stopOnStationary: false,
       pausesLocationUpdatesAutomatically: false,
 
@@ -1051,6 +1051,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Settings().getDouble(prefs.kLocationUpdateDistanceFilter, 1),
       Settings().getDouble(prefs.kLocationUpdateInterval, 0),
       Settings().getDouble(prefs.kLocationGarneringElasticityMultiplier, 0),
+      Settings().getDouble(prefs.kLocationGarneringStationaryTimeout, 2),
     ]).then((value) {
       double prefLocationUpdateDistanceFilter = value.elementAt(0);
       bgConfig.distanceFilter = prefLocationUpdateDistanceFilter;
@@ -1061,6 +1062,7 @@ class _MyHomePageState extends State<MyHomePage> {
           : prefLocationUpdateInterval ~/ 1 * 1000;
 
       bgConfig.elasticityMultiplier = value.elementAt(2);
+      bgConfig.stopTimeout = value.elementAt(3).floor();
     });
 
     // strings
