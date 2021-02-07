@@ -459,7 +459,7 @@ class ShapesPainter extends CustomPainter {
           Rect.fromPoints(
               Offset(wMargin, 0), Offset(sizeW + wMargin, sizeAltH)),
           elevPaint
-            ..color = elevPaint.color.withAlpha(20)
+            ..color = elevPaint.color.withAlpha(10)
             ..style = PaintingStyle.fill);
     }
 
