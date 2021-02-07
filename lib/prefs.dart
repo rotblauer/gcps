@@ -1,5 +1,5 @@
 // import 'package:shared_preferences/shared_preferences.dart';
-import 'package:gcps/config.dart';
+// import 'package:gcps/config.dart';
 import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 import 'package:flutter/material.dart';
 
@@ -149,7 +149,7 @@ class MySettingsScreen extends StatelessWidget {
           SwitchSettingsTile(
             settingKey: kAllowPushWithMobile,
             title: 'Push with mobile data',
-            icon: Icon(Icons.settings_cell_outlined),
+            icon: Icon(Icons.network_cell),
             defaultValue: false,
           ),
           SettingsContainer(

@@ -61,7 +61,6 @@ void _handleStreamLocationSave(bg.Location location) async {
   }
 
   // Persist the position.
-  print("saving position");
   var ap = AppPoint.fromLocationProvider(location);
   await insertTrack(ap);
 }
@@ -228,11 +227,11 @@ class ShapesPainter extends CustomPainter {
     double sizeAltH = sizeH / 3;
 
     Paint lastElevPointPaint = Paint()
-      ..color = MyTheme.buttonColor
+      ..color = Colors.tealAccent
       ..style = PaintingStyle.fill;
     Path elevPath = Path();
     final elevPaint = Paint();
-    elevPaint.color = Colors.white70;
+    elevPaint.color = Colors.tealAccent.withAlpha(155);
     elevPaint.style = PaintingStyle.stroke;
     elevPaint.strokeWidth = 1;
     double elevSpread = (maxAlt - minAlt);
@@ -1125,8 +1124,8 @@ class _MyHomePageState extends State<MyHomePage> {
     postHeaders.forEach((key, value) {
       headers[key] = value;
     });
-    print("body.length: " + body.length.toString());
-    print(jsonEncode(body));
+    // print("body.length: " + body.length.toString());
+    // print(jsonEncode(body));
     return http
         .post(
           postEndpoint,
@@ -1881,13 +1880,6 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 InfoDisplay(
-                  keyname: "odometer",
-                  value: glocation.odometer.toInt(),
-                  options: {
-                    't2.font': Theme.of(context).textTheme.headline6,
-                  },
-                ),
-                InfoDisplay(
                   keyname: "distance",
                   value: _tripDistance < 1000
                       ? (_tripDistance ~/ 1).toString() + 'm'
@@ -1895,8 +1887,21 @@ class _MyHomePageState extends State<MyHomePage> {
                           'km',
                   options: {
                     't2.font': Theme.of(context).textTheme.headline6,
+                    'third':
+                        Text(glocation.odometer.toInt().toString() + ' steps')
                   },
                 ),
+                // InfoDisplay(
+                //   keyname: "odometer",
+                //   value: glocation.odometer.toInt(),
+                //   options: {
+                //     't2.font': Theme.of(context).textTheme.headline6,
+                //   },
+                // ),
+                Container(
+                  width: 72,
+                ),
+
                 InfoDisplay(
                     keyname: "elevation Δ",
                     value: '+${_distanceTracker.up}-${_distanceTracker.dn}',
@@ -1954,45 +1959,46 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
 
-          Row(
-            children: [
-              Expanded(
-                  child: Container(
-                      // height: 128,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            elevation: 3.0,
-                            primary: Colors.deepPurple[700],
-                            padding: EdgeInsets.all(8)),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  TakePictureScreen(camera: firstCamera),
-                            ),
-                          );
-                        },
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              // Text('Cat snap',
-                              //     style: Theme.of(context).textTheme.overline),
-                              Icon(Icons.add_a_photo_outlined,
-                                  size: 48,
-                                  color: Colors.deepOrange /*green[300]*/),
+          // Row(
+          //   children: [
+          //     Expanded(
+          //         child: Container(
+          //       height: 128,
+          //       padding:
+          //           const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+          //       // child: ElevatedButton(
+          //       //   style: ElevatedButton.styleFrom(
+          //       //       elevation: 3.0,
+          //       //       primary: Colors.deepPurple[700],
+          //       //       padding: EdgeInsets.all(8)),
+          //       //   onPressed: () {
+          //       //     Navigator.push(
+          //       //       context,
+          //       //       MaterialPageRoute(
+          //       //         builder: (context) =>
+          //       //             TakePictureScreen(camera: firstCamera),
+          //       //       ),
+          //       //     );
+          //       //   },
+          //       //   child: Row(
+          //       //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //       //       children: [
+          //       //         // Text('Cat snap',
+          //       //         //     style: Theme.of(context).textTheme.overline),
+          //       //         Icon(Icons.add_a_photo_outlined,
+          //       //             size: 48,
+          //       //             color: Colors.deepOrange /*green[300]*/),
 
-                              // Icon(
-                              //   Icons.camera_alt,
-                              //   size: 64,
-                              //   color: Colors.lime, // green
-                              // ),
-                            ]),
-                      )))
-            ],
-          )
+          //       //         // Icon(
+          //       //         //   Icons.camera_alt,
+          //       //         //   size: 64,
+          //       //         //   color: Colors.lime, // green
+          //       //         // ),
+          //       //       ]),
+          //       // )
+          //     ))
+          //   ],
+          // )
 
           // Text(
           //   'You done ${ew.adjectives[_counter]}ly caressed the button this many times:',
@@ -2158,21 +2164,24 @@ class _MyHomePageState extends State<MyHomePage> {
       //   // ),
       // ],
       body: _exampleStuff(),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // floatingActionButton: FloatingActionButton(
-      //   materialTapTargetSize: MaterialTapTargetSize.padded,
-      //   foregroundColor: Colors.green,
-      //   onPressed: () {
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute(
-      //         builder: (context) => TakePictureScreen(camera: firstCamera),
-      //       ),
-      //     );
-      //   },
-      //   tooltip: 'Camera',
-      //   child: Icon(Icons.camera),
-      // ), // This trailing comma makes auto-formatting nicer for build methods.
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
+        materialTapTargetSize: MaterialTapTargetSize.padded,
+        backgroundColor: Colors.deepPurple[700],
+        foregroundColor: Colors.deepOrange,
+        elevation: 50,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TakePictureScreen(camera: firstCamera),
+            ),
+          );
+        },
+        tooltip: 'Camera',
+        icon: Icon(Icons.camera),
+        label: Text('Catsnap!'),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
@@ -2390,92 +2399,100 @@ class DisplayPictureScreen extends StatelessWidget {
           height: 8,
         ),
         Flexible(child: Image.file(File(imagePath))),
-        Row(
-          children: [
-            Expanded(
-                child: Container(
-                    height: 128,
-                    padding: const EdgeInsets.all(24),
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                              Colors.deepPurple[700])),
-                      onPressed: () async {
-                        // Get location.
-                        var location =
-                            await bg.BackgroundGeolocation.getCurrentPosition();
+        // Row(
+        //   children: [
+        //     Expanded(
+        //         child: Container(
+        //             height: 128,
+        //             padding: const EdgeInsets.all(24),
+        //             child: ElevatedButton(
+        //               style: ButtonStyle(
+        //                   backgroundColor: MaterialStateProperty.all<Color>(
+        //                       Colors.deepPurple[700])),
+        //               onPressed: () async {
+        //                 // Get location.
+        //                 var location =
+        //                     await bg.BackgroundGeolocation.getCurrentPosition();
 
-                        // Read and rotate the image according to exif data as needed.
-                        final img.Image capturedImage = img
-                            .decodeImage(await File(imagePath).readAsBytes());
-                        final img.Image orientedImage =
-                            img.bakeOrientation(capturedImage);
-                        await File(imagePath).writeAsBytes(
-                            img.encodeJpg(orientedImage),
-                            flush: true);
+        //                 // Read and rotate the image according to exif data as needed.
+        //                 final img.Image capturedImage = img
+        //                     .decodeImage(await File(imagePath).readAsBytes());
+        //                 final img.Image orientedImage =
+        //                     img.bakeOrientation(capturedImage);
+        //                 await File(imagePath).writeAsBytes(
+        //                     img.encodeJpg(orientedImage),
+        //                     flush: true);
 
-                        // Add the snap to the cat track.
-                        var p = AppPoint.fromLocationProvider(location);
-                        p.imgB64 =
-                            base64Encode(File(imagePath).readAsBytesSync());
+        //                 // Add the snap to the cat track.
+        //                 var p = AppPoint.fromLocationProvider(location);
+        //                 p.imgB64 =
+        //                     base64Encode(File(imagePath).readAsBytesSync());
 
-                        // Save it.
-                        await insertTrackForce(p);
+        //                 // Save it.
+        //                 await insertTrackForce(p);
 
-                        // Delete the original image file.
-                        File(imagePath).deleteSync();
+        //                 // Delete the original image file.
+        //                 File(imagePath).deleteSync();
 
-                        // Go back home.
-                        Navigator.popUntil(context, ModalRoute.withName('/'));
+        //                 // Go back home.
+        //                 Navigator.popUntil(context, ModalRoute.withName('/'));
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            _buildSnackBar(Text('Cat snap saved.'),
-                                backgroundColor: Colors.lightGreen));
+        //                 ScaffoldMessenger.of(context).showSnackBar(
+        //                     _buildSnackBar(Text('Cat snap saved.'),
+        //                         backgroundColor: Colors.lightGreen));
 
-                        return null;
-                      },
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: 64,
-                              color: Colors.deepOrange, // green
-                            ),
-                          ]),
-                    )))
-          ],
-        )
+        //                 return null;
+        //               },
+        //               child: Column(
+        //                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        //                   children: [
+        //                     Icon(
+        //                       Icons.add_photo_alternate_outlined,
+        //                       size: 64,
+        //                       color: Colors.deepOrange, // green
+        //                     ),
+        //                   ]),
+        //             )))
+        //   ],
+        // )
       ]),
-      // floatingActionButton: FloatingActionButton(
-      //   child: Icon(Icons.save),
-      //   onPressed: () async {
-      //     // Get location.
-      //     var location = await bg.BackgroundGeolocation.getCurrentPosition();
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
+        icon: Icon(Icons.save),
+        label: Text('Save'),
+        backgroundColor: Colors.deepPurple[700],
+        foregroundColor: Colors.deepOrange,
+        onPressed: () async {
+          // Get location.
+          var location = await bg.BackgroundGeolocation.getCurrentPosition();
 
-      //     // Read and rotate the image according to exif data as needed.
-      //     final img.Image capturedImage =
-      //         img.decodeImage(await File(imagePath).readAsBytes());
-      //     final img.Image orientedImage = img.bakeOrientation(capturedImage);
-      //     await File(imagePath)
-      //         .writeAsBytes(img.encodeJpg(orientedImage), flush: true);
+          // Read and rotate the image according to exif data as needed.
+          final img.Image capturedImage =
+              img.decodeImage(await File(imagePath).readAsBytes());
+          final img.Image orientedImage = img.bakeOrientation(capturedImage);
+          await File(imagePath)
+              .writeAsBytes(img.encodeJpg(orientedImage), flush: true);
 
-      //     // Add the snap to the cat track.
-      //     var p = AppPoint.fromLocationProvider(location);
-      //     p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
+          // Add the snap to the cat track.
+          var p = AppPoint.fromLocationProvider(location);
+          p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
 
-      //     // Save it.
-      //     await insertTrackForce(p);
+          // Save it.
+          await insertTrackForce(p);
 
-      //     // Delete the original image file.
-      //     File(imagePath).deleteSync();
+          // Delete the original image file.
+          File(imagePath).deleteSync();
 
-      //     // Go back home.
-      //     Navigator.popUntil(context, ModalRoute.withName('/'));
+          // Go back home.
+          Navigator.popUntil(context, ModalRoute.withName('/'));
 
-      //     return null;
-      //   },
-      // ),
+          ScaffoldMessenger.of(context).showSnackBar(_buildSnackBar(
+              Text('Cat snap saved.'),
+              backgroundColor: Colors.lightGreen));
+
+          return null;
+        },
+      ),
     );
   }
 }
