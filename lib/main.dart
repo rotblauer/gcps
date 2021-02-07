@@ -983,11 +983,11 @@ class _MyHomePageState extends State<MyHomePage> {
       _handleStreamLocationUpdate(glocation);
     });
 
-    // bg.BackgroundGeolocation.onHeartbeat((bg.HeartbeatEvent event) {
-    //   bg.BackgroundGeolocation.getCurrentPosition().then((location) {
-    //     _handleStreamLocationUpdate(location);
-    //   });
-    // });
+    bg.BackgroundGeolocation.onHeartbeat((bg.HeartbeatEvent event) {
+      bg.BackgroundGeolocation.getCurrentPosition().then((location) {
+        _handleStreamLocationUpdate(location);
+      });
+    });
 
     // Fired whenever the state of location-services changes.  Always fired at boot
     bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
@@ -997,75 +997,75 @@ class _MyHomePageState extends State<MyHomePage> {
     ////
     // 2.  Configure the plugin
     //
-    Settings()
-        .getDouble(prefs.kLocationUpdateDistanceFilter, 1)
-        .then((prefLocationUpdateDistanceFilter) {
-      Settings()
-          .getDouble(prefs.kLocationUpdateInterval, 0)
-          .then((prefLocationUpdateInterval) {
-        bg.BackgroundGeolocation.ready(bg.Config(
-          desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
+    Future.wait([
+      Settings().getDouble(prefs.kLocationUpdateDistanceFilter, 1),
+      Settings().getDouble(prefs.kLocationUpdateInterval, 0)
+    ]).then((value) {
+      double prefLocationUpdateDistanceFilter = value.elementAt(0).toDouble();
+      double prefLocationUpdateInterval = value.elementAt(1).toDouble();
 
-          // This OVERRIDES the locationUpdateInterval, which otherwise
-          // wants to do some sort-of-configurable dynamic things.
-          distanceFilter: prefLocationUpdateDistanceFilter,
-          disableElasticity: true,
-          locationUpdateInterval: prefLocationUpdateInterval == 0
-              ? null
-              : prefLocationUpdateInterval ~/ 1 * 1000,
-          fastestLocationUpdateInterval: 1000,
+      bg.BackgroundGeolocation.ready(bg.Config(
+        desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
 
-          // 100 m/s ~> 223 mi/h; planes grounded.
-          speedJumpFilter: 100,
+        // This OVERRIDES the locationUpdateInterval, which otherwise
+        // wants to do some sort-of-configurable dynamic things.
+        distanceFilter: prefLocationUpdateDistanceFilter,
+        disableElasticity: true,
+        locationUpdateInterval: prefLocationUpdateInterval == 0
+            ? null
+            : prefLocationUpdateInterval ~/ 1 * 1000,
+        fastestLocationUpdateInterval: 1000,
 
+        // 100 m/s ~> 223 mi/h; planes grounded.
+        speedJumpFilter: 100,
+
+        //
+        isMoving: true,
+        stopTimeout: 2, // minutes... right?
+        minimumActivityRecognitionConfidence: 25, // default: 75
+
+        // We must know what we're doing.
+        disableStopDetection: true,
+        stopOnStationary: false,
+        pausesLocationUpdatesAutomatically: false,
+
+        // But we probably don't really know what we're doing.
+        // preventSuspend: true,
+
+        disableAutoSyncOnCellular: true,
+        maxRecordsToPersist: 3600,
+        activityRecognitionInterval: 10000, // default=10000=10s
+        allowIdenticalLocations: true,
+
+        // I can't believe they let you do this.
+        stopOnTerminate: false,
+        enableHeadless: true,
+        startOnBoot: true,
+        heartbeatInterval: 1800,
+
+        // Buggers.
+        debug: false,
+        logLevel: bg.Config.LOG_LEVEL_INFO,
+        persistMode: bg.Config.PERSIST_MODE_NONE,
+
+        backgroundPermissionRationale: bg.PermissionRationale(
+          message: "Cats love it",
+        ),
+      )).then((bg.State state) {
+        if (!state.enabled) {
+          ////
+          // 3.  Start the plugin.
           //
-          isMoving: true,
-          stopTimeout: 2, // minutes... right?
-          minimumActivityRecognitionConfidence: 25, // default: 75
-
-          // We must know what we're doing.
-          disableStopDetection: true,
-          stopOnStationary: false,
-          pausesLocationUpdatesAutomatically: false,
-
-          // But we probably don't really know what we're doing.
-          // preventSuspend: true,
-
-          disableAutoSyncOnCellular: true,
-          maxRecordsToPersist: 3600,
-          activityRecognitionInterval: 10000, // default=10000=10s
-          allowIdenticalLocations: false,
-
-          // I can't believe they let you do this.
-          stopOnTerminate: false,
-          enableHeadless: true,
-          startOnBoot: true,
-          heartbeatInterval: 1200,
-
-          // Buggers.
-          debug: false,
-          logLevel: bg.Config.LOG_LEVEL_INFO,
-          persistMode: bg.Config.PERSIST_MODE_NONE,
-
-          backgroundPermissionRationale: bg.PermissionRationale(
-            message: "Cats love it",
-          ),
-        )).then((bg.State state) {
-          if (!state.enabled) {
-            ////
-            // 3.  Start the plugin.
-            //
-            bg.BackgroundGeolocation.start();
-            bg.BackgroundGeolocation.setOdometer(0);
-          }
-        });
-
-        _isManuallyRequestingLocation = true;
-        bg.BackgroundGeolocation.getCurrentPosition().then((value) {
-          _handleStreamLocationUpdate(value);
-          _isManuallyRequestingLocation = false;
-        });
+          bg.BackgroundGeolocation.start();
+          // bg.BackgroundGeolocation.setOdometer(0);
+        }
       });
+    });
+
+    _isManuallyRequestingLocation = true;
+    bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+      _handleStreamLocationUpdate(value);
+      _isManuallyRequestingLocation = false;
     });
 
     eachSecond();

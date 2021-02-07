@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
+import 'package:just_debounce_it/just_debounce_it.dart';
 
 const String kAllowPushWithMobile = "allowPushWithMobile";
 const String kAllowPushWithWifi = "allowPushWithWifi";
@@ -74,6 +75,10 @@ class MySettingsScreen extends StatelessWidget {
   double _locationUpdateDistanceFilter = 1;
   double _locationUpdateInterval = 0;
 
+  updateBGConfig(bg.Config config) {
+    bg.BackgroundGeolocation.setConfig(config);
+  }
+
   handleLocationUpdateChanges(String changedKey, double newValue) {
     // double _locationUpdateDistanceFilter;
     // double _locationUpdateInterval;
@@ -123,6 +128,27 @@ class MySettingsScreen extends StatelessWidget {
       // _settings.pingDouble(kLocationUpdateInterval, 0);
       //
     }
+
+    bg.Config newConfig;
+    if (_locationUpdateDistanceFilter > 0) {
+      newConfig = bg.Config(
+        distanceFilter: _locationUpdateDistanceFilter.floorToDouble(),
+        locationUpdateInterval: null,
+      );
+    } else {
+      newConfig = bg.Config(
+        distanceFilter: 0,
+        locationUpdateInterval: _locationUpdateInterval ~/ 1 * 1000,
+      );
+    }
+    Debounce.milliseconds(500, updateBGConfig, [newConfig]);
+
+    // // Update BackgroundLocation config.
+    // bg.BackgroundGeolocation.setConfig(bg.Config(
+    //   distanceFilter: _locationDistanceFilter,
+    //   locationUpdateInterval:
+    //       value == 0 ? null : value ~/ 1 * 1000,
+    // ));
   }
 
   @override
@@ -165,14 +191,6 @@ class MySettingsScreen extends StatelessWidget {
                     handleLocationUpdateChanges(
                         kLocationUpdateDistanceFilter, newDistanceFilterValue);
 
-                    // // Update BackgroundLocation config.
-                    // bg.BackgroundGeolocation.setConfig(bg.Config(
-                    //   distanceFilter: value,
-                    //   locationUpdateInterval: _locationUpdateInterval == 0
-                    //       ? null
-                    //       : _locationUpdateInterval ~/ 1 * 1000,
-                    // ));
-
                     return Container(
                         alignment: Alignment.topRight,
                         padding: EdgeInsets.only(right: 16),
@@ -193,7 +211,7 @@ class MySettingsScreen extends StatelessWidget {
                 icon: Icon(Icons.timer),
                 minValue: 0.0,
                 defaultValue: 0,
-                maxValue: 180.0,
+                maxValue: 60.0,
                 step: 1.0,
                 maxIcon: Icon(Icons.arrow_upward),
                 minIcon: Icon(Icons.arrow_downward),
@@ -205,13 +223,6 @@ class MySettingsScreen extends StatelessWidget {
                       (BuildContext context, double newIntervalValue) {
                     handleLocationUpdateChanges(
                         kLocationUpdateInterval, newIntervalValue);
-
-                    // // Update BackgroundLocation config.
-                    // bg.BackgroundGeolocation.setConfig(bg.Config(
-                    //   distanceFilter: _locationDistanceFilter,
-                    //   locationUpdateInterval:
-                    //       value == 0 ? null : value ~/ 1 * 1000,
-                    // ));
 
                     return Container(
                         alignment: Alignment.topRight,

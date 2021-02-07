@@ -332,6 +332,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.3-nullsafety.3"
+  just_debounce_it:
+    dependency: "direct main"
+    description:
+      name: just_debounce_it
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0+2"
   logging:
     dependency: transitive
     description:
