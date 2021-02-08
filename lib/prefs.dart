@@ -198,11 +198,83 @@ class _SettingsScreen extends State<MySettingsScreen> {
     Debounce.milliseconds(1000, updateBGConfig, [newConfig]);
   }
 
+  Widget _buildSwitchTile(
+    BuildContext context,
+    Widget leading,
+    String title,
+    String subtitle,
+    bool value,
+    void Function(bool) onChanged,
+  ) {
+    // MY SWITCH
+    return ListTile(
+      leading: leading,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 6),
+            child: Text(title),
+          ),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.caption,
+          )
+        ],
+      ),
+      trailing: Switch(
+        value: value,
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _buildSliderTile(
+    BuildContext context,
+    Widget leading,
+    String title,
+    String subtitle,
+    double min,
+    double max,
+    int divisions,
+    double value,
+    void Function(double value) onChanged,
+  ) {
+    return ListTile(
+      leading: leading,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(padding: EdgeInsets.only(top: 6), child: Text(title)),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.caption,
+          )
+        ],
+      ),
+      subtitle:
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Text(min.toInt().toString()),
+        Expanded(
+          child: Slider(
+              min: min,
+              max: max,
+              value: value,
+              divisions: divisions,
+              onChanged: onChanged),
+        ),
+        Text(max.toInt().toString()),
+      ]),
+      trailing: Text('${value}', style: settingsThemeText(context).headline5),
+    );
+  }
+
+  TextTheme settingsThemeText(context) {
+    return Theme.of(context).textTheme.apply(bodyColor: Colors.tealAccent);
+  }
+
   @override
   Widget build(BuildContext context) {
-    TextTheme settingsTheme =
-        Theme.of(context).textTheme.apply(bodyColor: Colors.tealAccent);
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
@@ -358,14 +430,16 @@ class _SettingsScreen extends State<MySettingsScreen> {
           //     }),
 
           //
-          SettingsContainer(
-              child: Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Push (upload) configuration',
-                  style: Theme.of(context).textTheme.overline),
+              Padding(
+                padding: EdgeInsets.all(8),
+                child: Text('Push (upload) configuration',
+                    style: Theme.of(context).textTheme.overline),
+              ),
             ],
-          )),
+          ),
           SwitchSettingsTile(
             settingKey: kAllowPushWithWifi,
             title: 'Push with wifi data',
@@ -402,7 +476,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
                         padding: EdgeInsets.only(right: 16),
                         child: Text(
                           value.toStringAsFixed(0),
-                          style: settingsTheme.headline5,
+                          style: settingsThemeText(context).headline5,
                         ));
                   }),
             ],
@@ -430,73 +504,66 @@ class _SettingsScreen extends State<MySettingsScreen> {
                         padding: EdgeInsets.only(right: 16),
                         child: Text(
                           value.toStringAsFixed(0),
-                          style: settingsTheme.headline5,
+                          style: settingsThemeText(context).headline5,
                         ));
                   }),
             ],
           ),
 
-// MY SLIDER
-          ListTile(
-            leading: Icon(Icons.ac_unit),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                    padding: EdgeInsets.only(top: 6),
-                    child: Text('My setting')),
-                Text(
-                  'A helpful description.',
-                  style: Theme.of(context).textTheme.caption,
-                )
-              ],
-            ),
-            subtitle: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('0'),
-                  Expanded(
-                    child: Slider(
-                        min: 0,
-                        max: 10,
-                        value: _stopTimeoutValue,
-                        divisions: 10,
-                        onChanged: (double value) {
-                          setState(() {
-                            _stopTimeoutValue = value;
-                          });
-                          print('slider slide: ${value}');
-                        }),
-                  ),
-                  Text('10'),
-                ]),
-            trailing:
-                Text('${_stopTimeoutValue}', style: settingsTheme.headline5),
-          ),
+// // MY SLIDER
+//           ListTile(
+//             leading: Icon(Icons.ac_unit),
+//             title: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Padding(
+//                     padding: EdgeInsets.only(top: 6),
+//                     child: Text('My setting')),
+//                 Text(
+//                   'A helpful description.',
+//                   style: Theme.of(context).textTheme.caption,
+//                 )
+//               ],
+//             ),
+//             subtitle: Row(
+//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                 children: [
+//                   Text('0'),
+//                   Expanded(
+//                     child: Slider(
+//                         min: 0,
+//                         max: 10,
+//                         value: _stopTimeoutValue,
+//                         divisions: 10,
+//                         onChanged: (double value) {
+//                           setState(() {
+//                             _stopTimeoutValue = value;
+//                           });
+//                           print('slider slide: ${value}');
+//                         }),
+//                   ),
+//                   Text('10'),
+//                 ]),
+//             trailing:
+//                 Text('${_stopTimeoutValue}', style: settingsTheme.headline5),
+//           ),
 
-          // MY SWITCH
-          ListTile(
-            leading: Icon(Icons.ac_unit),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                    padding: EdgeInsets.only(top: 6),
-                    child: Text('My setting')),
-                Text(
-                  'A helpful description.',
-                  style: Theme.of(context).textTheme.caption,
-                )
-              ],
-            ),
-            trailing: Switch(
-                value: _isWifiActive,
-                onChanged: (bool value) {
-                  setState(() {
-                    _isWifiActive = value;
-                  });
-                }),
-          ),
+          _buildSliderTile(context, Icon(Icons.ac_unit), 'Mytitle',
+              'description', 0, 10, 5, _stopTimeoutValue, (value) {
+            setState(() {
+              _stopTimeoutValue = value;
+            });
+            print('slider slide: ${value}');
+          }),
+
+          _buildSwitchTile(context, Icon(Icons.ac_unit), 'My titlel',
+              'A description', _isWifiActive, (bool value) {
+            setState(() {
+              print('changed: ${value}');
+              _isWifiActive = value;
+            });
+          }),
+
           //
           // SettingsContainer(
           //     child: Row(
