@@ -135,17 +135,17 @@ Icon buildConnectStatusIcon(String status, {Color color, double size}) {
   if (status.toLowerCase().contains('wifi'))
     return Icon(
       Icons.wifi,
-      color: color,
+      color: color ?? MyTheme.colorScheme.onSurface,
       size: size,
     );
   if (status.toLowerCase().contains('mobile'))
     return Icon(
       Icons.signal_cellular_alt,
-      color: color,
+      color: color ?? MyTheme.colorScheme.onSurface,
     );
   return Icon(
     Icons.do_disturb_alt_outlined,
-    color: color,
+    color: color ?? MyTheme.colorScheme.onError,
   );
 }
 
@@ -386,9 +386,15 @@ class ShapesPainter extends CustomPainter {
     } else if (maxDistMeters > 500) {
       legendScaleDist = 500;
       legendLabel = "500m";
+    } else if (maxDistMeters > 250) {
+      legendScaleDist = 250;
+      legendLabel = "250m";
     } else if (maxDistMeters > 100) {
       legendScaleDist = 100;
       legendLabel = "100m";
+    } else if (maxDistMeters > 50) {
+      legendScaleDist = 50;
+      legendLabel = "50m";
     } else if (maxDistMeters > 10) {
       legendScaleDist = 10;
       legendLabel = "10m";
@@ -504,7 +510,7 @@ Icon buildActivityIcon(BuildContext context, String activity, double size) {
   switch (activity) {
     case 'still':
       return Icon(
-        Icons.pin_drop_rounded,
+        Icons.airline_seat_legroom_extra,
         size: size,
         // color: Theme.of(context).primaryColor,
         color: getActivityColor(activity),
@@ -1332,7 +1338,8 @@ class _MyHomePageState extends State<MyHomePage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        _buildSnackBar(Text(_appErrorStatus), backgroundColor: Colors.red),
+        _buildSnackBar(Text(_appErrorStatus),
+            backgroundColor: MyTheme.errorColor),
       );
 
       //   _buildSnackBar(Text('Push failed. Status code: ' + resCode.toString()),
@@ -1534,8 +1541,13 @@ class _MyHomePageState extends State<MyHomePage> {
           Visibility(
             visible: _appErrorStatus != "",
             child: Container(
+              color: MyTheme.errorColor,
+              // decoration: BoxDecoration(
+              //     border: Border(
+              //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
               padding: EdgeInsets.all(8),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Flexible(
                       child: Text(
@@ -1547,191 +1559,191 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
 
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Expanded(
-                  //   flex: 2,
-                  //   child: Container(
-                  //     padding: EdgeInsets.all(4),
-                  //     child: Row(
-                  //       mainAxisAlignment: MainAxisAlignment.center,
-                  //       children: [
-                  //         _bgGeolocationIsEnabled
-                  //             ? Icon(Icons.check_box_outlined,
-                  //                 color: Colors.green[700], size: 16)
-                  //             : Icon(Icons.check_box_outline_blank,
-                  //                 color: Colors.red[700], size: 16)
-                  //       ],
-                  //     ),
-                  //     // decoration: BoxDecoration(
-                  //     //     border: Border(
-                  //     //         bottom:
-                  //     //             BorderSide(color: Colors.white, width: 4))),
-                  //   ),
-                  // ),
-                  // Expanded(
-                  //     // flex: 2,
-                  //     child: Container(
-                  //       // padding: EdgeInsets.all(8.0),
-                  //       // child: Expanded(
-                  //       height: 24,
-                  //       child: Container(),
-                  //       // RawMaterialButton(
-                  //       //     // MaterialStateProperty.all<Color>(Colors.lime)),
-                  //       //     elevation: 4.0,
-                  //       //     // shape: CircleBorder(),
-                  //       //     // padding: EdgeInsets.all(8.0),
-                  //       //     fillColor: Colors.deepOrange,
-                  //       //     onPressed: () async {
-                  //       //       var loc = await bg.BackgroundGeolocation
-                  //       //           .getCurrentPosition();
-                  //       //       _handleStreamLocationUpdate(loc);
-                  //       //       // ScaffoldMessenger.of(context).showSnackBar(
-                  //       //       //   _buildSnackBar(Text('Points!'),
-                  //       //       //       backgroundColor: Colors.green),
-                  //       //       // );
-                  //       //     },
-                  //       //     child: Icon(Icons.plus_one,
-                  //       //         semanticLabel: 'Point', size: 16)
-                  //       //         ),
-                  //     )),
-                  Expanded(
-                      flex: 2,
-                      child: Container(
-                        height: 36,
-                        // padding: EdgeInsets.all(8.0),
-                        child: RawMaterialButton(
-                            // fillColor: _countStored > 0 &&
-                            //         (_connectionStatus.contains('wifi') ||
-                            //             _connectionStatus.contains('mobile'))
-                            //     ? MyTheme.buttonColor
-                            //     : Colors.grey,
-                            onPressed: _countStored > 0 &&
-                                    (_connectionStatus.contains('wifi') ||
-                                        _connectionStatus.contains('mobile'))
-                                ? () {
-                                    if (_countStored == 0) return;
+          // Column(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     Row(
+          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //       children: [
+          //         // Expanded(
+          //         //   flex: 2,
+          //         //   child: Container(
+          //         //     padding: EdgeInsets.all(4),
+          //         //     child: Row(
+          //         //       mainAxisAlignment: MainAxisAlignment.center,
+          //         //       children: [
+          //         //         _bgGeolocationIsEnabled
+          //         //             ? Icon(Icons.check_box_outlined,
+          //         //                 color: Colors.green[700], size: 16)
+          //         //             : Icon(Icons.check_box_outline_blank,
+          //         //                 color: Colors.red[700], size: 16)
+          //         //       ],
+          //         //     ),
+          //         //     // decoration: BoxDecoration(
+          //         //     //     border: Border(
+          //         //     //         bottom:
+          //         //     //             BorderSide(color: Colors.white, width: 4))),
+          //         //   ),
+          //         // ),
+          //         // Expanded(
+          //         //     // flex: 2,
+          //         //     child: Container(
+          //         //       // padding: EdgeInsets.all(8.0),
+          //         //       // child: Expanded(
+          //         //       height: 24,
+          //         //       child: Container(),
+          //         //       // RawMaterialButton(
+          //         //       //     // MaterialStateProperty.all<Color>(Colors.lime)),
+          //         //       //     elevation: 4.0,
+          //         //       //     // shape: CircleBorder(),
+          //         //       //     // padding: EdgeInsets.all(8.0),
+          //         //       //     fillColor: Colors.deepOrange,
+          //         //       //     onPressed: () async {
+          //         //       //       var loc = await bg.BackgroundGeolocation
+          //         //       //           .getCurrentPosition();
+          //         //       //       _handleStreamLocationUpdate(loc);
+          //         //       //       // ScaffoldMessenger.of(context).showSnackBar(
+          //         //       //       //   _buildSnackBar(Text('Points!'),
+          //         //       //       //       backgroundColor: Colors.green),
+          //         //       //       // );
+          //         //       //     },
+          //         //       //     child: Icon(Icons.plus_one,
+          //         //       //         semanticLabel: 'Point', size: 16)
+          //         //       //         ),
+          //         //     )),
+          //         Expanded(
+          //             flex: 2,
+          //             child: Container(
+          //               height: 36,
+          //               // padding: EdgeInsets.all(8.0),
+          //               child: RawMaterialButton(
+          //                   // fillColor: _countStored > 0 &&
+          //                   //         (_connectionStatus.contains('wifi') ||
+          //                   //             _connectionStatus.contains('mobile'))
+          //                   //     ? MyTheme.buttonColor
+          //                   //     : Colors.grey,
+          //                   onPressed: _countStored > 0 &&
+          //                           (_connectionStatus.contains('wifi') ||
+          //                               _connectionStatus.contains('mobile'))
+          //                       ? () {
+          //                           if (_countStored == 0) return;
 
-                                    // set up the buttons
-                                    Widget cancelButton = ElevatedButton(
-                                      child: Text("Cancel"),
-                                      style: ButtonStyle(
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  Colors.grey)),
-                                      onPressed: () {
-                                        Navigator.of(context,
-                                                rootNavigator: true)
-                                            .pop('dialog');
-                                      },
-                                    ); // set up the AlertDialog
-                                    Widget continueButton = ElevatedButton(
-                                      child: Text("Yes, upload"),
-                                      onPressed: () async {
-                                        this._pushTracksBatching();
-                                        Navigator.of(context,
-                                                rootNavigator: true)
-                                            .pop('dialog');
-                                      },
-                                    ); // set up the AlertDialog
-                                    AlertDialog alert = AlertDialog(
-                                      title: Text("Confirm upload"),
-                                      content: Text(
-                                          'Would you like to upload ${_countStored} tracks?'),
-                                      actions: [
-                                        cancelButton,
-                                        continueButton,
-                                      ],
-                                    ); // show the dialog
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return alert;
-                                      },
-                                    );
-                                  }
-                                : null,
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.cloud_upload,
-                                    semanticLabel: 'Push',
-                                    size: 16,
-                                  ),
-                                  Container(
-                                    width: 8,
-                                    alignment: Alignment.center,
-                                    child: Text(':',
-                                        style:
-                                            TextStyle(/*color: Colors.white*/)),
-                                  ),
-                                  buildConnectStatusIcon(_connectionStatus,
-                                      size: 16),
-                                ])),
-                      )),
+          //                           // set up the buttons
+          //                           Widget cancelButton = ElevatedButton(
+          //                             child: Text("Cancel"),
+          //                             style: ButtonStyle(
+          //                                 backgroundColor:
+          //                                     MaterialStateProperty.all<Color>(
+          //                                         Colors.grey)),
+          //                             onPressed: () {
+          //                               Navigator.of(context,
+          //                                       rootNavigator: true)
+          //                                   .pop('dialog');
+          //                             },
+          //                           ); // set up the AlertDialog
+          //                           Widget continueButton = ElevatedButton(
+          //                             child: Text("Yes, upload"),
+          //                             onPressed: () async {
+          //                               this._pushTracksBatching();
+          //                               Navigator.of(context,
+          //                                       rootNavigator: true)
+          //                                   .pop('dialog');
+          //                             },
+          //                           ); // set up the AlertDialog
+          //                           AlertDialog alert = AlertDialog(
+          //                             title: Text("Confirm upload"),
+          //                             content: Text(
+          //                                 'Would you like to upload ${_countStored} tracks?'),
+          //                             actions: [
+          //                               cancelButton,
+          //                               continueButton,
+          //                             ],
+          //                           ); // show the dialog
+          //                           showDialog(
+          //                             context: context,
+          //                             builder: (BuildContext context) {
+          //                               return alert;
+          //                             },
+          //                           );
+          //                         }
+          //                       : null,
+          //                   child: Row(
+          //                       mainAxisAlignment: MainAxisAlignment.center,
+          //                       children: [
+          //                         Icon(
+          //                           Icons.cloud_upload,
+          //                           semanticLabel: 'Push',
+          //                           size: 16,
+          //                         ),
+          //                         Container(
+          //                           width: 8,
+          //                           alignment: Alignment.center,
+          //                           child: Text(':',
+          //                               style:
+          //                                   TextStyle(/*color: Colors.white*/)),
+          //                         ),
+          //                         buildConnectStatusIcon(_connectionStatus,
+          //                             size: 16),
+          //                       ])),
+          //             )),
 
-                  Visibility(
-                    visible: _isManuallyRequestingLocation,
-                    child: Container(
-                      height: 8,
-                      width: 24,
-                      child: LinearProgressIndicator(
-                        minHeight: 2,
-                        backgroundColor: Colors.deepOrange,
-                      ),
-                    ),
-                  ),
+          //         Visibility(
+          //           visible: _isManuallyRequestingLocation,
+          //           child: Container(
+          //             height: 8,
+          //             width: 24,
+          //             child: LinearProgressIndicator(
+          //               minHeight: 2,
+          //               backgroundColor: Colors.deepOrange,
+          //             ),
+          //           ),
+          //         ),
 
-                  // To settings.
-                  Expanded(
-                      flex: 2,
-                      child: Container(
-                        // padding: EdgeInsets.all(8.0),
-                        // child: Expanded(
+          //         // To settings.
+          //         Expanded(
+          //             flex: 2,
+          //             child: Container(
+          //               // padding: EdgeInsets.all(8.0),
+          //               // child: Expanded(
 
-                        height: 36,
-                        child: RawMaterialButton(
-                            // fillColor: Colors.indigo,
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => prefs.MySettingsScreen(
-                                    deviceUUID: _deviceUUID,
-                                    deviceName: _deviceName,
-                                    deviceVersion: _deviceAppVersion,
-                                  ),
-                                ),
-                              );
-                            },
-                            onLongPress: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => LoggerScreen()));
-                            },
-                            child: Icon(
-                              Icons.settings,
-                              size: 16,
-                            )),
-                      )),
-                ],
-              ),
+          //               height: 36,
+          //               child: RawMaterialButton(
+          //                   // fillColor: Colors.indigo,
+          //                   onPressed: () {
+          //                     Navigator.push(
+          //                       context,
+          //                       MaterialPageRoute(
+          //                         builder: (context) => prefs.MySettingsScreen(
+          //                           deviceUUID: _deviceUUID,
+          //                           deviceName: _deviceName,
+          //                           deviceVersion: _deviceAppVersion,
+          //                         ),
+          //                       ),
+          //                     );
+          //                   },
+          //                   onLongPress: () {
+          //                     Navigator.push(
+          //                         context,
+          //                         MaterialPageRoute(
+          //                             builder: (context) => LoggerScreen()));
+          //                   },
+          //                   child: Icon(
+          //                     Icons.settings,
+          //                     size: 16,
+          //                   )),
+          //             )),
+          //       ],
+          //     ),
 
-              // LinearProgressIndicator(
-              //   minHeight: 4,
-              //   value: _isPushing
-              //       ? null
-              //       : _countStored.toDouble() / _pushEvery.toDouble(),
-              //   // backgroundColor: ,
-              // ),
-            ],
-          ),
+          //     // LinearProgressIndicator(
+          //     //   minHeight: 4,
+          //     //   value: _isPushing
+          //     //       ? null
+          //     //       : _countStored.toDouble() / _pushEvery.toDouble(),
+          //     //   // backgroundColor: ,
+          //     // ),
+          //   ],
+          // ),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1739,91 +1751,271 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                   // padding: EdgeInsets.symmetric(horizontal: 8.0),
                   child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Container(
-                  //   padding: EdgeInsets.only(left: 12.0),
-                  //   child: buildConnectStatusIcon(_connectionStatus),
-                  // ),
-                  Container(
-                    padding: EdgeInsets.all(4),
-                    child: Row(
-                      children: [
-                        Icon(Icons.camera_alt_outlined,
-                            color: Colors.deepPurple[700], size: 16),
-                        Container(
-                          width: 4,
-                        ),
-                        Text(
-                          _countSnaps.toString(),
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(
-                                color: Colors.deepPurple[700], width: 4))),
-                  ),
-                  Container(
-                    padding: EdgeInsets.all(4),
-                    child: Row(
-                      children: [
-                        Icon(Icons.storage,
-                            color: MyTheme.accentColor, size: 16),
-                        Container(
-                          width: 4,
-                        ),
-                        Text(
-                          _countStored.toString(),
-                          style: TextStyle(color: Colors.white),
-                        )
-                      ],
-                    ),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(
-                                color: MyTheme.accentColor, width: 4))),
-                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        onLongPress: _countStored > 0 &&
+                                (_connectionStatus.contains('wifi') ||
+                                    _connectionStatus.contains('mobile'))
+                            ? () {
+                                if (_countStored == 0) return;
 
-                  if (_isPushing)
-                    Container(
-                      width: 24,
-                      padding: EdgeInsets.all(4),
-                      child: LinearProgressIndicator(
-                        backgroundColor: MyTheme.buttonColor,
+                                // set up the buttons
+                                Widget cancelButton = ElevatedButton(
+                                  child: Text("Cancel"),
+                                  style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.grey)),
+                                  onPressed: () {
+                                    Navigator.of(context, rootNavigator: true)
+                                        .pop('dialog');
+                                  },
+                                ); // set up the AlertDialog
+                                Widget continueButton = ElevatedButton(
+                                  child: Text("Yes, upload"),
+                                  onPressed: () async {
+                                    this._pushTracksBatching();
+                                    Navigator.of(context, rootNavigator: true)
+                                        .pop('dialog');
+                                  },
+                                ); // set up the AlertDialog
+                                AlertDialog alert = AlertDialog(
+                                  title: Text("Confirm upload"),
+                                  content: Text(
+                                      'Would you like to upload ${_countStored} tracks?'),
+                                  actions: [
+                                    cancelButton,
+                                    continueButton,
+                                  ],
+                                ); // show the dialog
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return alert;
+                                  },
+                                );
+                              }
+                            : null,
+                        child: Container(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: buildConnectStatusIcon(_connectionStatus),
+                        ),
                       ),
-                    ),
+                      InkWell(
+                        onTap: () async {
+                          setState(() {
+                            _isManuallyRequestingLocation = true;
+                          });
+                          var loc = await bg.BackgroundGeolocation
+                              .getCurrentPosition();
+                          _handleStreamLocationUpdate(loc);
+                          setState(() {
+                            _isManuallyRequestingLocation = false;
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.only(left: 4.0),
+                              child: buildActivityIcon(
+                                  context, glocation.activity.type, null),
+                            ),
+                            Container(
+                                padding: EdgeInsets.only(left: 4.0),
+                                // margin: EdgeInsets.only(left: 6),
+                                child: (glocation?.isMoving ?? false)
+                                    ? Icon(
+                                        Icons.circle,
+                                        color: MyTheme.accentColor,
+                                      )
+                                    : Icon(
+                                        Icons.trip_origin,
+                                        color: Colors.red[700],
+                                      )),
+                            Visibility(
+                              visible: _secondsSinceLastPoint > 3,
+                              child: Container(
+                                padding: EdgeInsets.only(
+                                    left: 4, right: 4, bottom: 4),
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                        bottom: BorderSide(
+                                            color:
+                                                colorForDurationSinceLastPoint(
+                                                    _secondsSinceLastPoint),
+                                            width: 2))),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.timelapse,
+                                        color: colorForDurationSinceLastPoint(
+                                            _secondsSinceLastPoint),
+                                        size: 16),
+                                    Container(
+                                      width: 4,
+                                    ),
+                                    Text(
+                                      '-' +
+                                          secondsToPrettyDuration(
+                                              _secondsSinceLastPoint
+                                                  .toDouble()),
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: _isManuallyRequestingLocation,
+                              child: Container(
+                                padding: EdgeInsets.only(left: 4.0),
+                                height: 4,
+                                width: 24,
+                                child: LinearProgressIndicator(
+                                  minHeight: 2,
+                                  backgroundColor: Colors.deepOrange,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      InkWell(
+                        onLongPress: () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TrackListScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.storage,
+                                  color: MyTheme.accentColor, size: 16),
+                              Container(
+                                width: 4,
+                              ),
+                              Text(
+                                (_countStored).toString(),
+                                style: TextStyle(color: Colors.white),
+                              )
+                            ],
+                          ),
+                          decoration: BoxDecoration(
+                              border: Border(
+                                  bottom: BorderSide(
+                                      color: MyTheme.accentColor, width: 2))),
+                        ),
+                      ),
 
-                  // LinearProgressIndicator(
-                  //   minHeight: 4,
-                  //   value: _isPushing
-                  //       ? null
-                  //       : _countStored.toDouble() / _pushEvery.toDouble(),
-                  //   // backgroundColor: ,
-                  // ),
-                  Container(
-                    padding: EdgeInsets.all(4),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.cloud_done_outlined,
-                          color: MyTheme.buttonColor,
-                          size: 16,
+                      Container(
+                        padding: EdgeInsets.all(4),
+                        child: Row(
+                          children: [
+                            Icon(Icons.camera_alt_outlined,
+                                color: Colors.deepPurple[400], size: 16),
+                            Container(
+                              width: 4,
+                            ),
+                            Text(
+                              _countSnaps.toString(),
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
                         ),
+                        decoration: BoxDecoration(
+                            border: Border(
+                                bottom: BorderSide(
+                                    color: Colors.deepPurple[700], width: 2))),
+                      ),
+
+                      if (_isPushing)
                         Container(
-                          width: 4,
+                          width: 24,
+                          padding: EdgeInsets.all(4),
+                          child: LinearProgressIndicator(
+                            backgroundColor: MyTheme.buttonColor,
+                          ),
                         ),
-                        Text(
-                          _countPushed.toString(),
-                          style: TextStyle(color: Colors.white),
-                        )
-                      ],
-                    ),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(
-                                color: MyTheme.buttonColor, width: 4))),
+
+                      // LinearProgressIndicator(
+                      //   minHeight: 4,
+                      //   value: _isPushing
+                      //       ? null
+                      //       : _countStored.toDouble() / _pushEvery.toDouble(),
+                      //   // backgroundColor: ,
+                      // ),
+                      Container(
+                        padding: EdgeInsets.all(4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.cloud_done_outlined,
+                              color: MyTheme.buttonColor,
+                              size: 16,
+                            ),
+                            Container(
+                              width: 4,
+                            ),
+                            Text(
+                              _countPushed.toString(),
+                              style: TextStyle(color: Colors.white),
+                            )
+                          ],
+                        ),
+                        decoration: BoxDecoration(
+                            border: Border(
+                                bottom: BorderSide(
+                                    color: MyTheme.buttonColor, width: 2))),
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(4),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => prefs.MySettingsScreen(
+                                  deviceUUID: _deviceUUID,
+                                  deviceName: _deviceName,
+                                  deviceVersion: _deviceAppVersion,
+                                ),
+                              ),
+                            );
+                          },
+                          onLongPress: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => LoggerScreen()));
+                          },
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.settings,
+                                color:
+                                    MyTheme.colorScheme.onSurface.withAlpha(64),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // decoration: BoxDecoration(
+                        //     border: Border(
+                        //         bottom: BorderSide(
+                        //             color: MyTheme.accentColor, width: 2))),
+                      ),
+                    ],
                   ),
                 ],
               )),
@@ -1833,14 +2025,17 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             children: [
               Expanded(
-                child: CustomPaint(
-                  // size: Size.infinite,
-                  painter: ShapesPainter(locations: _paintList),
-                  child: Container(
-                    height: 400,
+                child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 16),
+                  child: CustomPaint(
+                    // size: Size.infinite,
+                    painter: ShapesPainter(locations: _paintList),
+                    child: Container(
+                      height: 400,
+                    ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
 
@@ -1858,39 +2053,39 @@ class _MyHomePageState extends State<MyHomePage> {
                       : '')
                 },
               ),
-              InkWell(
-                onTap: () async {
-                  setState(() {
-                    _isManuallyRequestingLocation = true;
-                  });
-                  var loc = await bg.BackgroundGeolocation.getCurrentPosition();
-                  _handleStreamLocationUpdate(loc);
-                  setState(() {
-                    _isManuallyRequestingLocation = false;
-                  });
+              // InkWell(
+              //   onTap: () async {
+              //     setState(() {
+              //       _isManuallyRequestingLocation = true;
+              //     });
+              //     var loc = await bg.BackgroundGeolocation.getCurrentPosition();
+              //     _handleStreamLocationUpdate(loc);
+              //     setState(() {
+              //       _isManuallyRequestingLocation = false;
+              //     });
 
-                  // ScaffoldMessenger.of(context).showSnackBar(
-                  //   _buildSnackBar(Text('Points!'),
-                  //       backgroundColor: Colors.green),
-                  // );
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    // cativity icon
-                    Container(
-                      width: 96,
-                      height: 64,
-                      child: buildActivityIcon(
-                          context,
-                          glocation.activity.type,
-                          64 - _secondsSinceLastPoint.toDouble() > 16
-                              ? 64 - _secondsSinceLastPoint.toDouble()
-                              : 16),
-                    ),
-                  ],
-                ),
-              ),
+              //     // ScaffoldMessenger.of(context).showSnackBar(
+              //     //   _buildSnackBar(Text('Points!'),
+              //     //       backgroundColor: Colors.green),
+              //     // );
+              //   },
+              //   child: Column(
+              //     mainAxisAlignment: MainAxisAlignment.end,
+              //     children: [
+              //       // cativity icon
+              //       Container(
+              //         width: 96,
+              //         height: 64,
+              //         child: buildActivityIcon(
+              //             context,
+              //             glocation.activity.type,
+              //             64 - _secondsSinceLastPoint.toDouble() > 16
+              //                 ? 64 - _secondsSinceLastPoint.toDouble()
+              //                 : 16),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               InfoDisplay(
                 keyname: "heading",
                 value: degreeToCardinalDirection(glocation.coords.heading),
@@ -1908,78 +2103,80 @@ class _MyHomePageState extends State<MyHomePage> {
             children: <Widget>[
               InfoDisplay(
                   keyname: "accuracy", value: glocation.coords.accuracy),
-              InkWell(
-                onTap: () async {
-                  setState(() {
-                    _isManuallyRequestingLocation = true;
-                  });
-                  var loc = await bg.BackgroundGeolocation.getCurrentPosition();
-                  _handleStreamLocationUpdate(loc);
-                  setState(() {
-                    _isManuallyRequestingLocation = false;
-                  });
 
-                  // ScaffoldMessenger.of(context).showSnackBar(
-                  //   _buildSnackBar(Text('Points!'),
-                  //       backgroundColor: Colors.green),
-                  // );
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.only(left: 4, right: 4, bottom: 8),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Visibility(
-                              visible: true,
-                              child: (glocation?.isMoving ?? false)
-                                  ? Container(
-                                      // margin: EdgeInsets.only(left: 6),
-                                      child: Icon(
-                                      Icons.circle,
-                                      color: MyTheme.accentColor,
-                                    ))
-                                  : Container(
-                                      margin: EdgeInsets.symmetric(vertical: 6),
-                                      child: Icon(
-                                        Icons.trip_origin,
-                                        color: Colors.red[700],
-                                      ))),
-                          Visibility(
-                            visible: _secondsSinceLastPoint > 3,
-                            child: Row(
-                              children: [
-                                Icon(Icons.timelapse,
-                                    color: colorForDurationSinceLastPoint(
-                                        _secondsSinceLastPoint),
-                                    size: 16),
-                                Container(
-                                  width: 4,
-                                ),
-                                Text(
-                                  '-' +
-                                      secondsToPrettyDuration(
-                                          _secondsSinceLastPoint.toDouble()),
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      // decoration: BoxDecoration(
-                      //     border: Border(
-                      //         bottom: BorderSide(
-                      //             color: colorForDurationSinceLastPoint(
-                      //                 _secondsSinceLastPoint),
-                      //             width: 0))),
-                    ),
-                  ],
-                ),
-              ),
+              // InkWell(
+              //   onTap: () async {
+              //     setState(() {
+              //       _isManuallyRequestingLocation = true;
+              //     });
+              //     var loc = await bg.BackgroundGeolocation.getCurrentPosition();
+              //     _handleStreamLocationUpdate(loc);
+              //     setState(() {
+              //       _isManuallyRequestingLocation = false;
+              //     });
+
+              //     // ScaffoldMessenger.of(context).showSnackBar(
+              //     //   _buildSnackBar(Text('Points!'),
+              //     //       backgroundColor: Colors.green),
+              //     // );
+              //   },
+              //   child: Column(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     children: [
+              //       Container(
+              //         padding: EdgeInsets.only(left: 4, right: 4, bottom: 8),
+              //         child: Column(
+              //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //           mainAxisSize: MainAxisSize.min,
+              //           children: [
+              //             Visibility(
+              //                 visible: true,
+              //                 child: (glocation?.isMoving ?? false)
+              //                     ? Container(
+              //                         // margin: EdgeInsets.only(left: 6),
+              //                         child: Icon(
+              //                         Icons.circle,
+              //                         color: MyTheme.accentColor,
+              //                       ))
+              //                     : Container(
+              //                         margin: EdgeInsets.symmetric(vertical: 6),
+              //                         child: Icon(
+              //                           Icons.trip_origin,
+              //                           color: Colors.red[700],
+              //                         ))),
+              //             Visibility(
+              //               visible: _secondsSinceLastPoint > 3,
+              //               child: Row(
+              //                 children: [
+              //                   Icon(Icons.timelapse,
+              //                       color: colorForDurationSinceLastPoint(
+              //                           _secondsSinceLastPoint),
+              //                       size: 16),
+              //                   Container(
+              //                     width: 4,
+              //                   ),
+              //                   Text(
+              //                     '-' +
+              //                         secondsToPrettyDuration(
+              //                             _secondsSinceLastPoint.toDouble()),
+              //                     style: TextStyle(color: Colors.white),
+              //                   ),
+              //                 ],
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //         // decoration: BoxDecoration(
+              //         //     border: Border(
+              //         //         bottom: BorderSide(
+              //         //             color: colorForDurationSinceLastPoint(
+              //         //                 _secondsSinceLastPoint),
+              //         //             width: 0))),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+
               InfoDisplay(
                 keyname: "elevation",
                 value: glocation.coords.altitude,
@@ -1992,34 +2189,88 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
 
-          InkWell(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                InfoDisplay(
-                  keyname: "distance",
-                  value: _tripDistance < 1000
-                      ? (_tripDistance ~/ 1).toString() + 'm'
-                      : ((_tripDistance / 1000).toPrecision(2)).toString() +
-                          'km',
-                  options: {
-                    't2.font': Theme.of(context).textTheme.headline6,
-                    'third':
-                        Text(glocation.odometer.toInt().toString() + ' steps')
-                  },
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.only(topRight: Radius.circular(8)),
+                child: Container(
+                  padding: EdgeInsets.all(12),
+                  child: InfoDisplay(
+                    keyname: "distance",
+                    value: _tripDistance < 1000
+                        ? (_tripDistance ~/ 1).toString() + 'm'
+                        : ((_tripDistance / 1000).toPrecision(2)).toString() +
+                            'km',
+                    options: {
+                      't2.font': Theme.of(context).textTheme.headline6,
+                      'third':
+                          Text(glocation.odometer.toInt().toString() + ' steps')
+                    },
+                  ),
                 ),
-                // InfoDisplay(
-                //   keyname: "odometer",
-                //   value: glocation.odometer.toInt(),
-                //   options: {
-                //     't2.font': Theme.of(context).textTheme.headline6,
-                //   },
-                // ),
-                Container(
-                  width: 72,
-                ),
+                onLongPress: () {
+                  // set up the buttons
+                  Widget cancelButton = ElevatedButton(
+                    child: Text("Cancel"),
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Colors.grey)),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop('dialog');
+                    },
+                  ); // set up the AlertDialog
+                  Widget continueButton = ElevatedButton(
+                    child: Text('Yes, reset'),
+                    onPressed: () {
+                      setState(() {
+                        bg.BackgroundGeolocation.setOdometer(0);
+                        _distanceTracker.reset();
+                        _paintList = [];
+                        _tripStarted = DateTime.now().toUtc();
+                      });
 
-                InfoDisplay(
+                      Navigator.of(context, rootNavigator: true).pop('dialog');
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        _buildSnackBar(Text('Trip has been reset.'),
+                            backgroundColor: Colors.green),
+                      );
+                    },
+                  ); // set up the AlertDialog
+                  AlertDialog alert = AlertDialog(
+                    title: Text("Confirm trip reset"),
+                    content: Text(
+                        "This will reset the map, odometer, and distance."),
+                    actions: [
+                      cancelButton,
+                      continueButton,
+                    ],
+                  ); // show the dialog
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return alert;
+                    },
+                  );
+                },
+              ),
+              // InfoDisplay(
+              //   keyname: "odometer",
+              //   value: glocation.odometer.toInt(),
+              //   options: {
+              //     't2.font': Theme.of(context).textTheme.headline6,
+              //   },
+              // ),
+              // Expanded(
+              //   child: Container(
+              //     width: 72,
+              //   ),
+              // ),
+
+              Container(
+                padding: EdgeInsets.all(12),
+                child: InfoDisplay(
                     keyname: "elevation Δ",
                     value: '+${_distanceTracker.up}-${_distanceTracker.dn}',
                     options: {
@@ -2027,53 +2278,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       'third': Text(
                           (_distanceTracker.elev_rel()).toInt().toString()),
                     }),
-              ],
-            ),
-            onLongPress: () {
-              // set up the buttons
-              Widget cancelButton = ElevatedButton(
-                child: Text("Cancel"),
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.grey)),
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                },
-              ); // set up the AlertDialog
-              Widget continueButton = ElevatedButton(
-                child: Text('Yes, reset'),
-                onPressed: () {
-                  setState(() {
-                    bg.BackgroundGeolocation.setOdometer(0);
-                    _distanceTracker.reset();
-                    _paintList = [];
-                    _tripStarted = DateTime.now().toUtc();
-                  });
-
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    _buildSnackBar(Text('Trip has been reset.'),
-                        backgroundColor: Colors.green),
-                  );
-                },
-              ); // set up the AlertDialog
-              AlertDialog alert = AlertDialog(
-                title: Text("Confirm trip reset"),
-                content:
-                    Text("This will reset the map, odometer, and distance."),
-                actions: [
-                  cancelButton,
-                  continueButton,
-                ],
-              ); // show the dialog
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return alert;
-                },
-              );
-            },
+              ),
+            ],
           ),
 
           // Row(
@@ -2384,18 +2590,23 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-          Icon(Icons.add_a_photo_outlined),
+          Icon(
+            Icons.add_a_photo_outlined,
+            color: Colors.deepOrange,
+          ),
           // Container(
           //   width: 16,
           // ),
           // Text('Cat snap')
         ]),
-        // backgroundColor: Colors.lime,
+        backgroundColor: MyTheme.canvasColor,
+        foregroundColor: Colors.deepOrange,
       ),
       // Wait until the controller is initialized before displaying the
       // camera preview. Use a FutureBuilder to display a loading spinner
       // until the controller has finished initializing.
-      body: Column(
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Flexible(
               child: FutureBuilder<void>(
@@ -2499,11 +2710,13 @@ class DisplayPictureScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: MyTheme.canvasColor,
+        foregroundColor: Colors.deepOrange,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(Icons.add_a_photo_outlined),
-            Icon(Icons.library_add_check),
+            Icon(Icons.add_a_photo_outlined, color: Colors.deepOrange),
+            Icon(Icons.library_add_check, color: Colors.deepOrange),
           ],
         ),
 
@@ -2511,10 +2724,7 @@ class DisplayPictureScreen extends StatelessWidget {
       ),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      body: Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        Container(
-          height: 8,
-        ),
+      body: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         Flexible(child: Image.file(File(imagePath))),
         // Row(
         //   children: [
@@ -2709,6 +2919,70 @@ class LoggerScreen extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+// A widget that displays the picture taken by the user.
+class TrackListScreen extends StatelessWidget {
+  const TrackListScreen({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.storage_outlined,
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.deepOrange,
+      ),
+      // The image is stored as a file on the device. Use the `Image.file`
+      // constructor with the given path to display the image.
+      body: SafeArea(
+        child: new FutureBuilder<List<AppPoint>>(
+          future: lastTracksWithLimit(3600), // a Future<String> or null
+          builder:
+              (BuildContext context, AsyncSnapshot<List<AppPoint>> snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+                return new Text('Initializing...');
+              case ConnectionState.waiting:
+                return new Text('Awaiting result...');
+              default:
+                if (snapshot.hasError)
+                  return new Text('Error: ${snapshot.error}');
+                else
+                  return ListView.builder(itemBuilder: (context, index) {
+                    final bool isLast = index == snapshot.data.length - 1;
+                    final AppPoint point = snapshot.data[index];
+
+                    return ListTile(
+                      dense: true,
+                      leading:
+                          buildActivityIcon(context, point.activity_type, 16),
+                      title: Text(
+                          '${index == 0 ? point.time : ""} ${!isLast ? "+" + (point.timestamp - snapshot.data[index + 1].timestamp).toString() : ""}'),
+                      subtitle: Text(
+                          '+/-${point.accuracy}m  ${point.speed * 3.6}km/h  ↑${point.altitude}m'),
+                    );
+                  });
+              // return new Text(
+              //   '${snapshot.data.split("\n").reversed.join("\n")}',
+              //   style: Theme.of(context)
+              //       .textTheme
+              //       .apply(fontSizeFactor: 0.8)
+              //       .bodyText2,
+              // );
+            }
+          },
+        ),
       ),
     );
   }

@@ -459,8 +459,6 @@ class _SettingsScreen extends State<MySettingsScreen> {
               settingKey: kLocationGarneringDesiredAccuracy,
               defaultValue: 'NAVIGATION',
               childBuilder: (BuildContext context, String value) {
-                print('i changed: ' + value);
-
                 bg.BackgroundGeolocation.setConfig(bg.Config(
                     desiredAccuracy: prefLocationDesiredAccuracy(value)));
 
