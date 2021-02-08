@@ -1028,6 +1028,13 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
 
+    bg.BackgroundGeolocation.onGeofence((bg.GeofenceEvent event) {
+      _handleStreamLocationUpdate(event.location);
+    });
+    // bg.BackgroundGeolocation.onGeofence((bg.GeofenceEvent event) {
+    //   _handleStreamLocationUpdate(event.location);
+    // });
+
     // // Fired whenever the state of location-services changes.  Always fired at boot
     // bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
     //   print('[providerchange] - $event');
@@ -1045,7 +1052,7 @@ class _MyHomePageState extends State<MyHomePage> {
       distanceFilter: 1,
       // disableElasticity: true, // == elasticityMultiplier = 0
       elasticityMultiplier: 0,
-      locationUpdateInterval: null,
+      locationUpdateInterval: 0,
       fastestLocationUpdateInterval: 1000,
 
       // 100 m/s ~> 223 mi/h; planes grounded.
@@ -1095,10 +1102,8 @@ class _MyHomePageState extends State<MyHomePage> {
       double prefLocationUpdateDistanceFilter = value.elementAt(0);
       bgConfig.distanceFilter = prefLocationUpdateDistanceFilter;
 
-      double prefLocationUpdateInterval = value.elementAt(1);
-      bgConfig.locationUpdateInterval = prefLocationUpdateInterval == 0
-          ? null
-          : prefLocationUpdateInterval.ceilToDouble() * 1000 ~/ 1;
+      bgConfig.locationUpdateInterval =
+          value.elementAt(1).ceilToDouble() * 1000 ~/ 1;
 
       bgConfig.elasticityMultiplier = value.elementAt(2);
       bgConfig.stopTimeout = value.elementAt(3).floor();
@@ -1816,6 +1821,13 @@ class _MyHomePageState extends State<MyHomePage> {
                           setState(() {
                             _isManuallyRequestingLocation = false;
                           });
+                        },
+                        onLongPress: () async {
+                          bg.BackgroundGeolocation.changePace(true);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            _buildSnackBar(Text('Device is in motion.'),
+                                backgroundColor: Colors.green),
+                          );
                         },
                         child: Row(
                           children: [
@@ -2896,6 +2908,28 @@ class LoggerScreen extends StatelessWidget {
       // constructor with the given path to display the image.
       body: ListView(
         children: [
+          new FutureBuilder<bg.State>(
+            future: bg.BackgroundGeolocation.state, // a Future<String> or null
+            builder: (BuildContext context, AsyncSnapshot<bg.State> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                  return new Text('Initializing...');
+                case ConnectionState.waiting:
+                  return new Text('Awaiting result...');
+                default:
+                  if (snapshot.hasError)
+                    return new Text('Error: ${snapshot.error}');
+                  else
+                    return new Text(
+                      '${snapshot.data.toString()}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .apply(fontSizeFactor: 0.8)
+                          .bodyText2,
+                    );
+              }
+            },
+          ),
           new FutureBuilder<String>(
             future: bg.Logger.getLog(), // a Future<String> or null
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {

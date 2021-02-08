@@ -183,11 +183,13 @@ class _SettingsScreen extends State<MySettingsScreen> {
       newConfig = bg.Config(
         distanceFilter: _locationUpdateDistanceFilter,
         locationUpdateInterval: 0,
+        isMoving: true,
       );
     } else {
       newConfig = bg.Config(
         distanceFilter: 0,
         locationUpdateInterval: (_locationUpdateInterval * 1000 ~/ 1),
+        isMoving: true,
       );
     }
     Debounce.milliseconds(1000, updateBGConfig, [newConfig]);
@@ -301,8 +303,10 @@ class _SettingsScreen extends State<MySettingsScreen> {
                   defaultValue: 0,
                   childBuilder: (BuildContext context, double value) {
                     print('[update stopTimeout]: ${value.floor()}');
-                    bg.BackgroundGeolocation.setConfig(
-                        bg.Config(stopTimeout: value.floor()));
+                    bg.BackgroundGeolocation.setConfig(bg.Config(
+                      stopTimeout: value.floor(),
+                      isMoving: true,
+                    ));
 
                     return Container(
                         alignment: Alignment.topRight,
@@ -460,7 +464,9 @@ class _SettingsScreen extends State<MySettingsScreen> {
               defaultValue: 'NAVIGATION',
               childBuilder: (BuildContext context, String value) {
                 bg.BackgroundGeolocation.setConfig(bg.Config(
-                    desiredAccuracy: prefLocationDesiredAccuracy(value)));
+                  desiredAccuracy: prefLocationDesiredAccuracy(value),
+                  isMoving: true,
+                ));
 
                 return Container();
               }),
@@ -483,8 +489,10 @@ class _SettingsScreen extends State<MySettingsScreen> {
                   settingKey: kLocationGarneringElasticityMultiplier,
                   defaultValue: 0,
                   childBuilder: (BuildContext context, double value) {
-                    bg.BackgroundGeolocation.setConfig(
-                        bg.Config(elasticityMultiplier: value.floorToDouble()));
+                    bg.BackgroundGeolocation.setConfig(bg.Config(
+                      elasticityMultiplier: value.floorToDouble(),
+                      isMoving: true,
+                    ));
 
                     return Container(
                         alignment: Alignment.topRight,
