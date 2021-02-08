@@ -1761,15 +1761,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      RawMaterialButton(
-                        elevation: 10,
-                        fillColor: Colors.white24,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8))),
-                        constraints: BoxConstraints(minHeight: 0, minWidth: 0),
-                        onPressed: () {
-                          print('pressed');
-                        },
+                      InkWell(
                         onLongPress: _countStored > 0 &&
                                 (_connectionStatus.contains('wifi') ||
                                     _connectionStatus.contains('mobile'))
@@ -1814,7 +1806,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               }
                             : null,
                         child: Container(
-                          padding: EdgeInsets.all(4),
+                          padding: EdgeInsets.only(left: 8.0),
                           child: buildConnectStatusIcon(_connectionStatus),
                         ),
                       ),
