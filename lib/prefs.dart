@@ -110,6 +110,9 @@ class _SettingsScreen extends State<MySettingsScreen> {
   final String deviceName;
   final String deviceVersion;
 
+  double _stopTimeoutValue = 4;
+  bool _isWifiActive = true;
+
   _SettingsScreen({
     Key key,
     this.deviceUUID,
@@ -209,115 +212,115 @@ class _SettingsScreen extends State<MySettingsScreen> {
       body: ListView(
         // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SettingsContainer(
-              child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Location update configuration',
-                  style: Theme.of(context).textTheme.overline),
-            ],
-          )),
-          Stack(
-            children: [
-              SliderSettingsTile(
-                settingKey: kLocationUpdateDistanceFilter,
-                title: 'Distance filter',
-                subtitle:
-                    'Δ meters triggering a location update.\nZero causes time updates.',
-                icon: Icon(Icons.my_location_outlined),
-                minValue: 0.0,
-                defaultValue: 1,
-                maxValue: 100.0,
-                step: 1.0,
-                maxIcon: Icon(Icons.arrow_upward),
-                minIcon: Icon(Icons.arrow_downward),
-              ),
-              _settings.onDoubleChanged(
-                  settingKey: kLocationUpdateDistanceFilter,
-                  defaultValue: 1,
-                  childBuilder:
-                      (BuildContext context, double newDistanceFilterValue) {
-                    handleLocationUpdateChanges(
-                        kLocationUpdateDistanceFilter, newDistanceFilterValue);
+          // SettingsContainer(
+          //     child: Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     Text('Location update configuration',
+          //         style: Theme.of(context).textTheme.overline),
+          //   ],
+          // )),
+          // Stack(
+          //   children: [
+          //     SliderSettingsTile(
+          //       settingKey: kLocationUpdateDistanceFilter,
+          //       title: 'Distance filter',
+          //       subtitle:
+          //           'Δ meters triggering a location update.\nZero causes time updates.',
+          //       icon: Icon(Icons.my_location_outlined),
+          //       minValue: 0.0,
+          //       defaultValue: 1,
+          //       maxValue: 100.0,
+          //       step: 1.0,
+          //       maxIcon: Icon(Icons.arrow_upward),
+          //       minIcon: Icon(Icons.arrow_downward),
+          //     ),
+          //     _settings.onDoubleChanged(
+          //         settingKey: kLocationUpdateDistanceFilter,
+          //         defaultValue: 1,
+          //         childBuilder:
+          //             (BuildContext context, double newDistanceFilterValue) {
+          //           handleLocationUpdateChanges(
+          //               kLocationUpdateDistanceFilter, newDistanceFilterValue);
 
-                    return Container(
-                        alignment: Alignment.topRight,
-                        padding: EdgeInsets.only(right: 16),
-                        child: Text(
-                          newDistanceFilterValue.toStringAsFixed(0),
-                          style: settingsTheme.headline5,
-                        ));
-                  }),
-            ],
-          ),
-          Stack(
-            children: [
-              SliderSettingsTile(
-                settingKey: kLocationUpdateInterval,
-                title: 'Time interval',
-                subtitle:
-                    'Δ seconds triggering a location update.\nZero causes distance updates.',
-                icon: Icon(Icons.timer),
-                minValue: 0.0,
-                defaultValue: 0,
-                maxValue: 60.0,
-                step: 1.0,
-                maxIcon: Icon(Icons.arrow_upward),
-                minIcon: Icon(Icons.arrow_downward),
-              ),
-              _settings.onDoubleChanged(
-                  settingKey: kLocationUpdateInterval,
-                  defaultValue: 0,
-                  childBuilder:
-                      (BuildContext context, double newIntervalValue) {
-                    handleLocationUpdateChanges(
-                        kLocationUpdateInterval, newIntervalValue);
+          //           return Container(
+          //               alignment: Alignment.topRight,
+          //               padding: EdgeInsets.only(right: 16),
+          //               child: Text(
+          //                 newDistanceFilterValue.toStringAsFixed(0),
+          //                 style: settingsTheme.headline5,
+          //               ));
+          //         }),
+          //   ],
+          // ),
+          // Stack(
+          //   children: [
+          //     SliderSettingsTile(
+          //       settingKey: kLocationUpdateInterval,
+          //       title: 'Time interval',
+          //       subtitle:
+          //           'Δ seconds triggering a location update.\nZero causes distance updates.',
+          //       icon: Icon(Icons.timer),
+          //       minValue: 0.0,
+          //       defaultValue: 0,
+          //       maxValue: 60.0,
+          //       step: 1.0,
+          //       maxIcon: Icon(Icons.arrow_upward),
+          //       minIcon: Icon(Icons.arrow_downward),
+          //     ),
+          //     _settings.onDoubleChanged(
+          //         settingKey: kLocationUpdateInterval,
+          //         defaultValue: 0,
+          //         childBuilder:
+          //             (BuildContext context, double newIntervalValue) {
+          //           handleLocationUpdateChanges(
+          //               kLocationUpdateInterval, newIntervalValue);
 
-                    return Container(
-                        alignment: Alignment.topRight,
-                        padding: EdgeInsets.only(right: 16),
-                        child: Text(
-                          newIntervalValue.toStringAsFixed(0),
-                          style: settingsTheme.headline5,
-                        ));
-                  }),
-            ],
-          ),
+          //           return Container(
+          //               alignment: Alignment.topRight,
+          //               padding: EdgeInsets.only(right: 16),
+          //               child: Text(
+          //                 newIntervalValue.toStringAsFixed(0),
+          //                 style: settingsTheme.headline5,
+          //               ));
+          //         }),
+          //   ],
+          // ),
 
-          Stack(
-            children: [
-              SliderSettingsTile(
-                settingKey: kLocationGarneringStationaryTimeout,
-                title: 'Stationary timeout',
-                subtitle: 'Minutes without motion means cat napping.',
-                icon: Icon(Icons.airline_seat_legroom_extra_outlined),
-                minValue: 1.0,
-                defaultValue: 2,
-                maxValue: 10.0,
-                step: 1.0,
-                maxIcon: Icon(Icons.arrow_upward),
-                minIcon: Icon(Icons.arrow_downward),
-              ),
-              _settings.onDoubleChanged(
-                  settingKey: kLocationGarneringStationaryTimeout,
-                  defaultValue: 0,
-                  childBuilder: (BuildContext context, double value) {
-                    print('[update stopTimeout]: ${value.floor()}');
-                    bg.BackgroundGeolocation.setConfig(bg.Config(
-                      stopTimeout: value.floor(),
-                      isMoving: true,
-                    ));
+          // Stack(
+          //   children: [
+          //     SliderSettingsTile(
+          //       settingKey: kLocationGarneringStationaryTimeout,
+          //       title: 'Stationary timeout',
+          //       subtitle: 'Minutes without motion means cat napping.',
+          //       icon: Icon(Icons.airline_seat_legroom_extra_outlined),
+          //       minValue: 1.0,
+          //       defaultValue: 2,
+          //       maxValue: 10.0,
+          //       step: 1.0,
+          //       maxIcon: Icon(Icons.arrow_upward),
+          //       minIcon: Icon(Icons.arrow_downward),
+          //     ),
+          //     _settings.onDoubleChanged(
+          //         settingKey: kLocationGarneringStationaryTimeout,
+          //         defaultValue: 0,
+          //         childBuilder: (BuildContext context, double value) {
+          //           print('[update stopTimeout]: ${value.floor()}');
+          //           bg.BackgroundGeolocation.setConfig(bg.Config(
+          //             stopTimeout: value.floor(),
+          //             isMoving: true,
+          //           ));
 
-                    return Container(
-                        alignment: Alignment.topRight,
-                        padding: EdgeInsets.only(right: 16),
-                        child: Text(
-                          value.floorToDouble().toStringAsFixed(0),
-                          style: settingsTheme.headline5,
-                        ));
-                  }),
-            ],
-          ),
+          //           return Container(
+          //               alignment: Alignment.topRight,
+          //               padding: EdgeInsets.only(right: 16),
+          //               child: Text(
+          //                 value.floorToDouble().toStringAsFixed(0),
+          //                 style: settingsTheme.headline5,
+          //               ));
+          //         }),
+          //   ],
+          // ),
 
           // // kLocationDisableStopDetection
           // SwitchSettingsTile(
@@ -433,77 +436,138 @@ class _SettingsScreen extends State<MySettingsScreen> {
             ],
           ),
 
+// MY SLIDER
+          ListTile(
+            leading: Icon(Icons.ac_unit),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                    padding: EdgeInsets.only(top: 6),
+                    child: Text('My setting')),
+                Text(
+                  'A helpful description.',
+                  style: Theme.of(context).textTheme.caption,
+                )
+              ],
+            ),
+            subtitle: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('0'),
+                  Expanded(
+                    child: Slider(
+                        min: 0,
+                        max: 10,
+                        value: _stopTimeoutValue,
+                        divisions: 10,
+                        onChanged: (double value) {
+                          setState(() {
+                            _stopTimeoutValue = value;
+                          });
+                          print('slider slide: ${value}');
+                        }),
+                  ),
+                  Text('10'),
+                ]),
+            trailing:
+                Text('${_stopTimeoutValue}', style: settingsTheme.headline5),
+          ),
+
+          // MY SWITCH
+          ListTile(
+            leading: Icon(Icons.ac_unit),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                    padding: EdgeInsets.only(top: 6),
+                    child: Text('My setting')),
+                Text(
+                  'A helpful description.',
+                  style: Theme.of(context).textTheme.caption,
+                )
+              ],
+            ),
+            trailing: Switch(
+                value: _isWifiActive,
+                onChanged: (bool value) {
+                  setState(() {
+                    _isWifiActive = value;
+                  });
+                }),
+          ),
           //
-          SettingsContainer(
-              child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Location garnering configuration',
-                  style: Theme.of(context).textTheme.overline),
-            ],
-          )),
+          // SettingsContainer(
+          //     child: Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     Text('Location garnering configuration',
+          //         style: Theme.of(context).textTheme.overline),
+          //   ],
+          // )),
 
-          RadioSettingsTile(
-            settingKey: kLocationGarneringDesiredAccuracy,
-            icon: Icon(Icons.location_searching),
-            title: 'Desired location accuracy',
-            defaultKey: 'NAVIGATION',
-            expandable: true,
-            initiallyExpanded: false,
-            values: {
-              'NAVIGATION': 'Navigation',
-              'HIGH': 'High',
-              'MEDIUM': 'Medium',
-              'LOW': 'Low',
-              'VERY_LOW': 'Very low',
-              'LOWEST': 'Lowest',
-            },
-          ),
-          _settings.onStringChanged(
-              settingKey: kLocationGarneringDesiredAccuracy,
-              defaultValue: 'NAVIGATION',
-              childBuilder: (BuildContext context, String value) {
-                bg.BackgroundGeolocation.setConfig(bg.Config(
-                  desiredAccuracy: prefLocationDesiredAccuracy(value),
-                  isMoving: true,
-                ));
+          // RadioSettingsTile(
+          //   settingKey: kLocationGarneringDesiredAccuracy,
+          //   icon: Icon(Icons.location_searching),
+          //   title: 'Desired location accuracy',
+          //   defaultKey: 'NAVIGATION',
+          //   expandable: true,
+          //   initiallyExpanded: false,
+          //   values: {
+          //     'NAVIGATION': 'Navigation',
+          //     'HIGH': 'High',
+          //     'MEDIUM': 'Medium',
+          //     'LOW': 'Low',
+          //     'VERY_LOW': 'Very low',
+          //     'LOWEST': 'Lowest',
+          //   },
+          // ),
+          // _settings.onStringChanged(
+          //     settingKey: kLocationGarneringDesiredAccuracy,
+          //     defaultValue: 'NAVIGATION',
+          //     childBuilder: (BuildContext context, String value) {
+          //       bg.BackgroundGeolocation.setConfig(bg.Config(
+          //         desiredAccuracy: prefLocationDesiredAccuracy(value),
+          //         isMoving: true,
+          //       ));
 
-                return Container();
-              }),
+          //       return Container();
+          //     }),
 
-          Stack(
-            children: [
-              SliderSettingsTile(
-                settingKey: kLocationGarneringElasticityMultiplier,
-                title: 'Location elasticity multiplier',
-                subtitle: 'Higher values yield fewer points for fast cats.',
-                icon: Icon(Icons.speed_outlined),
-                minValue: 0.0,
-                defaultValue: 0,
-                maxValue: 8,
-                step: 1.0,
-                maxIcon: Icon(Icons.arrow_upward),
-                minIcon: Icon(Icons.arrow_downward),
-              ),
-              _settings.onDoubleChanged(
-                  settingKey: kLocationGarneringElasticityMultiplier,
-                  defaultValue: 0,
-                  childBuilder: (BuildContext context, double value) {
-                    bg.BackgroundGeolocation.setConfig(bg.Config(
-                      elasticityMultiplier: value.floorToDouble(),
-                      isMoving: true,
-                    ));
+          // Stack(
+          //   children: [
+          //     SliderSettingsTile(
+          //       settingKey: kLocationGarneringElasticityMultiplier,
+          //       title: 'Location elasticity multiplier',
+          //       subtitle: 'Higher values yield fewer points for fast cats.',
+          //       icon: Icon(Icons.speed_outlined),
+          //       minValue: 0.0,
+          //       defaultValue: 0,
+          //       maxValue: 8,
+          //       step: 1.0,
+          //       maxIcon: Icon(Icons.arrow_upward),
+          //       minIcon: Icon(Icons.arrow_downward),
+          //     ),
+          //     _settings.onDoubleChanged(
+          //         settingKey: kLocationGarneringElasticityMultiplier,
+          //         defaultValue: 0,
+          //         childBuilder: (BuildContext context, double value) {
+          //           bg.BackgroundGeolocation.setConfig(bg.Config(
+          //             elasticityMultiplier: value.floorToDouble(),
+          //             isMoving: true,
+          //           ));
 
-                    return Container(
-                        alignment: Alignment.topRight,
-                        padding: EdgeInsets.only(right: 16),
-                        child: Text(
-                          value.floorToDouble().toStringAsFixed(0),
-                          style: settingsTheme.headline5,
-                        ));
-                  }),
-            ],
-          ),
+          //           return Container(
+          //               alignment: Alignment.topRight,
+          //               padding: EdgeInsets.only(right: 16),
+          //               child: Text(
+          //                 value.floorToDouble().toStringAsFixed(0),
+          //                 style: settingsTheme.headline5,
+          //               ));
+          //         }),
+          //   ],
+          // ),
 
           // App metadata
           //

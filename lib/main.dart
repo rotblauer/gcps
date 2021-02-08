@@ -153,15 +153,15 @@ const Map<String, Color> activityColors = {
   'Stationary': Colors.deepOrange,
   'still': Colors.deepOrange,
   //
-  'Walking': Colors.blue,
-  'on_foot': Colors.blue,
-  'walking': Colors.blue,
+  'Walking': Colors.amber,
+  'on_foot': Colors.amber,
+  'walking': Colors.amber,
   //
   'Running': Colors.green,
   'running': Colors.green,
   //
-  'Bike': Colors.yellow,
-  'on_bicycle': Colors.yellow,
+  'Bike': Colors.lightBlue,
+  'on_bicycle': Colors.lightBlue,
   //
   'Automotive': Colors.purple,
   'in_vehicle': Colors.purple,
@@ -1060,7 +1060,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       //
       isMoving: true,
-      stopTimeout: 2, // minutes... right?
+      stopTimeout: 5, // minutes... right?
       minimumActivityRecognitionConfidence: 25, // default: 75
 
       // We must know what we're doing.
@@ -1097,7 +1097,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Settings().getDouble(prefs.kLocationUpdateDistanceFilter, 1),
       Settings().getDouble(prefs.kLocationUpdateInterval, 0),
       Settings().getDouble(prefs.kLocationGarneringElasticityMultiplier, 0),
-      Settings().getDouble(prefs.kLocationGarneringStationaryTimeout, 2),
+      Settings().getDouble(prefs.kLocationGarneringStationaryTimeout, 5),
     ]).then((value) {
       double prefLocationUpdateDistanceFilter = value.elementAt(0);
       bgConfig.distanceFilter = prefLocationUpdateDistanceFilter;
@@ -1761,7 +1761,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      InkWell(
+                      RawMaterialButton(
+                        elevation: 10,
+                        fillColor: Colors.white24,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8))),
+                        constraints: BoxConstraints(minHeight: 0, minWidth: 0),
+                        onPressed: () {
+                          print('pressed');
+                        },
                         onLongPress: _countStored > 0 &&
                                 (_connectionStatus.contains('wifi') ||
                                     _connectionStatus.contains('mobile'))
@@ -1806,7 +1814,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               }
                             : null,
                         child: Container(
-                          padding: EdgeInsets.only(left: 8.0),
+                          padding: EdgeInsets.all(4),
                           child: buildConnectStatusIcon(_connectionStatus),
                         ),
                       ),
@@ -1823,10 +1831,15 @@ class _MyHomePageState extends State<MyHomePage> {
                           });
                         },
                         onLongPress: () async {
-                          bg.BackgroundGeolocation.changePace(true);
+                          var targetState = !glocation.isMoving;
+                          bg.BackgroundGeolocation.changePace(targetState);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            _buildSnackBar(Text('Device is in motion.'),
-                                backgroundColor: Colors.green),
+                            _buildSnackBar(
+                                Text(targetState
+                                    ? 'Device is in motion.'
+                                    : 'Device is stationary.'),
+                                backgroundColor:
+                                    targetState ? Colors.green : Colors.red),
                           );
                         },
                         child: Row(
