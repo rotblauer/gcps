@@ -824,6 +824,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
   DateTime _tripStarted;
+  bool _bgGeolocationIsEnabled = false;
 
   String _connectionStatus = '-';
   ConnectivityResult _connectionResult;
@@ -997,11 +998,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     bg.BackgroundGeolocation.onActivityChange((bg.ActivityChangeEvent event) {
       print('[activityChange]');
-      if (glocation.uuid != 'abc') {
-        glocation.timestamp = DateTime.now().toUtc().toIso8601String();
-        glocation.activity.type = event.activity;
-        glocation.activity.confidence = event.confidence;
-      }
+      glocation.timestamp = DateTime.now().toUtc().toIso8601String();
+      glocation.activity.type = event.activity;
+      glocation.activity.confidence = event.confidence;
       _handleStreamLocationUpdate(glocation);
     });
 
@@ -1009,6 +1008,18 @@ class _MyHomePageState extends State<MyHomePage> {
       bg.BackgroundGeolocation.getCurrentPosition().then((location) {
         _handleStreamLocationUpdate(location);
       });
+    });
+
+    bg.BackgroundGeolocation.onEnabledChange((bool value) {
+      print('[enabledChange]');
+      setState(() {
+        _bgGeolocationIsEnabled = value;
+      });
+      if (value) {
+        bg.BackgroundGeolocation.getCurrentPosition().then((location) {
+          _handleStreamLocationUpdate(location);
+        });
+      }
     });
 
     // // Fired whenever the state of location-services changes.  Always fired at boot
@@ -1081,7 +1092,7 @@ class _MyHomePageState extends State<MyHomePage> {
       double prefLocationUpdateInterval = value.elementAt(1);
       bgConfig.locationUpdateInterval = prefLocationUpdateInterval == 0
           ? null
-          : prefLocationUpdateInterval * 1000 ~/ 1;
+          : prefLocationUpdateInterval.ceilToDouble() * 1000 ~/ 1;
 
       bgConfig.elasticityMultiplier = value.elementAt(2);
       bgConfig.stopTimeout = value.elementAt(3).floor();
@@ -1096,21 +1107,39 @@ class _MyHomePageState extends State<MyHomePage> {
           prefs.prefLocationDesiredAccuracy(value.elementAt(0));
     });
 
+    // bools
+    Future.wait([
+      Settings().getBool(prefs.kLocationDisableStopDetection, true),
+    ]).then((value) {
+      bgConfig.disableStopDetection = !value.elementAt(0);
+    });
+
     bg.BackgroundGeolocation.ready(bgConfig).then((bg.State state) {
+      setState(() {
+        _bgGeolocationIsEnabled = state.enabled;
+      });
       if (!state.enabled) {
         ////
         // 3.  Start the plugin.
         //
-        bg.BackgroundGeolocation.start();
+        bg.BackgroundGeolocation.start().then((bg.State state) {
+          print('[start] success - ${state}');
+        });
         // bg.BackgroundGeolocation.setOdometer(0);
+      } else {
+        bg.BackgroundGeolocation.start().then((bg.State state) {
+          print('[start] success (already) - ${state}');
+        });
       }
+    }).catchError((err) {
+      print('[start] error - ${err.toString()}');
     });
 
-    _isManuallyRequestingLocation = true;
-    bg.BackgroundGeolocation.getCurrentPosition().then((value) {
-      _handleStreamLocationUpdate(value);
-      _isManuallyRequestingLocation = false;
-    });
+    // _isManuallyRequestingLocation = true;
+    // bg.BackgroundGeolocation.getCurrentPosition().then((value) {
+    //   _handleStreamLocationUpdate(value);
+    //   _isManuallyRequestingLocation = false;
+    // });
 
     eachSecond();
   }
@@ -1172,7 +1201,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<http.Response> postTracks(List<Map<String, dynamic>> body) {
     print("body.length: " + body.length.toString());
-    print(jsonEncode(body));
+    // print(jsonEncode(body));
 
     // Dio dio = new Dio();
     // dio.options.connectTimeout = 60000; // 60s
@@ -1525,6 +1554,26 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Expanded(
+                  //   flex: 2,
+                  //   child: Container(
+                  //     padding: EdgeInsets.all(4),
+                  //     child: Row(
+                  //       mainAxisAlignment: MainAxisAlignment.center,
+                  //       children: [
+                  //         _bgGeolocationIsEnabled
+                  //             ? Icon(Icons.check_box_outlined,
+                  //                 color: Colors.green[700], size: 16)
+                  //             : Icon(Icons.check_box_outline_blank,
+                  //                 color: Colors.red[700], size: 16)
+                  //       ],
+                  //     ),
+                  //     // decoration: BoxDecoration(
+                  //     //     border: Border(
+                  //     //         bottom:
+                  //     //             BorderSide(color: Colors.white, width: 4))),
+                  //   ),
+                  // ),
+                  // Expanded(
                   //     // flex: 2,
                   //     child: Container(
                   //       // padding: EdgeInsets.all(8.0),
@@ -1541,7 +1590,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   //       //       var loc = await bg.BackgroundGeolocation
                   //       //           .getCurrentPosition();
                   //       //       _handleStreamLocationUpdate(loc);
-
                   //       //       // ScaffoldMessenger.of(context).showSnackBar(
                   //       //       //   _buildSnackBar(Text('Points!'),
                   //       //       //       backgroundColor: Colors.green),
@@ -1552,7 +1600,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   //       //         ),
                   //     )),
                   Expanded(
-                      flex: 1,
+                      flex: 2,
                       child: Container(
                         height: 36,
                         // padding: EdgeInsets.all(8.0),
@@ -1641,29 +1689,37 @@ class _MyHomePageState extends State<MyHomePage> {
 
                   // To settings.
                   Expanded(
+                      flex: 2,
                       child: Container(
-                    // padding: EdgeInsets.all(8.0),
-                    // child: Expanded(
-                    height: 36,
-                    child: RawMaterialButton(
-                        // fillColor: Colors.indigo,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => prefs.MySettingsScreen(
-                                deviceUUID: _deviceUUID,
-                                deviceName: _deviceName,
-                                deviceVersion: _deviceAppVersion,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Icon(
-                          Icons.settings,
-                          size: 16,
-                        )),
-                  )),
+                        // padding: EdgeInsets.all(8.0),
+                        // child: Expanded(
+
+                        height: 36,
+                        child: RawMaterialButton(
+                            // fillColor: Colors.indigo,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => prefs.MySettingsScreen(
+                                    deviceUUID: _deviceUUID,
+                                    deviceName: _deviceName,
+                                    deviceVersion: _deviceAppVersion,
+                                  ),
+                                ),
+                              );
+                            },
+                            onLongPress: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => LoggerScreen()));
+                            },
+                            child: Icon(
+                              Icons.settings,
+                              size: 16,
+                            )),
+                      )),
                 ],
               ),
 
@@ -1914,12 +1970,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ],
                       ),
-                      decoration: BoxDecoration(
-                          border: Border(
-                              bottom: BorderSide(
-                                  color: colorForDurationSinceLastPoint(
-                                      _secondsSinceLastPoint),
-                                  width: 3))),
+                      // decoration: BoxDecoration(
+                      //     border: Border(
+                      //         bottom: BorderSide(
+                      //             color: colorForDurationSinceLastPoint(
+                      //                 _secondsSinceLastPoint),
+                      //             width: 0))),
                     ),
                   ],
                 ),
@@ -2608,4 +2664,52 @@ String degreeToCardinalDirection(double heading) {
     "N",
   ];
   return directions[((heading % 360) ~/ 22.5) + 1];
+}
+
+// A widget that displays the picture taken by the user.
+class LoggerScreen extends StatelessWidget {
+  const LoggerScreen({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(Icons.pageview),
+          ],
+        ),
+        // backgroundColor: Colors.lime,
+      ),
+      // The image is stored as a file on the device. Use the `Image.file`
+      // constructor with the given path to display the image.
+      body: ListView(
+        children: [
+          new FutureBuilder<String>(
+            future: bg.Logger.getLog(), // a Future<String> or null
+            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                  return new Text('Initializing...');
+                case ConnectionState.waiting:
+                  return new Text('Awaiting result...');
+                default:
+                  if (snapshot.hasError)
+                    return new Text('Error: ${snapshot.error}');
+                  else
+                    return new Text(
+                      '${snapshot.data.split("\n").reversed.join("\n")}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .apply(fontSizeFactor: 0.8)
+                          .bodyText2,
+                    );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }

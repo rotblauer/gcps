@@ -22,6 +22,7 @@ const String kLocationGarneringElasticityMultiplier =
 const String kLocationGarneringStationaryTimeout =
     'locationGarneringStationaryTimeout';
 const String kLocationDisableStopDetection = 'kLocationDisableStopDetection';
+const String kLocationDeviceInMotion = 'kLocationDeviceInMotion';
 // const String kLocationUpdateStopTimeou = "locationUpdateStopTimeout";
 
 // class SharedPreferencesHelper {
@@ -84,17 +85,37 @@ int prefLocationDesiredAccuracy(String value) {
   return bg.Config.DESIRED_ACCURACY_NAVIGATION;
 }
 
-class MySettingsScreen extends StatelessWidget {
+class MySettingsScreen extends StatefulWidget {
   final String deviceUUID;
   final String deviceName;
   final String deviceVersion;
 
-  MySettingsScreen({
+  const MySettingsScreen({
     Key key,
     this.deviceUUID,
     this.deviceName,
     this.deviceVersion,
   }) : super(key: key);
+
+  @override
+  _SettingsScreen createState() => _SettingsScreen(
+        deviceUUID: this.deviceUUID,
+        deviceName: this.deviceName,
+        deviceVersion: this.deviceVersion,
+      );
+}
+
+class _SettingsScreen extends State<MySettingsScreen> {
+  final String deviceUUID;
+  final String deviceName;
+  final String deviceVersion;
+
+  _SettingsScreen({
+    Key key,
+    this.deviceUUID,
+    this.deviceName,
+    this.deviceVersion,
+  });
 
   final Settings _settings = Settings();
 
@@ -108,6 +129,8 @@ class MySettingsScreen extends StatelessWidget {
   handleLocationUpdateChanges(String changedKey, double newValue) {
     // double _locationUpdateDistanceFilter;
     // double _locationUpdateInterval;
+
+    newValue = newValue.roundToDouble();
 
     _settings.getDouble(kLocationUpdateDistanceFilter, 1).then((value) {
       _locationUpdateDistanceFilter = value;
@@ -158,16 +181,16 @@ class MySettingsScreen extends StatelessWidget {
     bg.Config newConfig;
     if (_locationUpdateDistanceFilter > 0) {
       newConfig = bg.Config(
-        distanceFilter: _locationUpdateDistanceFilter.floorToDouble(),
-        locationUpdateInterval: null,
+        distanceFilter: _locationUpdateDistanceFilter,
+        locationUpdateInterval: 0,
       );
     } else {
       newConfig = bg.Config(
-        distanceFilter: null,
-        locationUpdateInterval: _locationUpdateInterval * 1000 ~/ 1,
+        distanceFilter: 0,
+        locationUpdateInterval: (_locationUpdateInterval * 1000 ~/ 1),
       );
     }
-    Debounce.milliseconds(500, updateBGConfig, [newConfig]);
+    Debounce.milliseconds(1000, updateBGConfig, [newConfig]);
   }
 
   @override
@@ -277,6 +300,7 @@ class MySettingsScreen extends StatelessWidget {
                   settingKey: kLocationGarneringStationaryTimeout,
                   defaultValue: 0,
                   childBuilder: (BuildContext context, double value) {
+                    print('[update stopTimeout]: ${value.floor()}');
                     bg.BackgroundGeolocation.setConfig(
                         bg.Config(stopTimeout: value.floor()));
 
@@ -291,21 +315,40 @@ class MySettingsScreen extends StatelessWidget {
             ],
           ),
 
-          // kLocationDisableStopDetection
-          SwitchSettingsTile(
-            settingKey: kLocationDisableStopDetection,
-            title: 'Enable stop detection',
-            icon: Icon(Icons.trip_origin),
-            defaultValue: true,
-          ),
-          _settings.onBoolChanged(
-              settingKey: kLocationDisableStopDetection,
-              defaultValue: true,
-              childBuilder: (BuildContext context, bool value) {
-                bg.BackgroundGeolocation.setConfig(
-                    bg.Config(disableStopDetection: !value));
-                return Container();
-              }),
+          // // kLocationDisableStopDetection
+          // SwitchSettingsTile(
+          //   settingKey: kLocationDisableStopDetection,
+          //   title: 'Enable stop detection',
+          //   subtitle:
+          //       'Location tracking toggled automatically\nwhen device is active/stationary.',
+          //   subtitleIfOff:
+          //       'Location tracking depends on manual cativation and decativation.',
+          //   icon: Icon(Icons.trip_origin),
+          //   defaultValue: true,
+          // ),
+          // _settings.onBoolChanged(
+          //     settingKey: kLocationDisableStopDetection,
+          //     defaultValue: true,
+          //     childBuilder: (BuildContext context, bool value) {
+          //       bg.BackgroundGeolocation.setConfig(
+          //           bg.Config(disableStopDetection: value));
+          //       return Container();
+          //     }),
+
+          // SwitchSettingsTile(
+          //   settingKey: kLocationDeviceInMotion,
+          //   title: 'Location tracking active',
+          //   icon: Icon(Icons.circle),
+          //   defaultValue: true,
+          // ),
+          // _settings.onBoolChanged(
+          //     settingKey: kLocationDeviceInMotion,
+          //     defaultValue: true,
+          //     childBuilder: (BuildContext context, bool value) {
+          //       print('#changePace: ${value}');
+          //       bg.BackgroundGeolocation.changePace(value);
+          //       return Container();
+          //     }),
 
           //
           SettingsContainer(
