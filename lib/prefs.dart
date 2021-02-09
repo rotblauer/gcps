@@ -22,7 +22,7 @@ const String kLocationGarneringElasticityMultiplier =
     'locationGarneringElasticityMultiplier';
 const String kLocationGarneringStationaryTimeout =
     'locationGarneringStationaryTimeout';
-const String kLocationDisableStopDetection = 'kLocationDisableStopDetection';
+const String kLocationDisableStopDetection = 'kLocationDisableStopDetection'; //
 const String kLocationDeviceInMotion = 'kLocationDeviceInMotion';
 
 class SharedPrefs {
@@ -415,6 +415,78 @@ class _SettingsScreen extends State<MySettingsScreen> {
               ),
             ],
           ),
+
+          _buildSliderTile(
+              context: context,
+              leading: Icon(Icons.my_location_outlined),
+              title: 'Distance filter',
+              subtitle:
+                  'Δ meters triggering a location update.\nZero causes time updates.',
+              min: 0,
+              max: 100,
+              divisions: 33,
+              value: _kLocationUpdateDistanceFilter,
+              onChanged: (value) {
+                value = value.floorToDouble();
+                setState(() {
+                  _kLocationUpdateDistanceFilter = value;
+                });
+                if (value == 0) {
+                  setState(() {
+                    _kLocationUpdateInterval = 1;
+                  });
+                } else if (_kLocationUpdateInterval != 0) {
+                  setState(() {
+                    _kLocationUpdateInterval = 0;
+                  });
+                }
+                sharedPrefs.setDouble(kLocationUpdateDistanceFilter,
+                    _kLocationUpdateDistanceFilter);
+                sharedPrefs.setDouble(
+                    kLocationUpdateInterval, _kLocationUpdateInterval);
+                bg.BackgroundGeolocation.state.then((st) {
+                  st.set('distanceFilter', _kLocationUpdateDistanceFilter);
+                  st.set('locationTimeout',
+                      (_kLocationUpdateInterval * 1000).toInt());
+                  bg.BackgroundGeolocation.setConfig(st);
+                });
+              }),
+
+          _buildSliderTile(
+              context: context,
+              leading: Icon(Icons.timer),
+              title: 'Time interval',
+              subtitle:
+                  'Δ seconds triggering a location update.\nZero causes distance updates.',
+              min: 0,
+              max: 60,
+              divisions: 60,
+              value: _kLocationUpdateInterval,
+              onChanged: (value) {
+                value = value.floorToDouble();
+                setState(() {
+                  _kLocationUpdateInterval = value;
+                });
+                if (value == 0) {
+                  setState(() {
+                    _kLocationUpdateDistanceFilter = 1;
+                  });
+                } else if (_kLocationUpdateDistanceFilter != 0) {
+                  setState(() {
+                    _kLocationUpdateDistanceFilter = 0;
+                  });
+                }
+                sharedPrefs.setDouble(kLocationUpdateDistanceFilter,
+                    _kLocationUpdateDistanceFilter);
+                sharedPrefs.setDouble(
+                    kLocationUpdateInterval, _kLocationUpdateInterval);
+                bg.BackgroundGeolocation.state.then((st) {
+                  st.set('distanceFilter', _kLocationUpdateDistanceFilter);
+                  st.set('locationTimeout',
+                      (_kLocationUpdateInterval * 1000).toInt());
+                  bg.BackgroundGeolocation.setConfig(st);
+                });
+              }),
 
           _buildSwitchTile(
               context: context,
