@@ -17,7 +17,7 @@ import 'package:http/http.dart' as http;
 import 'package:connectivity/connectivity.dart';
 import 'package:camera/camera.dart';
 // import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:path/path.dart' show join;
+import 'package:path/path.dart' show basename, join;
 import 'package:path_provider/path_provider.dart';
 // import 'package:workmanager/workmanager.dart';
 // import 'package:gallery_saver/gallery_saver.dart';
@@ -801,6 +801,7 @@ String secondsToPrettyDuration(double seconds, [bool abbrev]) {
 }
 
 Color colorForDurationSinceLastPoint(int duration) {
+  if (duration == null) duration = 0;
   final int offset = duration > 255 ? 255 : duration;
   Color c = Color.fromRGBO(255, 255 - offset, 255 - offset, 1);
   if (duration < 10) {
@@ -1240,24 +1241,17 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<int> _pushTracks(List<AppPoint> tracks) async {
     print("=====> ... Pushing tracks: " + tracks.length.toString());
 
-    final List<Map<String, dynamic>> pushable =
-        List.generate(tracks.length, (index) {
-      var c = tracks[index].toCattrackJSON(
+    final List<Map<String, dynamic>> pushable = [];
+    for (var t in tracks) {
+      Map<String, dynamic> js = await t.toCattrackJSON(
         uuid: _deviceUUID,
         name: _deviceName,
         version: _deviceAppVersion,
         tripStarted: _tripStarted.toUtc().toIso8601String(),
         distance: _tripDistance.toPrecision(1),
       );
-
-      // c['tripStarted'] = _tripStarted.toUtc().toIso8601String();
-      // c['uuid'] = _deviceUUID;
-      // c['name'] = _deviceName;
-      // c['version'] = _deviceAppVersion;
-
-      return c;
-    });
-
+      pushable.add(js);
+    }
     print("=====> ... Pushing tracks: " +
         tracks.length.toString() +
         "/" +
@@ -1301,6 +1295,14 @@ class _MyHomePageState extends State<MyHomePage> {
           _countPushed += tracks.length;
         });
         deleteTracksBeforeInclusive(tracks[tracks.length - 1].timestamp);
+
+        // delete (clean up) cat snaps files
+        tracks.where((element) {
+          return element.image_file_path != null &&
+              element.image_file_path != '';
+        }).forEach((element) {
+          File(element.image_file_path).deleteSync();
+        });
       } else {
         print("✘ PUSH FAILED, status: " + resCode.toString());
         break;
@@ -1851,7 +1853,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           });
                         },
                         onLongPress: () async {
-                          var targetState = !glocation.isMoving;
+                          var targetState = !glocation?.isMoving ?? true;
                           bg.BackgroundGeolocation.changePace(targetState);
                           ScaffoldMessenger.of(context).showSnackBar(
                             _buildSnackBar(
@@ -1870,7 +1872,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   context, glocation.activity.type, null),
                             ),
                             Visibility(
-                              visible: !glocation?.isMoving,
+                              visible: !glocation?.isMoving ?? false,
                               child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 4.0),
                                   // margin: EdgeInsets.only(left: 6),
@@ -1880,7 +1882,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   )),
                             ),
                             Visibility(
-                              visible: glocation?.isMoving,
+                              visible: glocation?.isMoving ?? false,
                               child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 4.0),
                                   // margin: EdgeInsets.only(left: 6),
@@ -1987,25 +1989,36 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
 
-                      Container(
-                        padding: EdgeInsets.all(4),
-                        child: Row(
-                          children: [
-                            Icon(Icons.camera_alt_outlined,
-                                color: Colors.deepPurple[400], size: 16),
-                            Container(
-                              width: 4,
+                      InkWell(
+                        onLongPress: () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MyCatSnapsScreen(),
                             ),
-                            Text(
-                              _countSnaps.toString(),
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.camera_alt_outlined,
+                                  color: Colors.deepPurple[400], size: 16),
+                              Container(
+                                width: 4,
+                              ),
+                              Text(
+                                _countSnaps.toString(),
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          decoration: BoxDecoration(
+                              border: Border(
+                                  bottom: BorderSide(
+                                      color: Colors.deepPurple[700],
+                                      width: 2))),
                         ),
-                        decoration: BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                                    color: Colors.deepPurple[700], width: 2))),
                       ),
 
                       if (_isPushing)
@@ -2568,6 +2581,11 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: (context) => TakePictureScreen(camera: firstCamera),
             ),
           );
+          countSnaps().then((value) {
+            setState(() {
+              _countSnaps = value;
+            });
+          });
         },
         tooltip: 'Camera',
         icon: Icon(Icons.camera),
@@ -2689,81 +2707,16 @@ class TakePictureScreenState extends State<TakePictureScreen> {
               }
             },
           )),
-          // Row(
-          //   children: [
-          //     Expanded(
-          //         child: Container(
-          //             height: 128,
-          //             padding: const EdgeInsets.all(8),
-          //             child: ElevatedButton(
-          //               style: ButtonStyle(
-          //                   backgroundColor: MaterialStateProperty.all<Color>(
-          //                       Colors.deepPurple[700])),
-          //               onPressed: takePicture,
-          //               child: Column(
-          //                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //                   children: [
-          //                     // Text('Cat snap',
-          //                     //     style: Theme.of(context).textTheme.overline),
-          //                     Icon(
-          //                       Icons.camera,
-          //                       size: 64,
-          //                       color: Colors.deepOrange, // green
-          //                     ),
-          //                   ]),
-          //             )))
-          //   ],
-          // )
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-          autofocus: true,
-          backgroundColor: Colors.deepOrange,
-          foregroundColor: Colors.deepPurple[700],
-          child: Icon(Icons.camera),
-          onPressed: takePicture),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: Colors.tealAccent,
-      //   materialTapTargetSize: MaterialTapTargetSize.padded,
-      //   child: Icon(Icons.camera_alt),
-      //   // Provide an onPressed callback.
-      //   onPressed: () async {
-      //     // Take the Picture in a try / catch block. If anything goes wrong,
-      //     // catch the error.
-      //     try {
-      //       // Ensure that the camera is initialized.
-      //       await _initializeControllerFuture;
-
-      //       // Construct the path where the image should be saved using the
-      //       // pattern package.
-      //       final path = join(
-      //         // Store the picture in the temp directory.
-      //         // Find the temp directory using the `path_provider` plugin.
-      //         (await getTemporaryDirectory()).path,
-      //         '${DateTime.now().millisecondsSinceEpoch}.jpg',
-      //       );
-
-      //       // Attempt to take a picture and log where it's been saved.
-      //       // var xpath =
-      //       await _controller.takePicture().then((value) => value.saveTo(path));
-      //       // _controller.setFlashMode(FlashMode.off);
-      //       // xpath.saveTo(path);
-
-      //       // If the picture was taken, display it on a new screen.
-      //       Navigator.push(
-      //         context,
-      //         MaterialPageRoute(
-      //           builder: (context) => DisplayPictureScreen(imagePath: path),
-      //         ),
-      //       );
-      //     } catch (e) {
-      //       // If an error occurs, log the error to the console.
-      //       print(e);
-      //     }
-      //   },
-      // ),
+        autofocus: true,
+        backgroundColor: Colors.deepOrange,
+        foregroundColor: Colors.deepPurple[700],
+        child: Icon(Icons.camera),
+        onPressed: takePicture,
+      ),
     );
   }
 }
@@ -2794,62 +2747,6 @@ class DisplayPictureScreen extends StatelessWidget {
       // constructor with the given path to display the image.
       body: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         Flexible(child: Image.file(File(imagePath))),
-        // Row(
-        //   children: [
-        //     Expanded(
-        //         child: Container(
-        //             height: 128,
-        //             padding: const EdgeInsets.all(24),
-        //             child: ElevatedButton(
-        //               style: ButtonStyle(
-        //                   backgroundColor: MaterialStateProperty.all<Color>(
-        //                       Colors.deepPurple[700])),
-        //               onPressed: () async {
-        //                 // Get location.
-        //                 var location =
-        //                     await bg.BackgroundGeolocation.getCurrentPosition();
-
-        //                 // Read and rotate the image according to exif data as needed.
-        //                 final img.Image capturedImage = img
-        //                     .decodeImage(await File(imagePath).readAsBytes());
-        //                 final img.Image orientedImage =
-        //                     img.bakeOrientation(capturedImage);
-        //                 await File(imagePath).writeAsBytes(
-        //                     img.encodeJpg(orientedImage),
-        //                     flush: true);
-
-        //                 // Add the snap to the cat track.
-        //                 var p = AppPoint.fromLocationProvider(location);
-        //                 p.imgB64 =
-        //                     base64Encode(File(imagePath).readAsBytesSync());
-
-        //                 // Save it.
-        //                 await insertTrackForce(p);
-
-        //                 // Delete the original image file.
-        //                 File(imagePath).deleteSync();
-
-        //                 // Go back home.
-        //                 Navigator.popUntil(context, ModalRoute.withName('/'));
-
-        //                 ScaffoldMessenger.of(context).showSnackBar(
-        //                     _buildSnackBar(Text('Cat snap saved.'),
-        //                         backgroundColor: Colors.lightGreen));
-
-        //                 return null;
-        //               },
-        //               child: Column(
-        //                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        //                   children: [
-        //                     Icon(
-        //                       Icons.add_photo_alternate_outlined,
-        //                       size: 64,
-        //                       color: Colors.deepOrange, // green
-        //                     ),
-        //                   ]),
-        //             )))
-        //   ],
-        // )
       ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
@@ -2865,12 +2762,18 @@ class DisplayPictureScreen extends StatelessWidget {
           final img.Image capturedImage =
               img.decodeImage(await File(imagePath).readAsBytes());
           final img.Image orientedImage = img.bakeOrientation(capturedImage);
-          await File(imagePath)
+
+          // Move the image from the temporary store to persistent app data.
+          Directory persistentDir = await getApplicationDocumentsDirectory();
+          String persistentPath = join(persistentDir.path, basename(imagePath));
+
+          await File(persistentPath)
               .writeAsBytes(img.encodeJpg(orientedImage), flush: true);
 
           // Add the snap to the cat track.
           var p = AppPoint.fromLocationProvider(location);
-          p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
+          p.image_file_path = persistentPath;
+          // p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
 
           // Save it.
           await insertTrackForce(p);
@@ -2893,35 +2796,6 @@ class DisplayPictureScreen extends StatelessWidget {
 }
 
 String degreeToCardinalDirection(double heading) {
-/*
-    --- Return wind direction as a string.
-    local function to_direction(degrees)
-        -- Ref: https://www.campbellsci.eu/blog/convert-wind-directions
-        if degrees == nil then
-            return "Unknown dir"
-        end
-        local directions = {
-            "N",
-            "NNE",
-            "NE",
-            "ENE",
-            "E",
-            "ESE",
-            "SE",
-            "SSE",
-            "S",
-            "SSW",
-            "SW",
-            "WSW",
-            "W",
-            "WNW",
-            "NW",
-            "NNW",
-            "N",
-        }
-        return directions[math.floor((degrees % 360) / 22.5) + 1]
-    end
-*/
   var directions = [
     "N",
     "NNE",
@@ -3097,6 +2971,93 @@ class TrackListScreen extends StatelessWidget {
                               '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m'),
                         );
                       });
+              // return new Text(
+              //   '${snapshot.data.split("\n").reversed.join("\n")}',
+              //   style: Theme.of(context)
+              //       .textTheme
+              //       .apply(fontSizeFactor: 0.8)
+              //       .bodyText2,
+              // );
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// A widget that displays the picture taken by the user.
+class MyCatSnapsScreen extends StatelessWidget {
+  const MyCatSnapsScreen({Key key}) : super(key: key);
+
+  // Widget _buildListTileTitle(
+  //     {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
+  //   Row row = Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //     children: [],
+  //   );
+
+  //   if (prev == null) row.children.add(Text('${point.time} '));
+
+  //   row.children.add(Text(
+  //       '${next != null ? "+" + secondsToPrettyDuration((point.timestamp - next.timestamp).toDouble()) : ""}'));
+
+  //   if (point.event != '')
+  //     row.children.add(Chip(
+  //       backgroundColor: Colors.teal,
+  //       label: Text(point.event),
+  //     ));
+
+  //   return row;
+  // }
+
+  List<Widget> _buildSnaps(List<AppPoint> snaps) {
+    List<Widget> out = [];
+    for (var snap in snaps) {
+      out.add(Row(
+        children: [
+          Flexible(
+              child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Image.file(File(snap.image_file_path)))),
+        ],
+      ));
+    }
+    return out;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(Icons.image, color: Colors.deepOrange),
+          ],
+        ),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.deepOrange,
+      ),
+      // The image is stored as a file on the device. Use the `Image.file`
+      // constructor with the given path to display the image.
+      body: SafeArea(
+        child: new FutureBuilder<List<AppPoint>>(
+          future: snaps(), // a Future<String> or null
+          builder:
+              (BuildContext context, AsyncSnapshot<List<AppPoint>> snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+                return new Text('Initializing...');
+              case ConnectionState.waiting:
+                return new Text('Awaiting result...');
+              default:
+                if (snapshot.hasError)
+                  return new Text('Error: ${snapshot.error}');
+                else
+                  return ListView(
+                    children: _buildSnaps(snapshot.data),
+                  );
               // return new Text(
               //   '${snapshot.data.split("\n").reversed.join("\n")}',
               //   style: Theme.of(context)

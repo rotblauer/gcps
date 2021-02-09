@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:path/path.dart';
@@ -7,6 +8,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
+import 'package:image/image.dart' as img;
 // import 'config.dart' as config;
 
 const _cDatabaseName = 'cattracks_database.db';
@@ -31,6 +33,7 @@ const dbSchemaColumns = [
   'battery_is_charging integer',
   'event text',
   'imgb64 text',
+  'image_file_path text'
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -87,6 +90,9 @@ class AppPoint {
   final String event;
 
   String _uuid;
+  DateTime _tripStarted;
+  String _imgB64;
+  String _image_file_path;
 
   String get uuid {
     return _uuid;
@@ -96,7 +102,14 @@ class AppPoint {
     this._uuid = uuid;
   }
 
-  DateTime _tripStarted;
+  String get image_file_path {
+    return _image_file_path;
+  }
+
+  void set image_file_path(String path) {
+    this._image_file_path = path;
+  }
+
   DateTime get tripStarted {
     return _tripStarted;
   }
@@ -105,7 +118,6 @@ class AppPoint {
     this._tripStarted = dt;
   }
 
-  String _imgB64;
   String get imgB64 {
     return _imgB64;
   }
@@ -174,6 +186,7 @@ class AppPoint {
       'battery_is_charging': battery_is_charging ? 1 : 0,
       'event': event,
       'imgb64': imgB64,
+      'image_file_path': image_file_path,
     };
   }
 
@@ -223,6 +236,9 @@ class AppPoint {
     if (appMap['imgb64'] != null && appMap['imgb64'] != "") {
       ap.imgB64 = appMap['imgb64'].toString();
     }
+    if (appMap['image_file_path'] != null && appMap['image_file_path'] != "") {
+      ap.image_file_path = appMap['image_file_path'].toString();
+    }
     return ap;
   }
 
@@ -266,12 +282,12 @@ class AppPoint {
   }
 
   // toCattrackJSON creates a dynamic map for JSON (push).
-  Map<String, dynamic> toCattrackJSON(
+  Future<Map<String, dynamic>> toCattrackJSON(
       {String uuid = "",
       String name = "",
       String version = "",
       String tripStarted = "",
-      double distance = 0}) {
+      double distance = 0}) async {
     /*
     type TrackPoint struct {
       Uuid       string    `json:"uuid"`
@@ -315,9 +331,15 @@ class AppPoint {
     if (_tripStarted != null) {
       notes['currentTripStart'] = _tripStarted.toUtc().toIso8601String();
     }
-    if (imgB64 != null && imgB64 != "") {
-      notes['imgb64'] = imgB64;
+    if (image_file_path != null && image_file_path != '') {
+      // Add the snap to the cat track.
+      var encoded = base64Encode(File(image_file_path).readAsBytesSync());
+      // print('ENCODED image as base64: ${encoded}');
+      notes['imgb64'] = encoded;
     }
+    // if (imgB64 != null && imgB64 != "") {
+    //   notes['imgb64'] = imgB64;
+    // }
     notesString = jsonEncode(notes);
     return {
       'uuid': uuid,
@@ -392,8 +414,8 @@ Future<int> countTracks() async {
 
 Future<int> countSnaps() async {
   final Database db = await database();
-  return Sqflite.firstIntValue(await db
-      .rawQuery('SELECT COUNT(*) FROM $_cTableName WHERE imgB64 IS NOT NULL'));
+  return Sqflite.firstIntValue(await db.rawQuery(
+      'SELECT COUNT(*) FROM $_cTableName WHERE image_file_path IS NOT NULL'));
 }
 
 Future<int> lastId() async {
@@ -431,7 +453,7 @@ Future<void> deleteTracksBeforeInclusive(int ts) async {
 Future<List<AppPoint>> snaps() async {
   final Database db = await database();
   final List<Map<String, dynamic>> maps =
-      await db.query('$_cTableName', where: 'imgB64 IS NOT NULL');
+      await db.query('$_cTableName', where: 'image_file_path IS NOT NULL');
   return List.generate(maps.length, (i) {
     return AppPoint.fromMap(maps[i]);
   });
