@@ -51,7 +51,6 @@ class SharedPrefs {
       case kLocationUpdateStopTimeout:
         return _sharedPrefs.get(kLocationUpdateStopTimeout) ?? 5;
         break;
-
       case kLocationGarneringElasticityMultiplier:
         return _sharedPrefs.get(kLocationGarneringElasticityMultiplier) ?? 0;
         break;
@@ -311,8 +310,8 @@ class _SettingsScreen extends State<MySettingsScreen> {
       sharedPrefs.getDouble(kLocationUpdateDistanceFilter);
   double _kLocationUpdateStopTimeout =
       sharedPrefs.getDouble(kLocationUpdateStopTimeout);
-  double _kLocationGarneringElasticityMultiplier =
-      sharedPrefs.getDouble(kLocationGarneringElasticityMultiplier);
+  // double _kLocationGarneringElasticityMultiplier =
+  //     sharedPrefs.getDouble(kLocationGarneringElasticityMultiplier);
   String _kLocationGarneringDesiredAccuracy =
       sharedPrefs.getString(kLocationGarneringDesiredAccuracy);
 

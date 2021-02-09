@@ -1590,192 +1590,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
 
-          // Column(
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: [
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         // Expanded(
-          //         //   flex: 2,
-          //         //   child: Container(
-          //         //     padding: EdgeInsets.all(4),
-          //         //     child: Row(
-          //         //       mainAxisAlignment: MainAxisAlignment.center,
-          //         //       children: [
-          //         //         _bgGeolocationIsEnabled
-          //         //             ? Icon(Icons.check_box_outlined,
-          //         //                 color: Colors.green[700], size: 16)
-          //         //             : Icon(Icons.check_box_outline_blank,
-          //         //                 color: Colors.red[700], size: 16)
-          //         //       ],
-          //         //     ),
-          //         //     // decoration: BoxDecoration(
-          //         //     //     border: Border(
-          //         //     //         bottom:
-          //         //     //             BorderSide(color: Colors.white, width: 4))),
-          //         //   ),
-          //         // ),
-          //         // Expanded(
-          //         //     // flex: 2,
-          //         //     child: Container(
-          //         //       // padding: EdgeInsets.all(8.0),
-          //         //       // child: Expanded(
-          //         //       height: 24,
-          //         //       child: Container(),
-          //         //       // RawMaterialButton(
-          //         //       //     // MaterialStateProperty.all<Color>(Colors.lime)),
-          //         //       //     elevation: 4.0,
-          //         //       //     // shape: CircleBorder(),
-          //         //       //     // padding: EdgeInsets.all(8.0),
-          //         //       //     fillColor: Colors.deepOrange,
-          //         //       //     onPressed: () async {
-          //         //       //       var loc = await bg.BackgroundGeolocation
-          //         //       //           .getCurrentPosition();
-          //         //       //       _handleStreamLocationUpdate(loc);
-          //         //       //       // ScaffoldMessenger.of(context).showSnackBar(
-          //         //       //       //   _buildSnackBar(Text('Points!'),
-          //         //       //       //       backgroundColor: Colors.green),
-          //         //       //       // );
-          //         //       //     },
-          //         //       //     child: Icon(Icons.plus_one,
-          //         //       //         semanticLabel: 'Point', size: 16)
-          //         //       //         ),
-          //         //     )),
-          //         Expanded(
-          //             flex: 2,
-          //             child: Container(
-          //               height: 36,
-          //               // padding: EdgeInsets.all(8.0),
-          //               child: RawMaterialButton(
-          //                   // fillColor: _countStored > 0 &&
-          //                   //         (_connectionStatus.contains('wifi') ||
-          //                   //             _connectionStatus.contains('mobile'))
-          //                   //     ? MyTheme.buttonColor
-          //                   //     : Colors.grey,
-          //                   onPressed: _countStored > 0 &&
-          //                           (_connectionStatus.contains('wifi') ||
-          //                               _connectionStatus.contains('mobile'))
-          //                       ? () {
-          //                           if (_countStored == 0) return;
-
-          //                           // set up the buttons
-          //                           Widget cancelButton = ElevatedButton(
-          //                             child: Text("Cancel"),
-          //                             style: ButtonStyle(
-          //                                 backgroundColor:
-          //                                     MaterialStateProperty.all<Color>(
-          //                                         Colors.grey)),
-          //                             onPressed: () {
-          //                               Navigator.of(context,
-          //                                       rootNavigator: true)
-          //                                   .pop('dialog');
-          //                             },
-          //                           ); // set up the AlertDialog
-          //                           Widget continueButton = ElevatedButton(
-          //                             child: Text("Yes, upload"),
-          //                             onPressed: () async {
-          //                               this._pushTracksBatching();
-          //                               Navigator.of(context,
-          //                                       rootNavigator: true)
-          //                                   .pop('dialog');
-          //                             },
-          //                           ); // set up the AlertDialog
-          //                           AlertDialog alert = AlertDialog(
-          //                             title: Text("Confirm upload"),
-          //                             content: Text(
-          //                                 'Would you like to upload ${_countStored} tracks?'),
-          //                             actions: [
-          //                               cancelButton,
-          //                               continueButton,
-          //                             ],
-          //                           ); // show the dialog
-          //                           showDialog(
-          //                             context: context,
-          //                             builder: (BuildContext context) {
-          //                               return alert;
-          //                             },
-          //                           );
-          //                         }
-          //                       : null,
-          //                   child: Row(
-          //                       mainAxisAlignment: MainAxisAlignment.center,
-          //                       children: [
-          //                         Icon(
-          //                           Icons.cloud_upload,
-          //                           semanticLabel: 'Push',
-          //                           size: 16,
-          //                         ),
-          //                         Container(
-          //                           width: 8,
-          //                           alignment: Alignment.center,
-          //                           child: Text(':',
-          //                               style:
-          //                                   TextStyle(/*color: Colors.white*/)),
-          //                         ),
-          //                         buildConnectStatusIcon(_connectionStatus,
-          //                             size: 16),
-          //                       ])),
-          //             )),
-
-          //         Visibility(
-          //           visible: _isManuallyRequestingLocation,
-          //           child: Container(
-          //             height: 8,
-          //             width: 24,
-          //             child: LinearProgressIndicator(
-          //               minHeight: 2,
-          //               backgroundColor: Colors.deepOrange,
-          //             ),
-          //           ),
-          //         ),
-
-          //         // To settings.
-          //         Expanded(
-          //             flex: 2,
-          //             child: Container(
-          //               // padding: EdgeInsets.all(8.0),
-          //               // child: Expanded(
-
-          //               height: 36,
-          //               child: RawMaterialButton(
-          //                   // fillColor: Colors.indigo,
-          //                   onPressed: () {
-          //                     Navigator.push(
-          //                       context,
-          //                       MaterialPageRoute(
-          //                         builder: (context) => prefs.MySettingsScreen(
-          //                           deviceUUID: _deviceUUID,
-          //                           deviceName: _deviceName,
-          //                           deviceVersion: _deviceAppVersion,
-          //                         ),
-          //                       ),
-          //                     );
-          //                   },
-          //                   onLongPress: () {
-          //                     Navigator.push(
-          //                         context,
-          //                         MaterialPageRoute(
-          //                             builder: (context) => LoggerScreen()));
-          //                   },
-          //                   child: Icon(
-          //                     Icons.settings,
-          //                     size: 16,
-          //                   )),
-          //             )),
-          //       ],
-          //     ),
-
-          //     // LinearProgressIndicator(
-          //     //   minHeight: 4,
-          //     //   value: _isPushing
-          //     //       ? null
-          //     //       : _countStored.toDouble() / _pushEvery.toDouble(),
-          //     //   // backgroundColor: ,
-          //     // ),
-          //   ],
-          // ),
-
+          // Status row!
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1784,6 +1599,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  //
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -1853,7 +1669,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           });
                         },
                         onLongPress: () async {
-                          var targetState = !glocation?.isMoving ?? true;
+                          var targetState = !(glocation != null &&
+                              glocation.isMoving != null &&
+                              glocation.isMoving);
                           bg.BackgroundGeolocation.changePace(targetState);
                           ScaffoldMessenger.of(context).showSnackBar(
                             _buildSnackBar(
@@ -1871,8 +1689,12 @@ class _MyHomePageState extends State<MyHomePage> {
                               child: buildActivityIcon(
                                   context, glocation.activity.type, null),
                             ),
+
+                            //
                             Visibility(
-                              visible: !glocation?.isMoving ?? false,
+                              visible: (glocation != null &&
+                                  glocation.isMoving != null &&
+                                  !glocation.isMoving),
                               child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 4.0),
                                   // margin: EdgeInsets.only(left: 6),
@@ -1881,8 +1703,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                     color: Colors.red[700],
                                   )),
                             ),
+                            // ^^
+
                             Visibility(
-                              visible: glocation?.isMoving ?? false,
+                              visible: (glocation != null &&
+                                  glocation.isMoving != null &&
+                                  glocation.isMoving),
                               child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 4.0),
                                   // margin: EdgeInsets.only(left: 6),
@@ -1955,6 +1781,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ],
                   ),
+
+                  // ^^
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -1988,7 +1816,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                       color: MyTheme.accentColor, width: 2))),
                         ),
                       ),
-
                       InkWell(
                         onLongPress: () async {
                           Navigator.push(
@@ -2020,7 +1847,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                       width: 2))),
                         ),
                       ),
-
                       if (_isPushing)
                         Container(
                           width: 24,
@@ -2029,14 +1855,6 @@ class _MyHomePageState extends State<MyHomePage> {
                             backgroundColor: MyTheme.buttonColor,
                           ),
                         ),
-
-                      // LinearProgressIndicator(
-                      //   minHeight: 4,
-                      //   value: _isPushing
-                      //       ? null
-                      //       : _countStored.toDouble() / _pushEvery.toDouble(),
-                      //   // backgroundColor: ,
-                      // ),
                       Container(
                         padding: EdgeInsets.all(4),
                         child: Row(
@@ -2103,6 +1921,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
 
+          // Paint a map!
           Row(
             children: [
               Expanded(
@@ -2120,6 +1939,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
 
+          // Location measurements!
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -2134,39 +1954,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       : '')
                 },
               ),
-              // InkWell(
-              //   onTap: () async {
-              //     setState(() {
-              //       _isManuallyRequestingLocation = true;
-              //     });
-              //     var loc = await bg.BackgroundGeolocation.getCurrentPosition();
-              //     _handleStreamLocationUpdate(loc);
-              //     setState(() {
-              //       _isManuallyRequestingLocation = false;
-              //     });
-
-              //     // ScaffoldMessenger.of(context).showSnackBar(
-              //     //   _buildSnackBar(Text('Points!'),
-              //     //       backgroundColor: Colors.green),
-              //     // );
-              //   },
-              //   child: Column(
-              //     mainAxisAlignment: MainAxisAlignment.end,
-              //     children: [
-              //       // cativity icon
-              //       Container(
-              //         width: 96,
-              //         height: 64,
-              //         child: buildActivityIcon(
-              //             context,
-              //             glocation.activity.type,
-              //             64 - _secondsSinceLastPoint.toDouble() > 16
-              //                 ? 64 - _secondsSinceLastPoint.toDouble()
-              //                 : 16),
-              //       ),
-              //     ],
-              //   ),
-              // ),
               InfoDisplay(
                 keyname: "heading",
                 value: degreeToCardinalDirection(glocation.coords.heading),
@@ -2178,86 +1965,11 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               InfoDisplay(
                   keyname: "accuracy", value: glocation.coords.accuracy),
-
-              // InkWell(
-              //   onTap: () async {
-              //     setState(() {
-              //       _isManuallyRequestingLocation = true;
-              //     });
-              //     var loc = await bg.BackgroundGeolocation.getCurrentPosition();
-              //     _handleStreamLocationUpdate(loc);
-              //     setState(() {
-              //       _isManuallyRequestingLocation = false;
-              //     });
-
-              //     // ScaffoldMessenger.of(context).showSnackBar(
-              //     //   _buildSnackBar(Text('Points!'),
-              //     //       backgroundColor: Colors.green),
-              //     // );
-              //   },
-              //   child: Column(
-              //     mainAxisAlignment: MainAxisAlignment.center,
-              //     children: [
-              //       Container(
-              //         padding: EdgeInsets.only(left: 4, right: 4, bottom: 8),
-              //         child: Column(
-              //           mainAxisAlignment: MainAxisAlignment.spaceAround,
-              //           mainAxisSize: MainAxisSize.min,
-              //           children: [
-              //             Visibility(
-              //                 visible: true,
-              //                 child: (glocation?.isMoving ?? false)
-              //                     ? Container(
-              //                         // margin: EdgeInsets.only(left: 6),
-              //                         child: Icon(
-              //                         Icons.circle,
-              //                         color: MyTheme.accentColor,
-              //                       ))
-              //                     : Container(
-              //                         margin: EdgeInsets.symmetric(vertical: 6),
-              //                         child: Icon(
-              //                           Icons.trip_origin,
-              //                           color: Colors.red[700],
-              //                         ))),
-              //             Visibility(
-              //               visible: _secondsSinceLastPoint > 3,
-              //               child: Row(
-              //                 children: [
-              //                   Icon(Icons.timelapse,
-              //                       color: colorForDurationSinceLastPoint(
-              //                           _secondsSinceLastPoint),
-              //                       size: 16),
-              //                   Container(
-              //                     width: 4,
-              //                   ),
-              //                   Text(
-              //                     '-' +
-              //                         secondsToPrettyDuration(
-              //                             _secondsSinceLastPoint.toDouble()),
-              //                     style: TextStyle(color: Colors.white),
-              //                   ),
-              //                 ],
-              //               ),
-              //             ),
-              //           ],
-              //         ),
-              //         // decoration: BoxDecoration(
-              //         //     border: Border(
-              //         //         bottom: BorderSide(
-              //         //             color: colorForDurationSinceLastPoint(
-              //         //                 _secondsSinceLastPoint),
-              //         //             width: 0))),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-
               InfoDisplay(
                 keyname: "elevation",
                 value: glocation.coords.altitude,
@@ -2269,7 +1981,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -2336,19 +2047,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
               ),
-              // InfoDisplay(
-              //   keyname: "odometer",
-              //   value: glocation.odometer.toInt(),
-              //   options: {
-              //     't2.font': Theme.of(context).textTheme.headline6,
-              //   },
-              // ),
-              // Expanded(
-              //   child: Container(
-              //     width: 72,
-              //   ),
-              // ),
-
               Container(
                 padding: EdgeInsets.all(12),
                 child: InfoDisplay(
@@ -2362,100 +2060,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
-
-          // Row(
-          //   children: [
-          //     Expanded(
-          //         child: Container(
-          //       height: 128,
-          //       padding:
-          //           const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-          //       // child: ElevatedButton(
-          //       //   style: ElevatedButton.styleFrom(
-          //       //       elevation: 3.0,
-          //       //       primary: Colors.deepPurple[700],
-          //       //       padding: EdgeInsets.all(8)),
-          //       //   onPressed: () {
-          //       //     Navigator.push(
-          //       //       context,
-          //       //       MaterialPageRoute(
-          //       //         builder: (context) =>
-          //       //             TakePictureScreen(camera: firstCamera),
-          //       //       ),
-          //       //     );
-          //       //   },
-          //       //   child: Row(
-          //       //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //       //       children: [
-          //       //         // Text('Cat snap',
-          //       //         //     style: Theme.of(context).textTheme.overline),
-          //       //         Icon(Icons.add_a_photo_outlined,
-          //       //             size: 48,
-          //       //             color: Colors.deepOrange /*green[300]*/),
-
-          //       //         // Icon(
-          //       //         //   Icons.camera_alt,
-          //       //         //   size: 64,
-          //       //         //   color: Colors.lime, // green
-          //       //         // ),
-          //       //       ]),
-          //       // )
-          //     ))
-          //   ],
-          // )
-
-          // Text(
-          //   'You done ${ew.adjectives[_counter]}ly caressed the button this many times:',
-          // ),
-          // Text(
-          //   '$_counter',
-          //   style: Theme.of(context).textTheme.headline4,
-          // ),
-          // Text('Geolocate (IP): ' + geolocation_text),
-          // TextButton(
-          //     onPressed: () {
-          //       this.getIp().then((value) => {
-          //             if (geolocationData != null)
-          //               {
-          //                 setState(() {
-          //                   geolocation_text =
-          //                       jsonEncode(geolocationData.toJson());
-          //                 })
-          //               }
-          //             else
-          //               {
-          //                 setState(() {
-          //                   geolocation_text =
-          //                       "could not get location data from IP";
-          //                 })
-          //               }
-          //           });
-          //     },
-          //     child: Text(
-          //       "Get location from IP",
-          //     )),
-          // Text("Geolocate (API): " + geolocation_api_text),
-          // TextButton(
-          //     onPressed: () {
-          //       bg.BackgroundGeolocation.getCurrentPosition().then((value) {
-          //         this._handleStreamLocationUpdate(value);
-          //       });
-          //     },
-          //     child: Text(
-          //       "Get geolocation from  API",
-          //     )),
-          // Text("Geolocate Stream (API): " + geolocation_api_stream_text),
-          // TextButton(
-          //     onPressed: () {
-          //       Navigator.push(
-          //         context,
-          //         MaterialPageRoute(
-          //           builder: (context) =>
-          //               TakePictureScreen(camera: firstCamera),
-          //         ),
-          //       );
-          //     },
-          //     child: Text("Camera!"))
         ],
       ),
     ));
@@ -2472,101 +2076,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      // appBar: AppBar(
-      //   // Here we take the value from the MyHomePage object that was created by
-      //   // the App.build method, and use it to set our appbar title.
-      //   title: Text(widget.title),
-      // ),
-      // title: Icon(Icons.map)),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   currentIndex: _currentIndex,
-      //   onTap: (value) {
-      //     // Respond to item press.
-      //     setState(() => _currentIndex = value);
-      //   },
-      //   items: [
-      //     BottomNavigationBarItem(
-      //       title: Text('Cat Tracking'),
-      //       icon: Icon(Icons.map_outlined),
-      //     ),
-      //     BottomNavigationBarItem(
-      //       title: Text('Settings'),
-      //       icon: Icon(Icons.settings),
-      //     ),
-      //   ],
-      // ),
-      // persistentFooterButtons: [
-      //   // TextButton(onPressed: () {}, child: Text('left')),
-      //   // ElevatedButton(
-      //   //     onPressed: () {
-      //   //       Navigator.push(context,
-      //   //           MaterialPageRoute(builder: (context) => SettingsScreen()));
-      //   //     },
-      //   //     child: Text('Settings')),
-      //   Expanded(
-      //       child: Container(
-      //           padding: EdgeInsets.symmetric(horizontal: 8.0),
-      //           child: Expanded(
-      //             child: ElevatedButton(
-      //                 onPressed: () {
-      //                   // snaps().then((value) {
-      //                   //   print("stored snapsy");
-      //                   //   for (var item in value) {
-      //                   //     print(jsonEncode(item.toCattrackJSON()));
-      //                   //   }
-      //                   // });
-      //                   this._pushTracksBatching();
-      //                 },
-      //                 child: Icon(Icons.cloud_upload)),
-      //           ))),
-      //   Expanded(
-      //       child: Container(
-      //           padding: EdgeInsets.symmetric(horizontal: 8.0),
-      //           child: Expanded(
-      //             child: ElevatedButton(
-      //                 onPressed: () {
-      //                   Navigator.push(
-      //                       context,
-      //                       MaterialPageRoute(
-      //                           builder: (context) => SettingsScreen()));
-      //                 },
-      //                 child: Text('Settings')),
-      //           ))),
-      //   // Row(
-      //   //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-      //   //   children: [
-      //   //     Expanded(
-      //   //         child: Container(
-      //   //             padding: EdgeInsets.symmetric(horizontal: 8.0),
-      //   //             child: Expanded(
-      //   //               child: ElevatedButton(
-      //   //                   onPressed: () {
-      //   //                     // snaps().then((value) {
-      //   //                     //   print("stored snapsy");
-      //   //                     //   for (var item in value) {
-      //   //                     //     print(jsonEncode(item.toCattrackJSON()));
-      //   //                     //   }
-      //   //                     // });
-      //   //                     this._pushTracksBatching();
-      //   //                   },
-      //   //                   child: Icon(Icons.cloud_upload)),
-      //   //             ))),
-      //   //     Expanded(
-      //   //         child: Container(
-      //   //             padding: EdgeInsets.symmetric(horizontal: 8.0),
-      //   //             child: Expanded(
-      //   //               child: ElevatedButton(
-      //   //                   onPressed: () {
-      //   //                     Navigator.push(
-      //   //                         context,
-      //   //                         MaterialPageRoute(
-      //   //                             builder: (context) => SettingsScreen()));
-      //   //                   },
-      //   //                   child: Text('Settings')),
-      //   //             ))),
-      //   //   ],
-      //   // ),
-      // ],
       body: _exampleStuff(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
