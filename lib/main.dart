@@ -38,7 +38,7 @@ void main() async {
   // Importing 'package:flutter/widgets.dart' is required.
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Development: reset (rm -rf db) if exists.
+  // // Development: reset (rm -rf db) if exists.
   // resetDB();
 
   // Initialize preferences singleton.
@@ -1364,6 +1364,7 @@ class _MyHomePageState extends State<MyHomePage> {
           developmentGuessActivityType(location.coords.speed);
     }
 
+    // print('handle location update: event=${location.event}');
     // // debug
     // print(
     //     jsonEncode(AppPoint.fromLocationProvider(location).toCattrackJSON()));
@@ -2962,6 +2963,18 @@ class LoggerScreen extends StatelessWidget {
 class TrackListScreen extends StatelessWidget {
   const TrackListScreen({Key key}) : super(key: key);
 
+  Widget _buildListTileTitle(
+      {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
+    return Row(
+      children: [
+        if (prev == null) Text('${point.time} '),
+        Text(
+            '${next != null ? "+" + (point.timestamp - next.timestamp).toString() : ""}'),
+        Text(' ${point.event}'),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2994,17 +3007,26 @@ class TrackListScreen extends StatelessWidget {
                   return new Text('Error: ${snapshot.error}');
                 else
                   return ListView.builder(itemBuilder: (context, index) {
-                    final bool isLast = index == snapshot.data.length - 1;
-                    final AppPoint point = snapshot.data[index];
+                    // if (index >= snapshot.data.length) return Container();
+                    final AppPoint prev =
+                        index != 0 ? snapshot.data.elementAt(index - 1) : null;
+                    final AppPoint point = snapshot.data.elementAt(index);
+                    final AppPoint next = index < snapshot.data.length - 1
+                        ? snapshot.data.elementAt(index + 1)
+                        : null;
 
                     return ListTile(
                       dense: true,
                       leading:
                           buildActivityIcon(context, point.activity_type, 16),
-                      title: Text(
-                          '${index == 0 ? point.time : ""} ${!isLast ? "+" + (point.timestamp - snapshot.data[index + 1].timestamp).toString() : ""}'),
+                      title: _buildListTileTitle(
+                        context: context,
+                        prev: prev,
+                        point: point,
+                        next: next,
+                      ),
                       subtitle: Text(
-                          '+/-${point.accuracy}m  ${point.speed * 3.6}km/h  ↑${point.altitude}m'),
+                          '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m'),
                     );
                   });
               // return new Text(

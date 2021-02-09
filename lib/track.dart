@@ -154,6 +154,7 @@ class AppPoint {
     'vAccuracy': altitude_accuracy.toPrecision(1),
     'notes': notesString,
     */
+    // print('apppoint -> toMap: event=${event}');
     return {
       'time': time.toUtc().toIso8601String(),
       'timestamp': timestamp,
@@ -198,6 +199,7 @@ class AppPoint {
           'The supplied map doesn\'t contain the mandatory key `time`.');
     }
 
+    // print('apppoint <- fromMap: event=${appMap["event"]}');
     var ap = AppPoint(
       timestamp: appMap['timestamp'],
       time: DateTime.parse(appMap['time']),
@@ -239,6 +241,8 @@ class AppPoint {
     }
 
     final DateTime dt = DateTime.parse(location.timestamp);
+
+    // print('apppoint -> fromLocationProvider: event=${location.event}');
 
     return new AppPoint(
       timestamp: dt.millisecondsSinceEpoch ~/ 1000,

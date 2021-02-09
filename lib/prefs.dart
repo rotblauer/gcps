@@ -447,10 +447,15 @@ class _SettingsScreen extends State<MySettingsScreen> {
 
           _buildSliderTile(
               context: context,
-              leading: Icon(Icons.timer),
+              leading: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Icon(Icons.timer),
+                    Icon(Icons.android),
+                  ]),
               title: 'Time interval',
               subtitle:
-                  'Δ seconds triggering a location update.\nZero causes distance updates.',
+                  'Δ seconds triggering a location update.\nZero causes distance updates.\nThis value may be inexact.',
               min: 0,
               max: 60,
               divisions: 60,
