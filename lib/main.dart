@@ -1081,7 +1081,8 @@ class _MyHomePageState extends State<MyHomePage> {
       disableStopDetection:
           prefs.sharedPrefs.getBool(prefs.kLocationDisableStopDetection),
       stopOnStationary: false,
-      pausesLocationUpdatesAutomatically: false,
+      pausesLocationUpdatesAutomatically:
+          !prefs.sharedPrefs.getBool(prefs.kLocationDisableStopDetection),
 
       // But we probably don't really know what we're doing.
       // preventSuspend: true,

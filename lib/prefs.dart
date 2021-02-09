@@ -12,6 +12,7 @@ const String kAllowPushWithMobile = "allowPushWithMobile"; //
 const String kAllowPushWithWifi = "allowPushWithWifi"; //
 const String kPushInterval = "pushIntervalNumber"; //
 const String kPushBatchSize = "pushBatchSize"; //
+// BackgroundLocation settings
 const String kLocationUpdateInterval = "locationUpdateInterval";
 const String kLocationUpdateDistanceFilter = "locationUpdateDistanceFilter";
 const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout"; //
@@ -23,7 +24,6 @@ const String kLocationGarneringStationaryTimeout =
     'locationGarneringStationaryTimeout';
 const String kLocationDisableStopDetection = 'kLocationDisableStopDetection';
 const String kLocationDeviceInMotion = 'kLocationDeviceInMotion';
-// const String kLocationUpdateStopTimeou = "locationUpdateStopTimeout";
 
 class SharedPrefs {
   static SharedPreferences _sharedPrefs;
@@ -160,6 +160,42 @@ int prefLocationDesiredAccuracy(String value) {
   return bg.Config.DESIRED_ACCURACY_NAVIGATION;
 }
 
+double prefLocationDesiredAccuracyStringToSliderDouble(String value) {
+  switch (value) {
+    case 'NAVIGATION':
+      return 5;
+    case 'HIGH':
+      return 4;
+    case 'MEDIUM':
+      return 3;
+    case 'LOW':
+      return 2;
+    case 'VERY_LOW':
+      return 1;
+    case 'LOWEST':
+      return 0;
+  }
+  return 5;
+}
+
+String prefLocationDesiredAccuracySliderDoubleToString(double value) {
+  switch (value.toInt()) {
+    case 5:
+      return 'NAVIGATION';
+    case 4:
+      return 'HIGH';
+    case 3:
+      return 'MEDIUM';
+    case 2:
+      return 'LOW';
+    case 1:
+      return 'VERY_LOW';
+    case 0:
+      return 'LOWEST';
+  }
+  return 'NAVIGATION';
+}
+
 TextTheme settingsThemeText(context) {
   return Theme.of(context).textTheme.apply(bodyColor: Colors.tealAccent);
 }
@@ -204,6 +240,7 @@ Widget _buildSliderTile({
   int divisions,
   double value,
   void Function(double value) onChanged,
+  String customTrailing,
 }) {
   return ListTile(
     leading: leading,
@@ -229,8 +266,8 @@ Widget _buildSliderTile({
       ),
       Text(max.toInt().toString()),
     ]),
-    trailing:
-        Text('${value.toInt()}', style: settingsThemeText(context).headline5),
+    trailing: Text(customTrailing ?? '${value.toInt()}',
+        style: settingsThemeText(context).headline5),
   );
 }
 
@@ -317,8 +354,8 @@ class _SettingsScreen extends State<MySettingsScreen> {
               onChanged: (bool value) {
                 setState(() {
                   _kAllowPushWithWifi = value;
-                  sharedPrefs.setBool(kAllowPushWithWifi, value);
                 });
+                sharedPrefs.setBool(kAllowPushWithWifi, value);
               }),
 
           _buildSwitchTile(
@@ -330,8 +367,8 @@ class _SettingsScreen extends State<MySettingsScreen> {
               onChanged: (bool value) {
                 setState(() {
                   _kAllowPushWithMobile = value;
-                  sharedPrefs.setBool(kAllowPushWithMobile, value);
                 });
+                sharedPrefs.setBool(kAllowPushWithMobile, value);
               }),
 
           _buildSliderTile(
@@ -346,24 +383,25 @@ class _SettingsScreen extends State<MySettingsScreen> {
               onChanged: (value) {
                 setState(() {
                   _kPushInterval = value.floorToDouble();
-                  sharedPrefs.setDouble(kPushInterval, value);
                 });
+                sharedPrefs.setDouble(kPushInterval, value);
               }),
 
           _buildSliderTile(
               context: context,
               leading: Icon(Icons.file_upload),
               title: 'Push batch size',
-              subtitle: 'Max points in each upload reques.',
+              subtitle: 'Max points in each upload request.',
               min: 100,
               max: 3600,
               divisions: 30,
               value: _kPushBatchSize,
               onChanged: (value) {
+                value = value.floorToDouble();
                 setState(() {
-                  _kPushBatchSize = value.floorToDouble();
-                  sharedPrefs.setDouble(kPushBatchSize, value);
+                  _kPushBatchSize = value;
                 });
+                sharedPrefs.setDouble(kPushBatchSize, value);
               }),
 
           // Location settings
@@ -378,19 +416,78 @@ class _SettingsScreen extends State<MySettingsScreen> {
             ],
           ),
 
+          _buildSwitchTile(
+              context: context,
+              leading: Icon(Icons.trip_origin),
+              title: 'Disable stop detection',
+              subtitle: _kLocationDisableStopDetection
+                  ? 'Location tracking will not disengage when cat is stationary; location services will NEVER turn off.'
+                  : 'Location tracking will disengage automatically when device is stationary for ${_kLocationUpdateStopTimeout.toInt()} minutes.',
+              value: _kLocationDisableStopDetection,
+              onChanged: (bool value) {
+                setState(() {
+                  _kLocationDisableStopDetection = value;
+                });
+                sharedPrefs.setBool(kLocationDisableStopDetection, value);
+                bg.BackgroundGeolocation.state.then((st) {
+                  st.set('disableStopDetection', value);
+                  st.set(
+                    'pausesLocationUpdatesAutomatically',
+                    !value,
+                  );
+                  bg.BackgroundGeolocation.setConfig(st);
+                });
+              }),
+
+          if (!_kLocationDisableStopDetection)
+            _buildSliderTile(
+                context: context,
+                leading: Icon(Icons.airline_seat_legroom_extra_outlined),
+                title: 'Stop timeout',
+                subtitle: 'Minutes of stillness before cat naps.',
+                min: 1,
+                max: 10,
+                divisions: 9,
+                value: _kLocationUpdateStopTimeout,
+                onChanged: (value) {
+                  value = value.ceilToDouble();
+                  setState(() {
+                    _kLocationUpdateStopTimeout = value;
+                  });
+                  sharedPrefs.setDouble(kLocationUpdateStopTimeout, value);
+                  bg.BackgroundGeolocation.state.then((st) {
+                    st.set('stopTimeout', value.toInt());
+                    bg.BackgroundGeolocation.setConfig(st);
+                  });
+                }),
+
           _buildSliderTile(
               context: context,
               leading: Icon(Icons.airline_seat_legroom_extra_outlined),
-              title: 'Stop timeout',
-              subtitle: 'Minutes of stillness before cat naps.',
-              min: 1,
-              max: 10,
-              divisions: 10,
-              value: _kLocationUpdateStopTimeout,
+              title: 'Desired location accuracy',
+              subtitle: 'How hard you want the GPS to work for precision.',
+              min: 0,
+              max: 5,
+              divisions: 6,
+              value: prefLocationDesiredAccuracyStringToSliderDouble(
+                  _kLocationGarneringDesiredAccuracy),
+              customTrailing: _kLocationGarneringDesiredAccuracy,
               onChanged: (value) {
+                value = value.floorToDouble(); // normalize
                 setState(() {
-                  _kLocationUpdateStopTimeout = value.ceilToDouble();
-                  sharedPrefs.setDouble(kLocationUpdateStopTimeout, value);
+                  _kLocationGarneringDesiredAccuracy =
+                      prefLocationDesiredAccuracySliderDoubleToString(value);
+                });
+                sharedPrefs.setString(
+                  kLocationGarneringDesiredAccuracy,
+                  _kLocationGarneringDesiredAccuracy, // storing stored double (NOT location provider enumerable/constant)
+                );
+                bg.BackgroundGeolocation.state.then((st) {
+                  st.set(
+                      'desiredAccuracy',
+                      prefLocationDesiredAccuracy(
+                          _kLocationGarneringDesiredAccuracy));
+                  bg.BackgroundGeolocation.setConfig(st);
                 });
               }),
 
