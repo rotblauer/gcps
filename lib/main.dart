@@ -786,7 +786,7 @@ class DistanceTracker {
   }
 }
 
-String secondsToPrettyDuration(double seconds) {
+String secondsToPrettyDuration(double seconds, [bool abbrev]) {
   int secondsRound = seconds ~/ 1;
   int hours = secondsRound ~/ 3600;
   secondsRound = secondsRound % 3600;
@@ -795,21 +795,30 @@ String secondsToPrettyDuration(double seconds) {
   String out = "";
   hours > 0 ? out += hours.toString() + 'h ' : null;
   minutes > 0 ? out += minutes.toString() + 'm ' : null;
+  if (out.length > 0 && abbrev) return out;
   out += secondsRound.toString() + 's';
   return out;
 }
 
 Color colorForDurationSinceLastPoint(int duration) {
-  if (duration < 3) return Colors.white;
-  if (duration < 10) return Colors.red[100];
-  if (duration < 20) return Colors.red[200];
-  if (duration < 60) return Colors.red[300];
-  if (duration < 120) return Colors.red[400];
-  if (duration < 360) return Colors.red[500];
-  if (duration < 720) return Colors.red[600];
-  if (duration < 1200) return Colors.red[700];
-  if (duration < 2400) return Colors.red[800];
-  return Colors.red[900];
+  final int offset = duration > 255 ? 255 : duration;
+  Color c = Color.fromRGBO(255, 255 - offset, 255 - offset, 1);
+  if (duration < 10) {
+    c = c.withAlpha(duration / 10 * 255 ~/ 1);
+  }
+  return c;
+  // ..withBlue(offset)
+  // ..withGreen(offset);
+  // if (duration < 3) return Colors.white;
+  // if (duration < 10) return Colors.red[100];
+  // if (duration < 20) return Colors.red[200];
+  // if (duration < 60) return Colors.red[300];
+  // if (duration < 120) return Colors.red[400];
+  // if (duration < 360) return Colors.red[500];
+  // if (duration < 720) return Colors.red[600];
+  // if (duration < 1200) return Colors.red[700];
+  // if (duration < 2400) return Colors.red[800];
+  // return Colors.red[900];
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -1821,7 +1830,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               }
                             : null,
                         child: Container(
-                          padding: EdgeInsets.only(left: 8.0),
+                          padding: EdgeInsets.only(left: 8.0, right: 4),
                           child: buildConnectStatusIcon(_connectionStatus),
                         ),
                       ),
@@ -1856,25 +1865,46 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Row(
                           children: [
                             Container(
-                              padding: EdgeInsets.only(left: 4.0),
+                              margin: EdgeInsets.symmetric(horizontal: 4.0),
                               child: buildActivityIcon(
                                   context, glocation.activity.type, null),
                             ),
-                            Container(
-                                padding: EdgeInsets.only(left: 4.0),
-                                // margin: EdgeInsets.only(left: 6),
-                                child: (glocation?.isMoving ?? false)
-                                    ? Icon(
-                                        Icons.circle,
-                                        color: MyTheme.accentColor,
-                                      )
-                                    : Icon(
-                                        Icons.trip_origin,
-                                        color: Colors.red[700],
-                                      )),
                             Visibility(
-                              visible: _secondsSinceLastPoint > 3,
+                              visible: !glocation?.isMoving,
                               child: Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 4.0),
+                                  // margin: EdgeInsets.only(left: 6),
+                                  child: Icon(
+                                    Icons.trip_origin,
+                                    color: Colors.red[700],
+                                  )),
+                            ),
+                            Visibility(
+                              visible: glocation?.isMoving,
+                              child: Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 4.0),
+                                  // margin: EdgeInsets.only(left: 6),
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(
+                                      value: 1 -
+                                          ((DateTime.now().millisecondsSinceEpoch /
+                                                          1000) -
+                                                      DateTime.parse(glocation
+                                                                  .timestamp)
+                                                              .millisecondsSinceEpoch /
+                                                          1000)
+                                                  .toDouble() /
+                                              (prefs.sharedPrefs.getDouble(prefs
+                                                      .kLocationUpdateStopTimeout) *
+                                                  60),
+                                      strokeWidth: 4,
+                                      backgroundColor: Colors.deepOrange)),
+                            ),
+                            Visibility(
+                              visible: true,
+                              child: Container(
+                                margin: EdgeInsets.symmetric(horizontal: 4),
                                 padding: EdgeInsets.only(
                                     left: 4, right: 4, bottom: 4),
                                 decoration: BoxDecoration(
@@ -1896,9 +1926,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Text(
                                       '-' +
                                           secondsToPrettyDuration(
-                                              _secondsSinceLastPoint
-                                                  .toDouble()),
-                                      style: TextStyle(color: Colors.white),
+                                              _secondsSinceLastPoint.toDouble(),
+                                              true),
+                                      style: TextStyle(
+                                          color: colorForDurationSinceLastPoint(
+                                              _secondsSinceLastPoint)),
                                     ),
                                   ],
                                 ),
