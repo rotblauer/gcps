@@ -200,13 +200,13 @@ class _SettingsScreen extends State<MySettingsScreen> {
 
   Widget _buildSwitchTile(
     BuildContext context,
+    String prefKey,
     Widget leading,
     String title,
     String subtitle,
     bool value,
     void Function(bool) onChanged,
   ) {
-    // MY SWITCH
     return ListTile(
       leading: leading,
       title: Column(
@@ -231,6 +231,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
 
   Widget _buildSliderTile(
     BuildContext context,
+    String prefKey,
     Widget leading,
     String title,
     String subtitle,
@@ -240,33 +241,52 @@ class _SettingsScreen extends State<MySettingsScreen> {
     double value,
     void Function(double value) onChanged,
   ) {
-    return ListTile(
-      leading: leading,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(padding: EdgeInsets.only(top: 6), child: Text(title)),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.caption,
-          )
-        ],
-      ),
-      subtitle:
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text(min.toInt().toString()),
-        Expanded(
-          child: Slider(
-              min: min,
-              max: max,
-              value: value,
-              divisions: divisions,
-              onChanged: onChanged),
-        ),
-        Text(max.toInt().toString()),
-      ]),
-      trailing: Text('${value}', style: settingsThemeText(context).headline5),
-    );
+    return new FutureBuilder<SharedPreferences>(
+        future: SharedPreferences.getInstance(),
+        builder:
+            (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+              return new Text('Initializing...');
+            case ConnectionState.waiting:
+              return new Text('Awaiting result...');
+            default:
+              if (snapshot.hasError)
+                return new Text('Error: ${snapshot.error}');
+              else
+                value = snapshot.data.getDouble(prefKey);
+              return ListTile(
+                leading: leading,
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                        padding: EdgeInsets.only(top: 6), child: Text(title)),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.caption,
+                    )
+                  ],
+                ),
+                subtitle: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(min.toInt().toString()),
+                      Expanded(
+                        child: Slider(
+                            min: min,
+                            max: max,
+                            value: value,
+                            divisions: divisions,
+                            onChanged: onChanged),
+                      ),
+                      Text(max.toInt().toString()),
+                    ]),
+                trailing: Text('${value}',
+                    style: settingsThemeText(context).headline5),
+              );
+          }
+        });
   }
 
   TextTheme settingsThemeText(context) {
@@ -548,16 +568,24 @@ class _SettingsScreen extends State<MySettingsScreen> {
 //                 Text('${_stopTimeoutValue}', style: settingsTheme.headline5),
 //           ),
 
-          _buildSliderTile(context, Icon(Icons.ac_unit), 'Mytitle',
-              'description', 0, 10, 5, _stopTimeoutValue, (value) {
+          _buildSliderTile(
+              context,
+              kLocationGarneringStationaryTimeout,
+              Icon(Icons.ac_unit),
+              'Stop timeout',
+              'Minutes of stillness before cat naps.',
+              0,
+              10,
+              5,
+              _stopTimeoutValue, (value) {
             setState(() {
               _stopTimeoutValue = value;
             });
             print('slider slide: ${value}');
           }),
 
-          _buildSwitchTile(context, Icon(Icons.ac_unit), 'My titlel',
-              'A description', _isWifiActive, (bool value) {
+          _buildSwitchTile(context, kAllowPushWithWifi, Icon(Icons.ac_unit),
+              'My titlel', 'A description', _isWifiActive, (bool value) {
             setState(() {
               print('changed: ${value}');
               _isWifiActive = value;
@@ -638,25 +666,30 @@ class _SettingsScreen extends State<MySettingsScreen> {
 
           // App metadata
           //
-          SettingsContainer(
-            children: [
-              Text('App version', style: Theme.of(context).textTheme.overline),
-              Row(
-                children: [Text(deviceVersion)],
-                mainAxisAlignment: MainAxisAlignment.end,
-              ),
-              Text('UUID', style: Theme.of(context).textTheme.overline),
-              Row(
-                children: [Text(deviceUUID)],
-                mainAxisAlignment: MainAxisAlignment.end,
-              ),
-              Text('Name', style: Theme.of(context).textTheme.overline),
-              Row(
-                children: [Text(deviceName)],
-                mainAxisAlignment: MainAxisAlignment.end,
-              ),
-            ],
-          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('App version',
+                    style: Theme.of(context).textTheme.overline),
+                Row(
+                  children: [Text(deviceVersion)],
+                  mainAxisAlignment: MainAxisAlignment.end,
+                ),
+                Text('UUID', style: Theme.of(context).textTheme.overline),
+                Row(
+                  children: [Text(deviceUUID)],
+                  mainAxisAlignment: MainAxisAlignment.end,
+                ),
+                Text('Name', style: Theme.of(context).textTheme.overline),
+                Row(
+                  children: [Text(deviceName)],
+                  mainAxisAlignment: MainAxisAlignment.end,
+                ),
+              ],
+            ),
+          )
         ],
       ),
     );
