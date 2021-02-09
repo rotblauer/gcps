@@ -1049,14 +1049,22 @@ class _MyHomePageState extends State<MyHomePage> {
     //
 
     bg.Config bgConfig = bg.Config(
-      desiredAccuracy: bg.Config.DESIRED_ACCURACY_NAVIGATION,
+      // All configuration settings which are read from preferences are
+      // converted from
+      // - doubles -> ints via .floor()
+
+      desiredAccuracy: prefs.prefLocationDesiredAccuracy(
+          prefs.sharedPrefs.getString(prefs.kLocationGarneringDesiredAccuracy)),
 
       // This OVERRIDES the locationUpdateInterval, which otherwise
       // wants to do some sort-of-configurable dynamic things.
-      distanceFilter: 1,
+      distanceFilter:
+          prefs.sharedPrefs.getDouble(prefs.kLocationUpdateDistanceFilter),
       // disableElasticity: true, // == elasticityMultiplier = 0
-      elasticityMultiplier: 0,
-      locationUpdateInterval: 0,
+      elasticityMultiplier: prefs.sharedPrefs
+          .getDouble(prefs.kLocationGarneringElasticityMultiplier),
+      locationUpdateInterval:
+          prefs.sharedPrefs.getDouble(prefs.kLocationUpdateInterval).floor(),
       fastestLocationUpdateInterval: 1000,
 
       // 100 m/s ~> 223 mi/h; planes grounded.
@@ -1064,11 +1072,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
       //
       isMoving: true,
-      stopTimeout: 5, // minutes... right?
+      stopTimeout: prefs.sharedPrefs
+          .getDouble(prefs.kLocationUpdateStopTimeout)
+          .floor(), // minutes... right?
       minimumActivityRecognitionConfidence: 25, // default: 75
 
       // We must know what we're doing.
-      disableStopDetection: false,
+      disableStopDetection:
+          prefs.sharedPrefs.getBool(prefs.kLocationDisableStopDetection),
       stopOnStationary: false,
       pausesLocationUpdatesAutomatically: false,
 
@@ -1095,24 +1106,6 @@ class _MyHomePageState extends State<MyHomePage> {
         message: "Cats love it",
       ),
     );
-
-    // doubles
-    bgConfig.distanceFilter =
-        prefs.sharedPrefs.getDouble(prefs.kLocationUpdateDistanceFilter);
-    bgConfig.locationUpdateInterval =
-        prefs.sharedPrefs.getDouble(prefs.kLocationUpdateInterval).ceil();
-    bgConfig.elasticityMultiplier = prefs.sharedPrefs
-        .getDouble(prefs.kLocationGarneringElasticityMultiplier);
-    bgConfig.stopTimeout =
-        prefs.sharedPrefs.getDouble(prefs.kLocationUpdateStopTimeout).floor();
-
-    // strings
-    bgConfig.desiredAccuracy = prefs.prefLocationDesiredAccuracy(
-        prefs.sharedPrefs.getString(prefs.kLocationGarneringDesiredAccuracy));
-
-    // bool
-    bgConfig.disableStopDetection =
-        prefs.sharedPrefs.getBool(prefs.kLocationDisableStopDetection);
 
     bg.BackgroundGeolocation.ready(bgConfig).then((bg.State state) {
       setState(() {
