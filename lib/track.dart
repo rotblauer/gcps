@@ -217,7 +217,7 @@ class AppPoint {
       activity_type: appMap['activity_type'] ?? "Unknown",
       battery_level: appMap['battery_level'] ?? -1.0,
       battery_is_charging: appMap['battery_is_charging'] == 1 ? true : false,
-      event: appMap['event'] ?? "Unknown",
+      event: appMap['event'] ?? "",
     );
 
     if (appMap['imgb64'] != null && appMap['imgb64'] != "") {

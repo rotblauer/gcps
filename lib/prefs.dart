@@ -439,7 +439,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
                     kLocationUpdateInterval, _kLocationUpdateInterval);
                 bg.BackgroundGeolocation.state.then((st) {
                   st.set('distanceFilter', _kLocationUpdateDistanceFilter);
-                  st.set('locationTimeout',
+                  st.set('locationUpdateInterval',
                       (_kLocationUpdateInterval * 1000).toInt());
                   bg.BackgroundGeolocation.setConfig(st);
                 });
@@ -480,8 +480,9 @@ class _SettingsScreen extends State<MySettingsScreen> {
                     kLocationUpdateInterval, _kLocationUpdateInterval);
                 bg.BackgroundGeolocation.state.then((st) {
                   st.set('distanceFilter', _kLocationUpdateDistanceFilter);
-                  st.set('locationTimeout',
+                  st.set('locationUpdateInterval',
                       (_kLocationUpdateInterval * 1000).toInt());
+                  st.set('locationTimeout', 60);
                   bg.BackgroundGeolocation.setConfig(st);
                 });
               }),

@@ -1342,7 +1342,31 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _handleStreamLocationError(bg.LocationError err) async {
     setState(() {
-      _appLocationErrorStatus = 'Location error: ' + err.toString();
+      String errS = 'Location error: ' + err.toString();
+      /*
+      Error Codes
+      Code	Error
+      0	Location unknown
+      1	Location permission denied
+      2	Network error
+      408	Location timeout
+      */
+      switch (err.code) {
+        case 0:
+          errS = 'Location unknown.';
+          break;
+        case 1:
+          errS = 'Location permission denied.';
+          break;
+        case 2:
+          errS = 'Network error.';
+          break;
+        case 408:
+          errS = 'Location timeout.';
+          break;
+      }
+
+      _appLocationErrorStatus = errS;
     });
   }
 
@@ -1549,7 +1573,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   Flexible(
                       child: Text(
                     [_appErrorStatus, _appLocationErrorStatus].join(' '),
-                    style: TextStyle(),
                   ))
                 ],
               ),
@@ -2965,14 +2988,23 @@ class TrackListScreen extends StatelessWidget {
 
   Widget _buildListTileTitle(
       {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
-    return Row(
-      children: [
-        if (prev == null) Text('${point.time} '),
-        Text(
-            '${next != null ? "+" + (point.timestamp - next.timestamp).toString() : ""}'),
-        Text(' ${point.event}'),
-      ],
+    Row row = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [],
     );
+
+    if (prev == null) row.children.add(Text('${point.time} '));
+
+    row.children.add(Text(
+        '${next != null ? "+" + secondsToPrettyDuration((point.timestamp - next.timestamp).toDouble()) : ""}'));
+
+    if (point.event != '')
+      row.children.add(Chip(
+        backgroundColor: Colors.teal,
+        label: Text(point.event),
+      ));
+
+    return row;
   }
 
   @override
@@ -3006,29 +3038,33 @@ class TrackListScreen extends StatelessWidget {
                 if (snapshot.hasError)
                   return new Text('Error: ${snapshot.error}');
                 else
-                  return ListView.builder(itemBuilder: (context, index) {
-                    // if (index >= snapshot.data.length) return Container();
-                    final AppPoint prev =
-                        index != 0 ? snapshot.data.elementAt(index - 1) : null;
-                    final AppPoint point = snapshot.data.elementAt(index);
-                    final AppPoint next = index < snapshot.data.length - 1
-                        ? snapshot.data.elementAt(index + 1)
-                        : null;
+                  return ListView.builder(
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context, index) {
+                        int sdl = snapshot.data.length;
+                        // if (index >= snapshot.data.length) return Container();
+                        final AppPoint prev = (index - 1 >= 0)
+                            ? snapshot.data.elementAt(index - 1)
+                            : null;
+                        final AppPoint point = snapshot.data.elementAt(index);
+                        final AppPoint next = (index + 1 <= sdl - 1)
+                            ? snapshot.data.elementAt(index + 1)
+                            : null;
 
-                    return ListTile(
-                      dense: true,
-                      leading:
-                          buildActivityIcon(context, point.activity_type, 16),
-                      title: _buildListTileTitle(
-                        context: context,
-                        prev: prev,
-                        point: point,
-                        next: next,
-                      ),
-                      subtitle: Text(
-                          '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m'),
-                    );
-                  });
+                        return ListTile(
+                          dense: true,
+                          leading: buildActivityIcon(
+                              context, point.activity_type, 16),
+                          title: _buildListTileTitle(
+                            context: context,
+                            prev: prev,
+                            point: point,
+                            next: next,
+                          ),
+                          subtitle: Text(
+                              '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m'),
+                        );
+                      });
               // return new Text(
               //   '${snapshot.data.split("\n").reversed.join("\n")}',
               //   style: Theme.of(context)
