@@ -814,6 +814,7 @@ Color colorForDurationSinceLastPoint(int duration) {
 
 class _MyHomePageState extends State<MyHomePage> {
   String _appErrorStatus = "";
+  String _appLocationErrorStatus = "";
   String _deviceUUID = "";
   String _deviceName = "";
   String _deviceAppVersion = "";
@@ -998,7 +999,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // var j = jsonEncode(location.toMap());
       // print('[location] - ${j}');
       _handleStreamLocationUpdate(location);
-    });
+    }, _handleStreamLocationError);
 
     // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
     bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
@@ -1035,6 +1036,7 @@ class _MyHomePageState extends State<MyHomePage> {
     bg.BackgroundGeolocation.onGeofence((bg.GeofenceEvent event) {
       _handleStreamLocationUpdate(event.location);
     });
+
     // bg.BackgroundGeolocation.onGeofence((bg.GeofenceEvent event) {
     //   _handleStreamLocationUpdate(event.location);
     // });
@@ -1064,18 +1066,18 @@ class _MyHomePageState extends State<MyHomePage> {
       elasticityMultiplier: prefs.sharedPrefs
           .getDouble(prefs.kLocationGarneringElasticityMultiplier),
       locationUpdateInterval:
-          prefs.sharedPrefs.getDouble(prefs.kLocationUpdateInterval).floor(),
+          (prefs.sharedPrefs.getDouble(prefs.kLocationUpdateInterval) * 1000)
+              .toInt(),
       fastestLocationUpdateInterval: 1000,
 
       // 100 m/s ~> 223 mi/h; planes grounded.
       speedJumpFilter: 100,
 
       //
-      isMoving: true,
+      isMoving: prefs.sharedPrefs.getBool(prefs.kLocationDeviceInMotion),
       stopTimeout: prefs.sharedPrefs
           .getDouble(prefs.kLocationUpdateStopTimeout)
-          .floor(), // minutes... right?
-      minimumActivityRecognitionConfidence: 25, // default: 75
+          .floor(), // minutes... right? seconds is default
 
       // We must know what we're doing.
       disableStopDetection:
@@ -1090,6 +1092,7 @@ class _MyHomePageState extends State<MyHomePage> {
       disableAutoSyncOnCellular: true,
       maxRecordsToPersist: 3600,
       activityRecognitionInterval: 10000, // default=10000=10s
+      minimumActivityRecognitionConfidence: 25, // default: 75
       allowIdenticalLocations: true,
 
       // I can't believe they let you do this.
@@ -1337,6 +1340,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _handleStreamLocationError(bg.LocationError err) async {
+    setState(() {
+      _appLocationErrorStatus = 'Location error: ' + err.toString();
+    });
+  }
+
   void _handleStreamLocationUpdate(bg.Location location) async {
     // Short circuit if position is null or timestamp is null.
     if (location == null ||
@@ -1364,6 +1373,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Update display
     setState(() {
+      _appLocationErrorStatus = '';
       glocation = location;
     });
 
@@ -1525,7 +1535,7 @@ class _MyHomePageState extends State<MyHomePage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Visibility(
-            visible: _appErrorStatus != "",
+            visible: _appErrorStatus != "" || _appLocationErrorStatus != '',
             child: Container(
               color: MyTheme.errorColor,
               // decoration: BoxDecoration(
@@ -1537,7 +1547,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   Flexible(
                       child: Text(
-                    _appErrorStatus,
+                    [_appErrorStatus, _appLocationErrorStatus].join(' '),
                     style: TextStyle(),
                   ))
                 ],
@@ -1796,9 +1806,13 @@ class _MyHomePageState extends State<MyHomePage> {
                           setState(() {
                             _isManuallyRequestingLocation = true;
                           });
-                          var loc = await bg.BackgroundGeolocation
-                              .getCurrentPosition();
-                          _handleStreamLocationUpdate(loc);
+                          try {
+                            var loc = await bg.BackgroundGeolocation
+                                .getCurrentPosition();
+                            _handleStreamLocationUpdate(loc);
+                          } catch (err) {
+                            _handleStreamLocationError(err);
+                          }
                           setState(() {
                             _isManuallyRequestingLocation = false;
                           });

@@ -55,9 +55,6 @@ class SharedPrefs {
       case kLocationGarneringElasticityMultiplier:
         return _sharedPrefs.get(kLocationGarneringElasticityMultiplier) ?? 0;
         break;
-      case kLocationGarneringStationaryTimeout:
-        return _sharedPrefs.get(kLocationGarneringStationaryTimeout) ?? 0;
-        break;
       default:
         print('!!!! I AM IMPOSSIBILITY');
         return 0;
@@ -81,8 +78,6 @@ class SharedPrefs {
       case kLocationGarneringDesiredAccuracy:
         break;
       case kLocationGarneringElasticityMultiplier:
-        break;
-      case kLocationGarneringStationaryTimeout:
         break;
       default:
         print('!!!! I AM IMPOSSIBILITY');
@@ -506,8 +501,33 @@ class _SettingsScreen extends State<MySettingsScreen> {
                     !value,
                   );
                   bg.BackgroundGeolocation.setConfig(st);
+
+                  if (!st.isMoving && !value) {
+                    setState(() {
+                      _kLocationDeviceInMotion = true;
+                    });
+                    bg.BackgroundGeolocation.changePace(
+                        _kLocationDeviceInMotion);
+                  }
                 });
               }),
+
+          if (_kLocationDisableStopDetection)
+            _buildSwitchTile(
+                context: context,
+                leading: Icon(Icons.circle),
+                title: 'Cat is moving',
+                subtitle: _kLocationDeviceInMotion
+                    ? 'Location is tracking.'
+                    : 'Cat is napping. Location not tracking.',
+                value: _kLocationDeviceInMotion,
+                onChanged: (bool value) {
+                  setState(() {
+                    _kLocationDeviceInMotion = value;
+                  });
+                  sharedPrefs.setBool(kLocationDeviceInMotion, value);
+                  bg.BackgroundGeolocation.changePace(value);
+                }),
 
           if (!_kLocationDisableStopDetection)
             _buildSliderTile(
