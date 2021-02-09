@@ -8,13 +8,13 @@ import 'package:flutter_background_geolocation/flutter_background_geolocation.da
     as bg;
 import 'package:just_debounce_it/just_debounce_it.dart';
 
-const String kAllowPushWithMobile = "allowPushWithMobile";
-const String kAllowPushWithWifi = "allowPushWithWifi";
-const String kPushInterval = "pushIntervalNumber";
-const String kPushBatchSize = "pushBatchSize";
+const String kAllowPushWithMobile = "allowPushWithMobile"; //
+const String kAllowPushWithWifi = "allowPushWithWifi"; //
+const String kPushInterval = "pushIntervalNumber"; //
+const String kPushBatchSize = "pushBatchSize"; //
 const String kLocationUpdateInterval = "locationUpdateInterval";
 const String kLocationUpdateDistanceFilter = "locationUpdateDistanceFilter";
-const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout";
+const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout"; //
 const String kLocationGarneringDesiredAccuracy =
     'kLocationGarneringDesiredAccuracy';
 const String kLocationGarneringElasticityMultiplier =
@@ -295,8 +295,8 @@ class _SettingsScreen extends State<MySettingsScreen> {
         backgroundColor: Colors.indigo,
       ),
       body: ListView(
-        // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Network/upload settings
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -334,6 +334,39 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 });
               }),
 
+          _buildSliderTile(
+              context: context,
+              leading: Icon(Icons.timelapse_rounded),
+              title: 'Push interval',
+              subtitle: 'How often to maybe push points.',
+              min: 100,
+              max: 3600,
+              divisions: 30,
+              value: _kPushInterval,
+              onChanged: (value) {
+                setState(() {
+                  _kPushInterval = value.floorToDouble();
+                  sharedPrefs.setDouble(kPushInterval, value);
+                });
+              }),
+
+          _buildSliderTile(
+              context: context,
+              leading: Icon(Icons.file_upload),
+              title: 'Push batch size',
+              subtitle: 'Max points in each upload reques.',
+              min: 100,
+              max: 3600,
+              divisions: 30,
+              value: _kPushBatchSize,
+              onChanged: (value) {
+                setState(() {
+                  _kPushBatchSize = value.floorToDouble();
+                  sharedPrefs.setDouble(kPushBatchSize, value);
+                });
+              }),
+
+          // Location settings
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
