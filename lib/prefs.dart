@@ -8,20 +8,20 @@ import 'package:flutter_background_geolocation/flutter_background_geolocation.da
     as bg;
 import 'package:just_debounce_it/just_debounce_it.dart';
 
+// Network settings
 const String kAllowPushWithMobile = "allowPushWithMobile"; //
 const String kAllowPushWithWifi = "allowPushWithWifi"; //
 const String kPushInterval = "pushIntervalNumber"; //
 const String kPushBatchSize = "pushBatchSize"; //
+
 // BackgroundLocation settings
-const String kLocationUpdateInterval = "locationUpdateInterval";
-const String kLocationUpdateDistanceFilter = "locationUpdateDistanceFilter";
+const String kLocationUpdateInterval = "locationUpdateInterval"; //
+const String kLocationUpdateDistanceFilter = "locationUpdateDistanceFilter"; //
 const String kLocationUpdateStopTimeout = "locationUpdateStopTimeout"; //
 const String kLocationGarneringDesiredAccuracy =
-    'kLocationGarneringDesiredAccuracy';
+    'kLocationGarneringDesiredAccuracy'; //
 const String kLocationGarneringElasticityMultiplier =
     'locationGarneringElasticityMultiplier';
-const String kLocationGarneringStationaryTimeout =
-    'locationGarneringStationaryTimeout';
 const String kLocationDisableStopDetection = 'kLocationDisableStopDetection'; //
 const String kLocationDeviceInMotion = 'kLocationDeviceInMotion';
 
@@ -318,8 +318,6 @@ class _SettingsScreen extends State<MySettingsScreen> {
       sharedPrefs.getDouble(kLocationUpdateStopTimeout);
   double _kLocationGarneringElasticityMultiplier =
       sharedPrefs.getDouble(kLocationGarneringElasticityMultiplier);
-  double _kLocationGarneringStationaryTimeout =
-      sharedPrefs.getDouble(kLocationGarneringStationaryTimeout);
   String _kLocationGarneringDesiredAccuracy =
       sharedPrefs.getString(kLocationGarneringDesiredAccuracy);
 
