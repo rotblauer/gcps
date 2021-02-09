@@ -25,47 +25,122 @@ const String kLocationDisableStopDetection = 'kLocationDisableStopDetection';
 const String kLocationDeviceInMotion = 'kLocationDeviceInMotion';
 // const String kLocationUpdateStopTimeou = "locationUpdateStopTimeout";
 
-// class SharedPreferencesHelper {
-//   Future<bool> getAllowPushWithMobile() async {
-//     final SharedPreferences prefs = await SharedPreferences.getInstance();
-//     return prefs.getBool(kAllowPushWithMobile) ?? false;
-//   }
+class SharedPrefs {
+  static SharedPreferences _sharedPrefs;
 
-//   // Future<bool> setAllowPushWithMobile(bool value) async {
-//   //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-//   //   return prefs.setBool(kAllowPushWithMobile, value);
-//   // }
+  init() async {
+    if (_sharedPrefs == null) {
+      _sharedPrefs = await SharedPreferences.getInstance();
+    }
+  }
 
-//   Future<bool> getAllowPushWithWifi() async {
-//     final SharedPreferences prefs = await SharedPreferences.getInstance();
-//     return prefs.getBool(kAllowPushWithWifi) ?? false;
-//   }
+  double getDouble(String key) {
+    switch (key) {
+      case kPushInterval:
+        return _sharedPrefs.get(kPushInterval) ?? 100;
+        break;
+      case kPushBatchSize:
+        return _sharedPrefs.get(kPushBatchSize) ?? 100;
+        break;
+      case kLocationUpdateInterval:
+        return _sharedPrefs.get(kLocationUpdateInterval) ?? 0;
+        break;
+      case kLocationUpdateDistanceFilter:
+        return _sharedPrefs.get(kLocationUpdateDistanceFilter) ?? 1;
+        break;
+      case kLocationUpdateStopTimeout:
+        return _sharedPrefs.get(kLocationUpdateStopTimeout) ?? 5;
+        break;
 
-//   // Future<bool> setAllowPushWithWifi(String value) async {
-//   //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-//   //   return prefs.setString(kAllowPushWithWifi, value);
-//   // }
+      case kLocationGarneringElasticityMultiplier:
+        return _sharedPrefs.get(kLocationGarneringElasticityMultiplier) ?? 0;
+        break;
+      case kLocationGarneringStationaryTimeout:
+        return _sharedPrefs.get(kLocationGarneringStationaryTimeout) ?? 0;
+        break;
+      default:
+        print('!!!! I AM IMPOSSIBILITY');
+        return 0;
+    }
+  }
 
-//   Future<double> getPushInterval() async {
-//     final SharedPreferences prefs = await SharedPreferences.getInstance();
-//     return prefs.getDouble(kPushInterval) ?? 100;
-//   }
+  setDouble(String key, double value) {
+    // Validations.
+    switch (key) {
+      case kPushInterval:
+        break;
+      case kPushBatchSize:
+        if (value > 3600) value = 3600;
+        break;
+      case kLocationUpdateInterval:
+        break;
+      case kLocationUpdateDistanceFilter:
+        break;
+      case kLocationUpdateStopTimeout:
+        break;
+      case kLocationGarneringDesiredAccuracy:
+        break;
+      case kLocationGarneringElasticityMultiplier:
+        break;
+      case kLocationGarneringStationaryTimeout:
+        break;
+      default:
+        print('!!!! I AM IMPOSSIBILITY');
+        return;
+    }
+    _sharedPrefs.setDouble(key, value);
+  }
 
-//   Future<bool> setPushInterval(double value) async {
-//     final SharedPreferences prefs = await SharedPreferences.getInstance();
-//     return prefs.setDouble(kPushInterval, value);
-//   }
+  bool getBool(String key) {
+    switch (key) {
+      case kAllowPushWithMobile:
+        return _sharedPrefs.getBool(kAllowPushWithMobile) ?? true;
+      case kAllowPushWithWifi:
+        return _sharedPrefs.getBool(kAllowPushWithWifi) ?? true;
+      case kLocationDisableStopDetection:
+        return _sharedPrefs.getBool(kLocationDisableStopDetection) ?? false;
+      case kLocationDeviceInMotion:
+        return _sharedPrefs.getBool(kLocationDeviceInMotion) ?? true;
+      default:
+        print('!!!! I AM IMPOSSIBILITY');
+        return false;
+    }
+  }
 
-//   Future<double> getPushBatchSize() async {
-//     final SharedPreferences prefs = await SharedPreferences.getInstance();
-//     return prefs.getDouble(_kPushBatchSize) ?? 100;
-//   }
+  setBool(String key, bool value) {
+    switch (key) {
+      case kAllowPushWithMobile:
+        break;
+      case kAllowPushWithWifi:
+        break;
+      case kLocationDisableStopDetection:
+        break;
+      case kLocationDeviceInMotion:
+        break;
+      default:
+        print('!!!! I AM IMPOSSIBILITY');
+        return;
+    }
+    _sharedPrefs.setBool(key, value);
+  }
 
-//   Future<bool> setPushBatchSize(double value) async {
-//     final SharedPreferences prefs = await SharedPreferences.getInstance();
-//     return prefs.setDouble(_kPushBatchSize, value);
-//   }
-// }
+  String getString(String key) {
+    switch (key) {
+      case kLocationGarneringDesiredAccuracy:
+        return _sharedPrefs.get(kLocationGarneringDesiredAccuracy) ??
+            'NAVIGATION';
+    }
+  }
+
+  setString(String key, String value) {
+    switch (key) {
+      case kLocationGarneringDesiredAccuracy:
+        return _sharedPrefs.setString(kLocationGarneringDesiredAccuracy, value);
+    }
+  }
+}
+
+final sharedPrefs = SharedPrefs();
 
 int prefLocationDesiredAccuracy(String value) {
   switch (value) {
@@ -83,6 +158,80 @@ int prefLocationDesiredAccuracy(String value) {
       return bg.Config.DESIRED_ACCURACY_LOWEST;
   }
   return bg.Config.DESIRED_ACCURACY_NAVIGATION;
+}
+
+TextTheme settingsThemeText(context) {
+  return Theme.of(context).textTheme.apply(bodyColor: Colors.tealAccent);
+}
+
+Widget _buildSwitchTile({
+  BuildContext context,
+  Widget leading,
+  String title,
+  String subtitle,
+  bool value,
+  void Function(bool) onChanged,
+}) {
+  return ListTile(
+    leading: leading,
+    title: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: 6),
+          child: Text(title),
+        ),
+        Text(
+          subtitle,
+          style: Theme.of(context).textTheme.caption,
+        )
+      ],
+    ),
+    trailing: Switch(
+      value: value,
+      onChanged: onChanged,
+    ),
+  );
+}
+
+Widget _buildSliderTile({
+  BuildContext context,
+  Widget leading,
+  String title,
+  String subtitle,
+  double min,
+  double max,
+  int divisions,
+  double value,
+  void Function(double value) onChanged,
+}) {
+  return ListTile(
+    leading: leading,
+    title: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(padding: EdgeInsets.only(top: 6), child: Text(title)),
+        Text(
+          subtitle,
+          style: Theme.of(context).textTheme.caption,
+        )
+      ],
+    ),
+    subtitle: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Text(min.toInt().toString()),
+      Expanded(
+        child: Slider(
+            min: min,
+            max: max,
+            value: value,
+            divisions: divisions,
+            onChanged: onChanged),
+      ),
+      Text(max.toInt().toString()),
+    ]),
+    trailing:
+        Text('${value.toInt()}', style: settingsThemeText(context).headline5),
+  );
 }
 
 class MySettingsScreen extends StatefulWidget {
@@ -110,9 +259,6 @@ class _SettingsScreen extends State<MySettingsScreen> {
   final String deviceName;
   final String deviceVersion;
 
-  double _stopTimeoutValue = 4;
-  bool _isWifiActive = true;
-
   _SettingsScreen({
     Key key,
     this.deviceUUID,
@@ -120,178 +266,25 @@ class _SettingsScreen extends State<MySettingsScreen> {
     this.deviceVersion,
   });
 
-  final Settings _settings = Settings();
-
-  double _locationUpdateDistanceFilter = 1;
-  double _locationUpdateInterval = 0;
-
-  updateBGConfig(bg.Config config) {
-    bg.BackgroundGeolocation.setConfig(config);
-  }
-
-  handleLocationUpdateChanges(String changedKey, double newValue) {
-    // double _locationUpdateDistanceFilter;
-    // double _locationUpdateInterval;
-
-    newValue = newValue.roundToDouble();
-
-    _settings.getDouble(kLocationUpdateDistanceFilter, 1).then((value) {
-      _locationUpdateDistanceFilter = value;
-    });
-    _settings.getDouble(kLocationUpdateInterval, 0).then((value) {
-      _locationUpdateInterval = value;
-    });
-    print(changedKey + ': ' + newValue?.toString());
-    if (changedKey == kLocationUpdateDistanceFilter) {
-      // Distance filter changed, adjust the interval.
-      if (_locationUpdateDistanceFilter == newValue) return;
-      _locationUpdateDistanceFilter = newValue;
-
-      //
-      if (newValue != 0 && _locationUpdateInterval > 0) {
-        _locationUpdateInterval = 0.0;
-        _settings.save(kLocationUpdateInterval, _locationUpdateInterval);
-      } else if (newValue == 0 && _locationUpdateInterval <= 0) {
-        _locationUpdateInterval = 1.0;
-        _settings.save(kLocationUpdateInterval, _locationUpdateInterval);
-      }
-      // _settings.save(kLocationUpdateInterval, _locationUpdateInterval);
-      //
-      // _settings.pingDouble(kLocationUpdateDistanceFilter, 1);
-      // _settings.pingDouble(kLocationUpdateInterval, 0);
-    } else if (changedKey == kLocationUpdateInterval) {
-      // Interval changed, adjust the distance filter.
-
-      if (_locationUpdateInterval == newValue) return;
-      _locationUpdateInterval = newValue;
-
-      //
-      if (newValue != 0 && _locationUpdateDistanceFilter > 0) {
-        _locationUpdateDistanceFilter = 0.0;
-        _settings.save(
-            kLocationUpdateDistanceFilter, _locationUpdateDistanceFilter);
-      } else if (newValue == 0 && _locationUpdateDistanceFilter <= 0) {
-        _locationUpdateDistanceFilter = 1.0;
-        _settings.save(
-            kLocationUpdateDistanceFilter, _locationUpdateDistanceFilter);
-      }
-
-      // _settings.pingDouble(kLocationUpdateDistanceFilter, 1);
-      // _settings.pingDouble(kLocationUpdateInterval, 0);
-      //
-    }
-
-    bg.Config newConfig;
-    if (_locationUpdateDistanceFilter > 0) {
-      newConfig = bg.Config(
-        distanceFilter: _locationUpdateDistanceFilter,
-        locationUpdateInterval: 0,
-        isMoving: true,
-      );
-    } else {
-      newConfig = bg.Config(
-        distanceFilter: 0,
-        locationUpdateInterval: (_locationUpdateInterval * 1000 ~/ 1),
-        isMoving: true,
-      );
-    }
-    Debounce.milliseconds(1000, updateBGConfig, [newConfig]);
-  }
-
-  Widget _buildSwitchTile(
-    BuildContext context,
-    String prefKey,
-    Widget leading,
-    String title,
-    String subtitle,
-    bool value,
-    void Function(bool) onChanged,
-  ) {
-    return ListTile(
-      leading: leading,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(top: 6),
-            child: Text(title),
-          ),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.caption,
-          )
-        ],
-      ),
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-      ),
-    );
-  }
-
-  Widget _buildSliderTile(
-    BuildContext context,
-    String prefKey,
-    Widget leading,
-    String title,
-    String subtitle,
-    double min,
-    double max,
-    int divisions,
-    double value,
-    void Function(double value) onChanged,
-  ) {
-    return new FutureBuilder<SharedPreferences>(
-        future: SharedPreferences.getInstance(),
-        builder:
-            (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.none:
-              return new Text('Initializing...');
-            case ConnectionState.waiting:
-              return new Text('Awaiting result...');
-            default:
-              if (snapshot.hasError)
-                return new Text('Error: ${snapshot.error}');
-              else
-                value = snapshot.data.getDouble(prefKey);
-              return ListTile(
-                leading: leading,
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                        padding: EdgeInsets.only(top: 6), child: Text(title)),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.caption,
-                    )
-                  ],
-                ),
-                subtitle: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(min.toInt().toString()),
-                      Expanded(
-                        child: Slider(
-                            min: min,
-                            max: max,
-                            value: value,
-                            divisions: divisions,
-                            onChanged: onChanged),
-                      ),
-                      Text(max.toInt().toString()),
-                    ]),
-                trailing: Text('${value}',
-                    style: settingsThemeText(context).headline5),
-              );
-          }
-        });
-  }
-
-  TextTheme settingsThemeText(context) {
-    return Theme.of(context).textTheme.apply(bodyColor: Colors.tealAccent);
-  }
+  bool _kAllowPushWithMobile = sharedPrefs.getBool(kAllowPushWithMobile);
+  bool _kAllowPushWithWifi = sharedPrefs.getBool(kAllowPushWithWifi);
+  bool _kLocationDisableStopDetection =
+      sharedPrefs.getBool(kLocationDisableStopDetection);
+  bool _kLocationDeviceInMotion = sharedPrefs.getBool(kLocationDeviceInMotion);
+  double _kPushInterval = sharedPrefs.getDouble(kPushInterval);
+  double _kPushBatchSize = sharedPrefs.getDouble(kPushBatchSize);
+  double _kLocationUpdateInterval =
+      sharedPrefs.getDouble(kLocationUpdateInterval);
+  double _kLocationUpdateDistanceFilter =
+      sharedPrefs.getDouble(kLocationUpdateDistanceFilter);
+  double _kLocationUpdateStopTimeout =
+      sharedPrefs.getDouble(kLocationUpdateStopTimeout);
+  double _kLocationGarneringElasticityMultiplier =
+      sharedPrefs.getDouble(kLocationGarneringElasticityMultiplier);
+  double _kLocationGarneringStationaryTimeout =
+      sharedPrefs.getDouble(kLocationGarneringStationaryTimeout);
+  String _kLocationGarneringDesiredAccuracy =
+      sharedPrefs.getString(kLocationGarneringDesiredAccuracy);
 
   @override
   Widget build(BuildContext context) {
@@ -304,6 +297,70 @@ class _SettingsScreen extends State<MySettingsScreen> {
       body: ListView(
         // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Text('Push (upload) configuration',
+                    style: Theme.of(context).textTheme.overline),
+              ),
+            ],
+          ),
+
+          _buildSwitchTile(
+              context: context,
+              leading: Icon(Icons.wifi),
+              title: 'Push with wifi',
+              subtitle: 'Allow automatic upload with a wifi connection.',
+              value: _kAllowPushWithWifi,
+              onChanged: (bool value) {
+                setState(() {
+                  _kAllowPushWithWifi = value;
+                  sharedPrefs.setBool(kAllowPushWithWifi, value);
+                });
+              }),
+
+          _buildSwitchTile(
+              context: context,
+              leading: Icon(Icons.network_cell),
+              title: 'Push with mobile',
+              subtitle: 'Allow automatic upload with a mobile connection.',
+              value: _kAllowPushWithMobile,
+              onChanged: (bool value) {
+                setState(() {
+                  _kAllowPushWithMobile = value;
+                  sharedPrefs.setBool(kAllowPushWithMobile, value);
+                });
+              }),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Text('Location garnering configuration',
+                    style: Theme.of(context).textTheme.overline),
+              ),
+            ],
+          ),
+
+          _buildSliderTile(
+              context: context,
+              leading: Icon(Icons.airline_seat_legroom_extra_outlined),
+              title: 'Stop timeout',
+              subtitle: 'Minutes of stillness before cat naps.',
+              min: 1,
+              max: 10,
+              divisions: 10,
+              value: _kLocationUpdateStopTimeout,
+              onChanged: (value) {
+                setState(() {
+                  _kLocationUpdateStopTimeout = value.ceilToDouble();
+                  sharedPrefs.setDouble(kLocationUpdateStopTimeout, value);
+                });
+              }),
+
           // SettingsContainer(
           //     child: Row(
           //   mainAxisAlignment: MainAxisAlignment.center,
@@ -450,85 +507,75 @@ class _SettingsScreen extends State<MySettingsScreen> {
           //     }),
 
           //
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: EdgeInsets.all(8),
-                child: Text('Push (upload) configuration',
-                    style: Theme.of(context).textTheme.overline),
-              ),
-            ],
-          ),
-          SwitchSettingsTile(
-            settingKey: kAllowPushWithWifi,
-            title: 'Push with wifi data',
-            icon: Icon(Icons.wifi),
-            defaultValue: true,
-          ),
-          SwitchSettingsTile(
-            settingKey: kAllowPushWithMobile,
-            title: 'Push with mobile data',
-            icon: Icon(Icons.network_cell),
-            defaultValue: false,
-          ),
-          Stack(
-            children: [
-              SliderSettingsTile(
-                settingKey: kPushInterval,
-                title: 'Push interval',
-                // title: 'How often to maybe push points',
-                subtitle: 'How often to maybe push points.',
-                icon: Icon(Icons.timelapse_rounded),
-                minValue: 100.0,
-                defaultValue: 100,
-                maxValue: 3600.0,
-                step: 100.0,
-                maxIcon: Icon(Icons.arrow_upward),
-                minIcon: Icon(Icons.arrow_downward),
-              ),
-              _settings.onDoubleChanged(
-                  settingKey: kPushInterval,
-                  defaultValue: 100,
-                  childBuilder: (BuildContext context, double value) {
-                    return Container(
-                        alignment: Alignment.topRight,
-                        padding: EdgeInsets.only(right: 16),
-                        child: Text(
-                          value.toStringAsFixed(0),
-                          style: settingsThemeText(context).headline5,
-                        ));
-                  }),
-            ],
-          ),
-          Stack(
-            children: [
-              SliderSettingsTile(
-                settingKey: kPushBatchSize,
-                title: 'Push batch size',
-                subtitle: 'Max points in each upload request.',
-                icon: Icon(Icons.file_upload),
-                minValue: 100.0,
-                defaultValue: 100,
-                maxValue: 3600.0,
-                step: 100.0,
-                maxIcon: Icon(Icons.arrow_upward),
-                minIcon: Icon(Icons.arrow_downward),
-              ),
-              _settings.onDoubleChanged(
-                  settingKey: kPushBatchSize,
-                  defaultValue: 100,
-                  childBuilder: (BuildContext context, double value) {
-                    return Container(
-                        alignment: Alignment.topRight,
-                        padding: EdgeInsets.only(right: 16),
-                        child: Text(
-                          value.toStringAsFixed(0),
-                          style: settingsThemeText(context).headline5,
-                        ));
-                  }),
-            ],
-          ),
+          // SwitchSettingsTile(
+          //   settingKey: kAllowPushWithWifi,
+          //   title: 'Push with wifi data',
+          //   icon: Icon(Icons.wifi),
+          //   defaultValue: true,
+          // ),
+          // SwitchSettingsTile(
+          //   settingKey: kAllowPushWithMobile,
+          //   title: 'Push with mobile data',
+          //   icon: Icon(Icons.network_cell),
+          //   defaultValue: false,
+          // ),
+          // Stack(
+          //   children: [
+          //     SliderSettingsTile(
+          //       settingKey: kPushInterval,
+          //       title: 'Push interval',
+          //       // title: 'How often to maybe push points',
+          //       subtitle: 'How often to maybe push points.',
+          //       icon: Icon(Icons.timelapse_rounded),
+          //       minValue: 100.0,
+          //       defaultValue: 100,
+          //       maxValue: 3600.0,
+          //       step: 100.0,
+          //       maxIcon: Icon(Icons.arrow_upward),
+          //       minIcon: Icon(Icons.arrow_downward),
+          //     ),
+          //     _settings.onDoubleChanged(
+          //         settingKey: kPushInterval,
+          //         defaultValue: 100,
+          //         childBuilder: (BuildContext context, double value) {
+          //           return Container(
+          //               alignment: Alignment.topRight,
+          //               padding: EdgeInsets.only(right: 16),
+          //               child: Text(
+          //                 value.toStringAsFixed(0),
+          //                 style: settingsThemeText(context).headline5,
+          //               ));
+          //         }),
+          //   ],
+          // ),
+          // Stack(
+          //   children: [
+          //     SliderSettingsTile(
+          //       settingKey: kPushBatchSize,
+          //       title: 'Push batch size',
+          //       subtitle: 'Max points in each upload request.',
+          //       icon: Icon(Icons.file_upload),
+          //       minValue: 100.0,
+          //       defaultValue: 100,
+          //       maxValue: 3600.0,
+          //       step: 100.0,
+          //       maxIcon: Icon(Icons.arrow_upward),
+          //       minIcon: Icon(Icons.arrow_downward),
+          //     ),
+          //     _settings.onDoubleChanged(
+          //         settingKey: kPushBatchSize,
+          //         defaultValue: 100,
+          //         childBuilder: (BuildContext context, double value) {
+          //           return Container(
+          //               alignment: Alignment.topRight,
+          //               padding: EdgeInsets.only(right: 16),
+          //               child: Text(
+          //                 value.toStringAsFixed(0),
+          //                 style: settingsThemeText(context).headline5,
+          //               ));
+          //         }),
+          //   ],
+          // ),
 
 // // MY SLIDER
 //           ListTile(
@@ -567,30 +614,6 @@ class _SettingsScreen extends State<MySettingsScreen> {
 //             trailing:
 //                 Text('${_stopTimeoutValue}', style: settingsTheme.headline5),
 //           ),
-
-          _buildSliderTile(
-              context,
-              kLocationGarneringStationaryTimeout,
-              Icon(Icons.ac_unit),
-              'Stop timeout',
-              'Minutes of stillness before cat naps.',
-              0,
-              10,
-              5,
-              _stopTimeoutValue, (value) {
-            setState(() {
-              _stopTimeoutValue = value;
-            });
-            print('slider slide: ${value}');
-          }),
-
-          _buildSwitchTile(context, kAllowPushWithWifi, Icon(Icons.ac_unit),
-              'My titlel', 'A description', _isWifiActive, (bool value) {
-            setState(() {
-              print('changed: ${value}');
-              _isWifiActive = value;
-            });
-          }),
 
           //
           // SettingsContainer(
@@ -689,7 +712,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

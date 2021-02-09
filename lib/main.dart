@@ -33,13 +33,16 @@ import 'track.dart';
 import 'prefs.dart' as prefs;
 import 'config.dart';
 
-void main() {
+void main() async {
   // Avoid errors cased by flutter upgrade
   // Importing 'package:flutter/widgets.dart' is required.
   WidgetsFlutterBinding.ensureInitialized();
 
   // Development: reset (rm -rf db) if exists.
   // resetDB();
+
+  // Initialize preferences singleton.
+  await prefs.sharedPrefs.init();
 
   // Run app.
   runApp(MyApp());
@@ -922,6 +925,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     _tripStarted = DateTime.now().toUtc();
     super.initState();
+
     // this.getIp();
     _getId().then((value) {
       _deviceUUID = value;
@@ -1093,37 +1097,22 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     // doubles
-    Future.wait([
-      Settings().getDouble(prefs.kLocationUpdateDistanceFilter, 1),
-      Settings().getDouble(prefs.kLocationUpdateInterval, 0),
-      Settings().getDouble(prefs.kLocationGarneringElasticityMultiplier, 0),
-      Settings().getDouble(prefs.kLocationGarneringStationaryTimeout, 5),
-    ]).then((value) {
-      double prefLocationUpdateDistanceFilter = value.elementAt(0);
-      bgConfig.distanceFilter = prefLocationUpdateDistanceFilter;
-
-      bgConfig.locationUpdateInterval =
-          value.elementAt(1).ceilToDouble() * 1000 ~/ 1;
-
-      bgConfig.elasticityMultiplier = value.elementAt(2);
-      bgConfig.stopTimeout = value.elementAt(3).floor();
-    });
+    bgConfig.distanceFilter =
+        prefs.sharedPrefs.getDouble(prefs.kLocationUpdateDistanceFilter);
+    bgConfig.locationUpdateInterval =
+        prefs.sharedPrefs.getDouble(prefs.kLocationUpdateInterval).ceil();
+    bgConfig.elasticityMultiplier = prefs.sharedPrefs
+        .getDouble(prefs.kLocationGarneringElasticityMultiplier);
+    bgConfig.stopTimeout =
+        prefs.sharedPrefs.getDouble(prefs.kLocationUpdateStopTimeout).floor();
 
     // strings
-    Future.wait([
-      Settings()
-          .getString(prefs.kLocationGarneringDesiredAccuracy, 'NAVIGATION'),
-    ]).then((value) {
-      bgConfig.desiredAccuracy =
-          prefs.prefLocationDesiredAccuracy(value.elementAt(0));
-    });
+    bgConfig.desiredAccuracy = prefs.prefLocationDesiredAccuracy(
+        prefs.sharedPrefs.getString(prefs.kLocationGarneringDesiredAccuracy));
 
-    // bools
-    Future.wait([
-      Settings().getBool(prefs.kLocationDisableStopDetection, true),
-    ]).then((value) {
-      bgConfig.disableStopDetection = !value.elementAt(0);
-    });
+    // bool
+    bgConfig.disableStopDetection =
+        prefs.sharedPrefs.getBool(prefs.kLocationDisableStopDetection);
 
     bg.BackgroundGeolocation.ready(bgConfig).then((bg.State state) {
       setState(() {
@@ -1294,7 +1283,7 @@ class _MyHomePageState extends State<MyHomePage> {
         count > 0;
         count = await countTracks()) {
       var tracks = await firstTracksWithLimit(
-          (await Settings().getDouble(prefs.kPushBatchSize, 100)).toInt());
+          (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt());
       resCode = await _pushTracks(tracks);
 
       if (resCode == HttpStatus.ok) {
@@ -1421,8 +1410,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // If we're not at a push mod, we're done.
-    var pushevery =
-        (await Settings().getDouble(prefs.kPushInterval, 100)).toInt();
+    var pushevery = (prefs.sharedPrefs.getDouble(prefs.kPushInterval)).toInt();
 
     setState(() {
       _pushEvery = pushevery;
@@ -1437,9 +1425,8 @@ class _MyHomePageState extends State<MyHomePage> {
     var connectedWifi = _connectionResult == ConnectivityResult.wifi;
     var connectedMobile = _connectionResult == ConnectivityResult.mobile;
 
-    var allowWifi = await Settings().getBool(prefs.kAllowPushWithWifi, true);
-    var allowMobile =
-        await Settings().getBool(prefs.kAllowPushWithMobile, true);
+    var allowWifi = prefs.sharedPrefs.getBool(prefs.kAllowPushWithWifi);
+    var allowMobile = prefs.sharedPrefs.getBool(prefs.kAllowPushWithMobile);
 
     if ((connectedWifi && allowWifi) || (connectedMobile && allowMobile)) {
       await _pushTracksBatching();
