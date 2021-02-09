@@ -1301,6 +1301,7 @@ class _MyHomePageState extends State<MyHomePage> {
           return element.image_file_path != null &&
               element.image_file_path != '';
         }).forEach((element) {
+          print('Deleting cat snap image file: ${element.image_file_path}');
           File(element.image_file_path).deleteSync();
         });
       } else {
@@ -2065,6 +2066,14 @@ class _MyHomePageState extends State<MyHomePage> {
     ));
   }
 
+  onPictureSave() {
+    countSnaps().then((value) {
+      setState(() {
+        _countSnaps = value;
+      });
+    });
+  }
+
   // int _currentIndex = 0;
 
   @override
@@ -2087,14 +2096,12 @@ class _MyHomePageState extends State<MyHomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TakePictureScreen(camera: firstCamera),
+              builder: (context) => TakePictureScreen(
+                camera: firstCamera,
+                onPictureSave: onPictureSave,
+              ),
             ),
           );
-          countSnaps().then((value) {
-            setState(() {
-              _countSnaps = value;
-            });
-          });
         },
         tooltip: 'Camera',
         icon: Icon(Icons.camera),
@@ -2107,10 +2114,12 @@ class _MyHomePageState extends State<MyHomePage> {
 // A screen that allows users to take a picture using a given camera.
 class TakePictureScreen extends StatefulWidget {
   final CameraDescription camera;
+  final void Function() onPictureSave;
 
   const TakePictureScreen({
     Key key,
     @required this.camera,
+    this.onPictureSave,
   }) : super(key: key);
 
   @override
@@ -2164,7 +2173,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => DisplayPictureScreen(imagePath: path),
+          builder: (context) => DisplayPictureScreen(
+            imagePath: path,
+            onPictureSave: widget.onPictureSave,
+          ),
         ),
       );
     } catch (e) {
@@ -2233,8 +2245,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 // A widget that displays the picture taken by the user.
 class DisplayPictureScreen extends StatelessWidget {
   final String imagePath;
+  final void Function() onPictureSave;
 
-  const DisplayPictureScreen({Key key, this.imagePath}) : super(key: key);
+  const DisplayPictureScreen({Key key, this.imagePath, this.onPictureSave})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -2286,6 +2300,8 @@ class DisplayPictureScreen extends StatelessWidget {
 
           // Save it.
           await insertTrackForce(p);
+
+          this.onPictureSave();
 
           // Delete the original image file.
           File(imagePath).deleteSync();
