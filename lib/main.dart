@@ -1822,7 +1822,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => MyCatSnapsScreen(),
+                              builder: (context) =>
+                                  MyCatSnapsScreen(onExit: refreshSnapCount),
                             ),
                           );
                         },
@@ -2066,7 +2067,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ));
   }
 
-  onPictureSave() {
+  refreshSnapCount() {
     countSnaps().then((value) {
       setState(() {
         _countSnaps = value;
@@ -2098,7 +2099,7 @@ class _MyHomePageState extends State<MyHomePage> {
             MaterialPageRoute(
               builder: (context) => TakePictureScreen(
                 camera: firstCamera,
-                onPictureSave: onPictureSave,
+                onPictureSave: refreshSnapCount,
               ),
             ),
           );
@@ -2242,6 +2243,44 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 }
 
+class LoadingOverlay {
+  BuildContext _context;
+
+  void hide() {
+    Navigator.of(_context).pop();
+  }
+
+  void show() {
+    showDialog(
+        context: _context,
+        barrierDismissible: false,
+        builder: _FullScreenLoader().build);
+  }
+
+  Future<T> during<T>(Future<T> future) {
+    show();
+    return future.whenComplete(() => hide());
+  }
+
+  LoadingOverlay._create(this._context);
+
+  factory LoadingOverlay.of(BuildContext context) {
+    return LoadingOverlay._create(context);
+  }
+}
+
+class _FullScreenLoader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: BoxDecoration(color: Color.fromRGBO(0, 0, 0, 0.62)),
+        child: Center(
+            child: CircularProgressIndicator(
+          backgroundColor: Colors.deepPurple,
+        )));
+  }
+}
+
 // A widget that displays the picture taken by the user.
 class DisplayPictureScreen extends StatelessWidget {
   final String imagePath;
@@ -2249,6 +2288,37 @@ class DisplayPictureScreen extends StatelessWidget {
 
   const DisplayPictureScreen({Key key, this.imagePath, this.onPictureSave})
       : super(key: key);
+
+  savePicture() async {
+    // await Future.delayed(Duration(seconds: 20));
+    // Get location.
+    var location = await bg.BackgroundGeolocation.getCurrentPosition();
+
+    // Read and rotate the image according to exif data as needed.
+    final img.Image capturedImage =
+        img.decodeImage(await File(imagePath).readAsBytes());
+    final img.Image orientedImage = img.bakeOrientation(capturedImage);
+
+    // Move the image from the temporary store to persistent app data.
+    Directory persistentDir = await getApplicationDocumentsDirectory();
+    String persistentPath = join(persistentDir.path, basename(imagePath));
+
+    await File(persistentPath)
+        .writeAsBytes(img.encodeJpg(orientedImage), flush: true);
+
+    // Add the snap to the cat track.
+    var p = AppPoint.fromLocationProvider(location);
+    p.image_file_path = persistentPath;
+    // p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
+
+    // Save it.
+    await insertTrackForce(p);
+
+    // Delete the original image file.
+    File(imagePath).deleteSync();
+
+    this.onPictureSave();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2278,33 +2348,9 @@ class DisplayPictureScreen extends StatelessWidget {
         backgroundColor: Colors.deepPurple[700],
         foregroundColor: Colors.deepOrange,
         onPressed: () async {
-          // Get location.
-          var location = await bg.BackgroundGeolocation.getCurrentPosition();
+          final overlay = LoadingOverlay.of(context);
 
-          // Read and rotate the image according to exif data as needed.
-          final img.Image capturedImage =
-              img.decodeImage(await File(imagePath).readAsBytes());
-          final img.Image orientedImage = img.bakeOrientation(capturedImage);
-
-          // Move the image from the temporary store to persistent app data.
-          Directory persistentDir = await getApplicationDocumentsDirectory();
-          String persistentPath = join(persistentDir.path, basename(imagePath));
-
-          await File(persistentPath)
-              .writeAsBytes(img.encodeJpg(orientedImage), flush: true);
-
-          // Add the snap to the cat track.
-          var p = AppPoint.fromLocationProvider(location);
-          p.image_file_path = persistentPath;
-          // p.imgB64 = base64Encode(File(imagePath).readAsBytesSync());
-
-          // Save it.
-          await insertTrackForce(p);
-
-          this.onPictureSave();
-
-          // Delete the original image file.
-          File(imagePath).deleteSync();
+          overlay.during(savePicture());
 
           // Go back home.
           Navigator.popUntil(context, ModalRoute.withName('/'));
@@ -2513,38 +2559,76 @@ class TrackListScreen extends StatelessWidget {
 
 // A widget that displays the picture taken by the user.
 class MyCatSnapsScreen extends StatelessWidget {
-  const MyCatSnapsScreen({Key key}) : super(key: key);
+  final void Function() onExit;
+  const MyCatSnapsScreen({Key key, this.onExit}) : super(key: key);
 
-  // Widget _buildListTileTitle(
-  //     {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
-  //   Row row = Row(
-  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //     children: [],
-  //   );
+  exit(BuildContext context) {
+    onExit();
+    Navigator.popUntil(context, ModalRoute.withName('/'));
+  }
 
-  //   if (prev == null) row.children.add(Text('${point.time} '));
-
-  //   row.children.add(Text(
-  //       '${next != null ? "+" + secondsToPrettyDuration((point.timestamp - next.timestamp).toDouble()) : ""}'));
-
-  //   if (point.event != '')
-  //     row.children.add(Chip(
-  //       backgroundColor: Colors.teal,
-  //       label: Text(point.event),
-  //     ));
-
-  //   return row;
-  // }
-
-  List<Widget> _buildSnaps(List<AppPoint> snaps) {
+  List<Widget> _buildSnaps(BuildContext context, List<AppPoint> snaps) {
     List<Widget> out = [];
+    var index = -1;
     for (var snap in snaps) {
+      index++;
+      var key = Key('snapimg-${index}');
       out.add(Row(
+        key: key,
         children: [
           Flexible(
               child: Padding(
                   padding: EdgeInsets.all(10),
-                  child: Image.file(File(snap.image_file_path)))),
+                  child: InkWell(
+                    onLongPress: () async {
+                      // set up the buttons
+                      Widget cancelButton = ElevatedButton(
+                        child: Text("Cancel"),
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.grey)),
+                        onPressed: () {
+                          Navigator.of(context, rootNavigator: true)
+                              .pop('dialog');
+                        },
+                      );
+                      Widget continueButton = ElevatedButton(
+                        child: Text('Yes, delete'),
+                        onPressed: () {
+                          deleteSnap(snap);
+
+                          // out = out
+                          //     .where((element) => element.key != key)
+                          //     .toList();
+
+                          // Don't splice the image gracefull, just go home.
+                          // Go back home.
+                          exit(context);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            _buildSnackBar(Text('Snap has been deleted.'),
+                                backgroundColor: Colors.green),
+                          );
+                        },
+                      ); // set up the AlertDialog
+                      AlertDialog alert = AlertDialog(
+                        title: Text("Confirm cat snap delete"),
+                        content: Text(
+                            "This will delete the image and associated cat track."),
+                        actions: [
+                          cancelButton,
+                          continueButton,
+                        ],
+                      ); // show the dialog
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return alert;
+                        },
+                      );
+                    },
+                    child: Image.file(File(snap.image_file_path)),
+                  ))),
         ],
       ));
     }
@@ -2581,7 +2665,7 @@ class MyCatSnapsScreen extends StatelessWidget {
                   return new Text('Error: ${snapshot.error}');
                 else
                   return ListView(
-                    children: _buildSnaps(snapshot.data),
+                    children: _buildSnaps(context, snapshot.data),
                   );
               // return new Text(
               //   '${snapshot.data.split("\n").reversed.join("\n")}',

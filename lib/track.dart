@@ -458,3 +458,11 @@ Future<List<AppPoint>> snaps() async {
     return AppPoint.fromMap(maps[i]);
   });
 }
+
+deleteSnap(AppPoint snap) async {
+  final Database db = await database();
+  await db.delete(_cTableName,
+      where: 'image_file_path IS ?', whereArgs: [snap.image_file_path]);
+  // Delete the original image file.
+  File(snap.image_file_path).deleteSync();
+}
