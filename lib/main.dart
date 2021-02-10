@@ -180,7 +180,8 @@ String developmentGuessActivityType(double speed) {
   if (speed > 50 / 3.6) return 'in_vehicle';
   if (speed > 12 / 3.6) return 'on_bicycle';
   if (speed > 6 / 3.6) return 'running';
-  if (speed > 3 / 3.6) return 'walking';
+  if (speed > 0 / 3.6) return 'walking';
+
   return 'still';
 }
 
@@ -878,7 +879,6 @@ class _MyHomePageState extends State<MyHomePage> {
     },
   });
 
-
   // Display data history information
   int _countStored = 0;
   int _countSnaps = 0;
@@ -1391,14 +1391,25 @@ class _MyHomePageState extends State<MyHomePage> {
         location.timestamp == null ||
         location.timestamp == "" ||
         location.coords == null) {
-      print("streamed position: unknown or null timestamp");
-      // setState(() {
-      //   geolocation_api_stream_text = 'Unknown';
-      // });
+      setState(() {
+        _appLocationErrorStatus = 'Invalid location.';
+      });
       return;
     }
 
     if (postEndpoint.contains('http://10.0.2.2')) {
+      if (location.coords.speed <= 0) {
+        var m = Haversine.fromDegrees(
+                latitude1: glocation.coords.latitude,
+                longitude1: glocation.coords.longitude,
+                latitude2: location.coords.latitude,
+                longitude2: location.coords.longitude)
+            .distance();
+        var s = (DateTime.parse(location.timestamp).millisecondsSinceEpoch /
+                1000) -
+            (DateTime.parse(glocation.timestamp).millisecondsSinceEpoch / 1000);
+        location.coords.speed = m / s;
+      }
       location.activity.type =
           developmentGuessActivityType(location.coords.speed);
     }
@@ -1800,7 +1811,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           children: [
                             Icon(
                               Icons.cloud_done_outlined,
-                              color: MyTheme.buttonColor,
+                              color: (prefs.sharedPrefs
+                                          .getBool(prefs.kAllowPushWithWifi) ||
+                                      prefs.sharedPrefs
+                                          .getBool(prefs.kAllowPushWithMobile))
+                                  ? MyTheme.buttonColor
+                                  : MyTheme.disabledColor,
                               size: 16,
                             ),
                             Container(
@@ -1815,7 +1831,13 @@ class _MyHomePageState extends State<MyHomePage> {
                         decoration: BoxDecoration(
                             border: Border(
                                 bottom: BorderSide(
-                                    color: MyTheme.buttonColor, width: 2))),
+                                    color: (prefs.sharedPrefs.getBool(
+                                                prefs.kAllowPushWithWifi) ||
+                                            prefs.sharedPrefs.getBool(
+                                                prefs.kAllowPushWithMobile))
+                                        ? MyTheme.buttonColor
+                                        : MyTheme.disabledColor,
+                                    width: 2))),
                       ),
                       Container(
                         padding: EdgeInsets.all(4),
@@ -2266,8 +2288,8 @@ class DisplayPictureScreen extends StatelessWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(Icons.add_a_photo_outlined, color: Colors.deepOrange),
             Icon(Icons.library_add_check, color: Colors.deepOrange),
+            // Icon(Icons.add_a_photo_outlined, color: Colors.deepOrange),
           ],
         ),
 
@@ -2411,8 +2433,7 @@ class TrackListScreen extends StatelessWidget {
 
     if (next != null) {
       row.children.add(Text(
-          '${"+" + secondsToPrettyDuration(
-              (point.timestamp - next.timestamp).toDouble())}'));
+          '${"+" + secondsToPrettyDuration((point.timestamp - next.timestamp).toDouble())}'));
     }
 
     if (point.event != '')
@@ -2423,10 +2444,11 @@ class TrackListScreen extends StatelessWidget {
 
     return row;
   }
+
   Widget _buildListTileSubtitle(
       {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
     return Text(
-        '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m 🔋${point.battery_level}');
+        '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m 🔋${point.battery_level}\ntripstart=${point.tripStarted?.toIso8601String()}');
   }
 
   @override
@@ -2483,7 +2505,8 @@ class TrackListScreen extends StatelessWidget {
                             point: point,
                             next: next,
                           ),
-                          subtitle: _buildListTileSubtitle(                       context: context,
+                          subtitle: _buildListTileSubtitle(
+                            context: context,
                             prev: prev,
                             point: point,
                             next: next,

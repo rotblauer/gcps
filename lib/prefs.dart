@@ -454,7 +454,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
                   ]),
               title: 'Time interval',
               subtitle:
-                  'Δ seconds triggering a location update.\nZero causes distance updates.\nThis value may be inexact.',
+                  'Δ seconds triggering a location update.\nZero causes distance updates.\nActual results may be imprecise.',
               min: 0,
               max: 60,
               divisions: 60,
