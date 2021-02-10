@@ -37,7 +37,7 @@ void main() async {
   // Avoid errors cased by flutter upgrade
   // Importing 'package:flutter/widgets.dart' is required.
   WidgetsFlutterBinding.ensureInitialized();
-
+  //
   // // Development: reset (rm -rf db) if exists.
   // resetDB();
 
@@ -979,6 +979,7 @@ class _MyHomePageState extends State<MyHomePage> {
     countSnaps().then((value) {
       _countSnaps = value;
     });
+    countPushed().then((value) => _countPushed = value);
     // Workmanager.initialize(callbackDispatcher, isInDebugMode: true);
     // /*
     // fuck
@@ -1301,36 +1302,64 @@ class _MyHomePageState extends State<MyHomePage> {
         // Note that the delete condition used assumes tracks are ordered
         // earliest -> latest.
         print("🗸 PUSH OK");
-        setState(() {
-          _countPushed += tracks.length;
-        });
-        deleteTracksBeforeInclusive(tracks[tracks.length - 1].timestamp);
 
+        setTracksPushedBetweenInclusive(
+            tracks[0].timestamp,
+            tracks[tracks.length - 1].timestamp,
+            (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1));
+        // deleteTracksBeforeInclusive(tracks[tracks.length - 1].timestamp);
+
+        ///
         // delete (clean up) cat snaps files
+        /*
+        ......
+
+
+        NOTE that UNLIKE normal tracks, SNAPS get delete IMMEDIATELY once they've
+        been uploaded.
+
+        .....
+         */
         tracks.where((element) {
           return element.image_file_path != null &&
               element.image_file_path != '';
         }).forEach((element) {
           print('Deleting cat snap image file: ${element.image_file_path}');
-          File(element.image_file_path).deleteSync();
+          // File(element.image_file_path).deleteSync();
+          deleteSnap(element);
         });
+
+        // .....
       } else {
         print("✘ PUSH FAILED, status: " + resCode.toString());
         break;
       }
     }
+
+    if (resCode == 200) {
+      ///
+      //
+      // Track OLDER than 7 days get deleted.
+      //
+      await deleteOldUploadedTracks(age: 7 * 24 * 60 * 60);
+      // development:
+      // await deleteOldUploadedTracks(age: 60);
+    }
+
     var count = await countTracks();
     int snapCount;
     if (count == 0) {
       snapCount = 0;
-      bg.BackgroundGeolocation.sync(); // delete from database
     } else {
       snapCount = await countSnaps();
     }
 
     // Awkwardly placed but whatever.
     // Update the persistent-state display.
+    var cp = await countPushed();
+
     setState(() {
+      _countPushed = cp;
       _countStored = count;
       _countSnaps = snapCount;
       _isPushing = false;
@@ -1340,6 +1369,9 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _appErrorStatus = "";
       });
+
+      // delete from background geolocation database
+      bg.BackgroundGeolocation.sync();
 
       // ScaffoldMessenger.of(context).showSnackBar(
       //   _buildSnackBar(Text('Push successful'), backgroundColor: Colors.green),
@@ -1445,17 +1477,6 @@ class _MyHomePageState extends State<MyHomePage> {
         lat: location.coords.latitude,
         elevation: location.coords.altitude,
         isMoving: location.isMoving && location.activity.type != "still");
-
-    // if (mapController != null && _mapboxStyleLoaded) {
-    //   mapController.addCircle(CircleOptions(
-    //     geometry: LatLng(location.coords.latitude, location.coords.longitude),
-    //     circleColor: '#ff0000',
-    //     // circleRadius: 4,
-    //   ));
-
-    //   mapController.animateCamera(CameraUpdate.newLatLng(
-    //       LatLng(location.coords.latitude, location.coords.longitude)));
-    // }
 
     var countStored = await countTracks();
     var vcountSnaps = await countSnaps();
@@ -1913,10 +1934,10 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               InfoDisplay(
                 keyname: "km/h",
-                value: glocation.coords.speed == null ||
-                        glocation.coords.speed <= 0
+                value: (glocation.coords.speed == null ||
+                        glocation.coords.speed <= 0.000001)
                     ? 0
-                    : ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1),
+                    : (glocation.coords.speed * 3.6).toPrecision(1),
                 options: {
                   'third': Text(glocation.coords.speedAccuracy != null
                       ? glocation.coords.speedAccuracy.toString()
@@ -2478,7 +2499,8 @@ class TrackListScreen extends StatelessWidget {
       // constructor with the given path to display the image.
       body: SafeArea(
         child: new FutureBuilder<List<AppPoint>>(
-          future: lastTracksWithLimit(3600), // a Future<String> or null
+          future: lastTracksWithLimit(60 * 60 * 8,
+              excludeUploaded: false), // a Future<String> or null
           builder:
               (BuildContext context, AsyncSnapshot<List<AppPoint>> snapshot) {
             switch (snapshot.connectionState) {
@@ -2505,8 +2527,19 @@ class TrackListScreen extends StatelessWidget {
 
                         return ListTile(
                           dense: true,
-                          leading: buildActivityIcon(
-                              context, point.activity_type, 16),
+                          tileColor:
+                              (point.uploaded != null && point.uploaded > 0)
+                                  ? MyTheme.canvasColor.withBlue(62)
+                                  : null,
+                          leading: Column(children: [
+                            if (point.uploaded != null && point.uploaded > 0)
+                              Icon(
+                                Icons.cloud_done_outlined,
+                                size: 12,
+                                color: Colors.grey,
+                              ),
+                            buildActivityIcon(context, point.activity_type, 16),
+                          ]),
                           title: _buildListTileTitle(
                             context: context,
                             prev: prev,

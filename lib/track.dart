@@ -32,8 +32,8 @@ const dbSchemaColumns = [
   'battery_level real',
   'battery_is_charging integer',
   'event text',
-  'imgb64 text',
-  'image_file_path text'
+  'image_file_path text',
+  'uploaded integer'
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -88,6 +88,7 @@ class AppPoint {
   final double battery_level;
   final bool battery_is_charging;
   final String event;
+  int uploaded;
 
   String _uuid;
   DateTime _tripStarted;
@@ -98,7 +99,7 @@ class AppPoint {
     return _uuid;
   }
 
-  void set uuid(String uuid) {
+  set uuid(String uuid) {
     this._uuid = uuid;
   }
 
@@ -106,7 +107,7 @@ class AppPoint {
     return _image_file_path;
   }
 
-  void set image_file_path(String path) {
+  set image_file_path(String path) {
     this._image_file_path = path;
   }
 
@@ -114,7 +115,7 @@ class AppPoint {
     return _tripStarted;
   }
 
-  void set tripStarted(DateTime dt) {
+  set tripStarted(DateTime dt) {
     this._tripStarted = dt;
   }
 
@@ -122,8 +123,12 @@ class AppPoint {
     return _imgB64;
   }
 
-  void set imgB64(String i) {
+  set imgB64(String i) {
     this._imgB64 = i;
+  }
+
+  bool isUploaded() {
+    return this.uploaded != null && this.uploaded != 0;
   }
 
   AppPoint({
@@ -144,6 +149,7 @@ class AppPoint {
     this.battery_level,
     this.battery_is_charging,
     this.event,
+    this.uploaded,
   });
 
   // toMap creates a dynamic map for persistence.
@@ -185,8 +191,8 @@ class AppPoint {
       'battery_level': battery_level?.toPrecision(2),
       'battery_is_charging': battery_is_charging ? 1 : 0,
       'event': event,
-      'imgb64': imgB64,
       'image_file_path': image_file_path,
+      // 'uploaded': uploaded,
     };
   }
 
@@ -231,11 +237,9 @@ class AppPoint {
       battery_level: appMap['battery_level'] ?? -1.0,
       battery_is_charging: appMap['battery_is_charging'] == 1 ? true : false,
       event: appMap['event'] ?? "",
+      uploaded: appMap['uploaded'] ?? 0,
     );
 
-    if (appMap['imgb64'] != null && appMap['imgb64'] != "") {
-      ap.imgB64 = appMap['imgb64'].toString();
-    }
     if (appMap['image_file_path'] != null && appMap['image_file_path'] != "") {
       ap.image_file_path = appMap['image_file_path'].toString();
     }
@@ -278,6 +282,7 @@ class AppPoint {
       battery_level: location.battery.level,
       battery_is_charging: location.battery.isCharging,
       event: location.event,
+      uploaded: 0,
     );
   }
 
@@ -364,9 +369,15 @@ class AppPoint {
 
 extension Precision on double {
   double toPrecision(int fractionDigits) {
-    if (this == 0) return 0;
+    if (this == null || this.isInfinite || this.isNaN || this == 0) return 0;
     double mod = pow(10, fractionDigits.toDouble());
-    return ((this * mod).round().toDouble() / mod);
+    double out;
+    try {
+      out = ((this * mod).round().toDouble() / mod);
+    } catch (err) {
+      print('toPrecision failed: ${err.toString()} (value was: ${this}');
+    }
+    return out;
   }
 }
 
@@ -407,16 +418,33 @@ Future<void> insertTrackForce(AppPoint point) async {
   );
 }
 
-Future<int> countTracks() async {
+Future<int> countTracks({bool excludeUploaded: true}) async {
   final Database db = await database();
-  return Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM $_cTableName'));
+  var q = 'SELECT COUNT(*) FROM $_cTableName';
+  if (excludeUploaded) {
+    q += ' WHERE uploaded IS NULL';
+  }
+  return Sqflite.firstIntValue(await db.rawQuery(q));
 }
 
 Future<int> countSnaps() async {
   final Database db = await database();
   return Sqflite.firstIntValue(await db.rawQuery(
       'SELECT COUNT(*) FROM $_cTableName WHERE image_file_path IS NOT NULL'));
+}
+
+Future<int> countPushed() async {
+  final Database db = await database();
+  return Sqflite.firstIntValue(await db.rawQuery(
+      'SELECT COUNT(*) FROM $_cTableName WHERE uploaded IS NOT NULL'));
+}
+
+deleteOldUploadedTracks({int age}) async {
+  final Database db = await database();
+
+  await db.delete(_cTableName,
+      where: 'uploaded IS NOT NULL AND timestamp < ?',
+      whereArgs: [(DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1) - age]);
 }
 
 Future<int> lastId() async {
@@ -426,24 +454,47 @@ Future<int> lastId() async {
   return lastID;
 }
 
-Future<List<AppPoint>> firstTracksWithLimit(int limit) async {
+Future<List<AppPoint>> firstTracksWithLimit(int limit,
+    {bool excludeUploaded: true}) async {
   final Database db = await database();
-  final List<Map<String, dynamic>> maps =
-      await db.query('$_cTableName', limit: limit, orderBy: 'id ASC');
+
+  String where;
+  List<dynamic> whereargs;
+  if (excludeUploaded) {
+    where = 'uploaded IS NULL';
+    whereargs = [];
+  }
+
+  final List<Map<String, dynamic>> maps = await db.query('$_cTableName',
+      where: where, whereArgs: whereargs, limit: limit, orderBy: 'id ASC');
 
   return List.generate(maps.length, (i) {
     return AppPoint.fromMap(maps[i]);
   });
 }
 
-Future<List<AppPoint>> lastTracksWithLimit(int limit) async {
+Future<List<AppPoint>> lastTracksWithLimit(int limit,
+    {bool excludeUploaded: true}) async {
   final Database db = await database();
-  final List<Map<String, dynamic>> maps =
-      await db.query('$_cTableName', limit: limit, orderBy: 'id DESC');
+  String where;
+  List<dynamic> whereargs;
+  if (excludeUploaded) {
+    where = 'uploaded IS NULL';
+    whereargs = [];
+  }
+  final List<Map<String, dynamic>> maps = await db.query('$_cTableName',
+      where: where, whereArgs: whereargs, limit: limit, orderBy: 'id DESC');
 
   return List.generate(maps.length, (i) {
     return AppPoint.fromMap(maps[i]);
   });
+}
+
+Future<void> setTracksPushedBetweenInclusive(
+    int first, int last, int uploaded) async {
+  final Database db = await database();
+  await db.update(_cTableName, {'uploaded': uploaded},
+      where: 'timestamp >= ? AND timestamp <= ?', whereArgs: [first, last]);
 }
 
 Future<void> deleteTracksBeforeInclusive(int ts) async {
