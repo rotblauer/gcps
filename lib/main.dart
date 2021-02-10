@@ -1685,6 +1685,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 4.0),
                                   // margin: EdgeInsets.only(left: 6),
+                                  // height: 16,
+                                  // width: 16,
                                   child: Icon(
                                     Icons.trip_origin,
                                     color: Colors.red[700],
@@ -1696,9 +1698,12 @@ class _MyHomePageState extends State<MyHomePage> {
                               visible: glocation.isMoving,
                               child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 4.0),
-                                  // margin: EdgeInsets.only(left: 6),
                                   height: 16,
                                   width: 16,
+                                  decoration: BoxDecoration(
+                                    color: Colors.deepOrange,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                   child: CircularProgressIndicator(
                                       value: 1 -
                                           ((DateTime.now().millisecondsSinceEpoch /
@@ -1711,7 +1716,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                               (prefs.sharedPrefs.getDouble(prefs
                                                       .kLocationUpdateStopTimeout) *
                                                   60),
-                                      strokeWidth: 4,
+                                      strokeWidth: 3,
                                       backgroundColor: Colors.deepOrange)),
                             ),
                             Visibility(
@@ -2139,6 +2144,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       widget.camera,
       // Define the resolution to use.
       ResolutionPreset.veryHigh,
+      enableAudio: false,
     );
 
     // Next, initialize the controller. This returns a Future.
@@ -2221,7 +2227,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 return CameraPreview(_controller);
               } else {
                 // Otherwise, display a loading indicator.
-                return Center(child: CircularProgressIndicator());
+                return Center(
+                    child: CircularProgressIndicator(
+                        backgroundColor: Colors.deepPurple));
               }
             },
           )),
