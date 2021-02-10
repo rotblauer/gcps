@@ -185,6 +185,13 @@ String developmentGuessActivityType(double speed) {
   return 'still';
 }
 
+String countAbbrev(int count) {
+  if (count > 10000) return '${(count / 1000) ~/ 1}k'; // no precision
+  if (count > 1000)
+    return '${(count / 1000).toPrecision(1)}k'; // one decimal place
+  return '$count';
+}
+
 class ShapesPainter extends CustomPainter {
   List<AppPoint> locations = [];
 
@@ -1754,7 +1761,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 width: 4,
                               ),
                               Text(
-                                (_countStored).toString(),
+                                countAbbrev(_countStored),
                                 style: TextStyle(color: Colors.white),
                               )
                             ],
@@ -1823,7 +1830,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               width: 4,
                             ),
                             Text(
-                              _countPushed.toString(),
+                              countAbbrev(_countPushed),
                               style: TextStyle(color: Colors.white),
                             )
                           ],
@@ -1906,9 +1913,10 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               InfoDisplay(
                 keyname: "km/h",
-                value: glocation.coords.speed <= 0
+                value: glocation.coords.speed == null ||
+                        glocation.coords.speed <= 0
                     ? 0
-                    : ((glocation.coords.speed ?? 0) * 3.6).toPrecision(1),
+                    : (glocation.coords.speed * 3.6).toPrecision(0),
                 options: {
                   'third': Text(glocation.coords.speedAccuracy != null
                       ? glocation.coords.speedAccuracy.toString()
