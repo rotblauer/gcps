@@ -803,7 +803,7 @@ String secondsToPrettyDuration(double seconds, [bool abbrev]) {
   String out = "";
   hours > 0 ? out += hours.toString() + 'h ' : null;
   minutes > 0 ? out += minutes.toString() + 'm ' : null;
-  if (out.length > 0 && abbrev) return out;
+  if (abbrev != null && out.length > 0 && abbrev) return out;
   out += secondsRound.toString() + 's';
   return out;
 }
