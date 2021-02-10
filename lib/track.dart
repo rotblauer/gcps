@@ -182,7 +182,7 @@ class AppPoint {
       'odometer': odometer?.floorToDouble(),
       'activity_confidence': activity_confidence,
       'activity_type': activity_type,
-      'battery_level': battery_level?.toPrecision(0),
+      'battery_level': battery_level?.toPrecision(2),
       'battery_is_charging': battery_is_charging ? 1 : 0,
       'event': event,
       'imgb64': imgB64,
@@ -315,7 +315,7 @@ class AppPoint {
     String notesString = "";
     String batteryStatusString = "";
     var batteryStatus = <String, dynamic>{
-      'level': battery_level.toPrecision(0),
+      'level': battery_level.toPrecision(2),
       'status': battery_is_charging
           ? (battery_level == 1 ? 'full' : 'charging')
           : 'unplugged', // full/unplugged

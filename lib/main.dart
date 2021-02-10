@@ -2472,8 +2472,11 @@ class TrackListScreen extends StatelessWidget {
 
     if (prev == null) row.children.add(Text('${point.time} '));
 
-    row.children.add(Text(
-        '${next != null ? "+" + secondsToPrettyDuration((point.timestamp - next.timestamp).toDouble()) : ""}'));
+    if (next != null) {
+      row.children.add(Text(
+          '${"+" + secondsToPrettyDuration(
+              (point.timestamp - next.timestamp).toDouble())}'));
+    }
 
     if (point.event != '')
       row.children.add(Chip(
