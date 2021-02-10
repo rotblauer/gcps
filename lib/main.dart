@@ -857,7 +857,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Display location information
   bg.Location glocation = new bg.Location({
     'timestamp': DateTime.now().toIso8601String(),
-    'isMoving': false,
+    'isMoving': true,
     'uuid': 'abc',
     'odometer': 42,
     'coords': {
@@ -877,6 +877,7 @@ class _MyHomePageState extends State<MyHomePage> {
       'confidence': 9000,
     },
   });
+
 
   // Display data history information
   int _countStored = 0;
@@ -934,8 +935,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    _tripStarted = DateTime.now().toUtc();
     super.initState();
+
+    glocation.isMoving = true;
+    _tripStarted = DateTime.now().toUtc();
 
     // this.getIp();
     _getId().then((value) {
@@ -1474,66 +1477,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  // void _startStream() {
-  //   positionStream =
-  //       Geolocator.getPositionStream(desiredAccuracy: LocationAccuracy.best)
-  //           .listen(_handleStreamLocationUpdate);
-  // }
-
-  // /// Determine the current position of the device.
-  // ///
-  // /// When the location services are not enabled or permissions
-  // /// are denied the `Future` will return an error.
-  // Future<Position> _determinePosition() async {
-  //   bool serviceEnabled;
-  //   LocationPermission permission;
-
-  //   serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  //   if (!serviceEnabled) {
-  //     return Future.error('Location services are disabled.');
-  //   }
-
-  //   permission = await Geolocator.checkPermission();
-  //   if (permission == LocationPermission.deniedForever) {
-  //     /*
-  //     Settings
-
-  //     In some cases it is necessary to ask the user and update their device settings.
-  //     For example when the user initially permanently denied permissions to access
-  //     the device's location or if the location services are not enabled
-  //     (and, on Android, automatic resolution didn't work). In these cases you
-  //     can use the openAppSettings or openLocationSettings methods to immediately
-  //     redirect the user to the device's settings page.
-
-  //     On Android the openAppSettings method will redirect the user to the App
-  //     specific settings where the user can update necessary permissions.
-  //     The openLocationSettings method will redirect the user to the location
-  //     settings where the user can enable/ disable the location services.
-
-  //     On iOS we are not allowed to open specific setting pages so both methods
-  //     will redirect the user to the Settings App from where the user can navigate
-  //     to the correct settings category to update permissions or enable/ disable
-  //     the location services.
-  //     */
-  //     // await Geolocator.openAppSettings();
-  //     await Geolocator.openLocationSettings();
-  //     return Future.error(
-  //         'Location permissions are permantly denied, we cannot request permissions.');
-  //   }
-
-  //   if (permission == LocationPermission.denied) {
-  //     permission = await Geolocator.requestPermission();
-  //     if (permission != LocationPermission.whileInUse &&
-  //         permission != LocationPermission.always) {
-  //       return Future.error(
-  //           'Location permissions are denied (actual value: $permission).');
-  //     }
-  //   }
-
-  //   return await Geolocator.getCurrentPosition(
-  //       desiredAccuracy: LocationAccuracy.best);
-  // }
-
   // runs every 1 second
 
   int _secondsSinceLastPoint = 0;
@@ -1670,9 +1613,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           });
                         },
                         onLongPress: () async {
-                          var targetState = !(glocation != null &&
-                              glocation.isMoving != null &&
-                              glocation.isMoving);
+                          var targetState = !glocation.isMoving;
                           bg.BackgroundGeolocation.changePace(targetState);
                           ScaffoldMessenger.of(context).showSnackBar(
                             _buildSnackBar(
@@ -1693,9 +1634,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                             //
                             Visibility(
-                              visible: (glocation != null &&
-                                  glocation.isMoving != null &&
-                                  !glocation.isMoving),
+                              visible: !glocation.isMoving,
                               child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 4.0),
                                   // margin: EdgeInsets.only(left: 6),
@@ -1707,9 +1646,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             // ^^
 
                             Visibility(
-                              visible: (glocation != null &&
-                                  glocation.isMoving != null &&
-                                  glocation.isMoving),
+                              visible: glocation.isMoving,
                               child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 4.0),
                                   // margin: EdgeInsets.only(left: 6),
@@ -2486,6 +2423,11 @@ class TrackListScreen extends StatelessWidget {
 
     return row;
   }
+  Widget _buildListTileSubtitle(
+      {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
+    return Text(
+        '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m 🔋${point.battery_level}');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2541,8 +2483,11 @@ class TrackListScreen extends StatelessWidget {
                             point: point,
                             next: next,
                           ),
-                          subtitle: Text(
-                              '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m'),
+                          subtitle: _buildListTileSubtitle(                       context: context,
+                            prev: prev,
+                            point: point,
+                            next: next,
+                          ),
                         );
                       });
               // return new Text(
