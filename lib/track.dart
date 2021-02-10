@@ -291,7 +291,7 @@ class AppPoint {
       {String uuid = "",
       String name = "",
       String version = "",
-      String tripStarted = "",
+      DateTime tripStarted,
       double distance = 0}) async {
     /*
     type TrackPoint struct {
@@ -332,6 +332,7 @@ class AppPoint {
       'numberOfSteps': odometer.toInt(),
       'distance': distance,
       'batteryStatus': batteryStatusString,
+      'currentTripStart': tripStarted?.toUtc()?.toIso8601String(),
     };
     if (_tripStarted != null) {
       notes['currentTripStart'] = _tripStarted.toUtc().toIso8601String();
@@ -350,7 +351,6 @@ class AppPoint {
       'uuid': uuid,
       'name': name,
       'version': version,
-      'tripStarted': tripStarted,
       'time': time.toUtc().toIso8601String(),
       'timestamp': timestamp,
       'lat': latitude.toPrecision(9),

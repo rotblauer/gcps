@@ -33,6 +33,8 @@ import 'track.dart';
 import 'prefs.dart' as prefs;
 import 'config.dart';
 
+final bool developmentMode = postEndpoint.contains('http://10.0.2.2');
+
 void main() async {
   // Avoid errors cased by flutter upgrade
   // Importing 'package:flutter/widgets.dart' is required.
@@ -1258,7 +1260,7 @@ class _MyHomePageState extends State<MyHomePage> {
         uuid: _deviceUUID,
         name: _deviceName,
         version: _deviceAppVersion,
-        tripStarted: _tripStarted.toUtc().toIso8601String(),
+        tripStarted: _tripStarted,
         distance: _tripDistance.toPrecision(1),
       );
       pushable.add(js);
@@ -1303,11 +1305,19 @@ class _MyHomePageState extends State<MyHomePage> {
         // earliest -> latest.
         print("🗸 PUSH OK");
 
+        // Awkwardly placed but whatever.
+        // Update the persistent-state display.
+
         setTracksPushedBetweenInclusive(
             tracks[0].timestamp,
             tracks[tracks.length - 1].timestamp,
             (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1));
         // deleteTracksBeforeInclusive(tracks[tracks.length - 1].timestamp);
+
+        var cp = await countPushed();
+        setState(() {
+          _countPushed = cp;
+        });
 
         ///
         // delete (clean up) cat snaps files
@@ -1357,10 +1367,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Awkwardly placed but whatever.
     // Update the persistent-state display.
-    var cp = await countPushed();
-
     setState(() {
-      _countPushed = cp;
       _countStored = count;
       _countSnaps = snapCount;
       _isPushing = false;
@@ -1437,7 +1444,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    if (postEndpoint.contains('http://10.0.2.2')) {
+    if (developmentMode) {
       if (location.coords.speed <= 0) {
         var m = Haversine.fromDegrees(
                 latitude1: glocation.coords.latitude,
