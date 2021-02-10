@@ -491,7 +491,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
               leading: Icon(Icons.trip_origin),
               title: 'Disable stop detection',
               subtitle: _kLocationDisableStopDetection
-                  ? 'Location tracking will not disengage when cat is stationary; location services will NEVER turn off.'
+                  ? 'Location tracking will not disengage when cat is stationary; location services will NEVER turn off if cat is moving.'
                   : 'Location tracking will automatically disengage when device is stationary for ${_kLocationUpdateStopTimeout.toInt()} minutes.',
               value: _kLocationDisableStopDetection,
               onChanged: (bool value) {
