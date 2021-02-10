@@ -1339,7 +1339,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (resCode == 200) {
       ///
       //
-      // Track OLDER than 7 days get deleted.
+      // UPLOADED tracks OLDER than 7 days get deleted.
+      // Tracks which have not been uploaded will not be deleted.
       //
       await deleteOldUploadedTracks(age: 7 * 24 * 60 * 60);
       // development:
