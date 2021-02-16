@@ -1,37 +1,33 @@
 import 'dart:async';
+import 'dart:convert'; // jsonEncode
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:camera/camera.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert'; // jsonEncode
 // import 'package:english_words/english_words.dart' as ew;
 import 'package:flutter/services.dart';
-import 'package:gcps/haversine.dart/lib/src/haversine_base.dart';
-
-import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 // import 'package:geolocator/geolocator.dart';
 import 'package:flutter/widgets.dart';
-import 'package:device_info/device_info.dart';
-import 'package:http/http.dart' as http;
-import 'package:connectivity/connectivity.dart';
-import 'package:camera/camera.dart';
-// import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:path/path.dart' show basename, join;
-import 'package:path_provider/path_provider.dart';
 // import 'package:workmanager/workmanager.dart';
 // import 'package:gallery_saver/gallery_saver.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
-import 'package:shared_preferences_settings/shared_preferences_settings.dart';
-
+import 'package:gcps/haversine.dart/lib/src/haversine_base.dart';
+import 'package:http/http.dart' as http;
 // import 'package:dio/dio.dart';
 import 'package:image/image.dart' as img;
+import 'package:ip_geolocation_api/ip_geolocation_api.dart';
+// import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:path/path.dart' show basename, join;
+import 'package:path_provider/path_provider.dart';
 
-import 'track.dart';
-import 'prefs.dart' as prefs;
 import 'config.dart';
+import 'prefs.dart' as prefs;
+import 'track.dart';
 
 final bool developmentMode = postEndpoint.contains('http://10.0.2.2');
 
@@ -408,6 +404,9 @@ class ShapesPainter extends CustomPainter {
     } else if (maxDistMeters > 50) {
       legendScaleDist = 50;
       legendLabel = "50m";
+    } else if (maxDistMeters > 25) {
+      legendScaleDist = 25;
+      legendLabel = "25m";
     } else if (maxDistMeters > 10) {
       legendScaleDist = 10;
       legendLabel = "10m";
@@ -1637,7 +1636,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                   },
                                 );
                               }
-                            : null,
+                            : () {
+                                _connectivity.checkConnectivity().then(
+                                    (value) => _updateConnectionStatus(value));
+                              },
                         child: Container(
                           padding: EdgeInsets.only(left: 8.0, right: 4),
                           child: buildConnectStatusIcon(_connectionStatus),
@@ -2132,7 +2134,19 @@ class TakePictureScreen extends StatefulWidget {
 
 class TakePictureScreenState extends State<TakePictureScreen> {
   CameraController _controller;
-  Future<void> _initializeControllerFuture;
+  Future<void> _setupControllerFuture;
+  Directory _tmpDir;
+  Future<void> _getTmpDirFuture;
+
+  Future<void> _setupController() async {
+    await _controller.initialize();
+    await _controller.setFocusMode(FocusMode.auto);
+    return _controller.unlockCaptureOrientation();
+  }
+
+  _setupTmpDir() async {
+    _tmpDir = await getTemporaryDirectory();
+  }
 
   @override
   void initState() {
@@ -2148,21 +2162,23 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     );
 
     // Next, initialize the controller. This returns a Future.
-    _initializeControllerFuture = _controller.initialize();
+    _setupControllerFuture = _setupController();
+    _getTmpDirFuture = _setupTmpDir();
   }
 
   takePicture() async {
     // catch the error.
     try {
       // Ensure that the camera is initialized.
-      await _initializeControllerFuture;
+      await _setupControllerFuture;
+      await _getTmpDirFuture;
 
       // Construct the path where the image should be saved using the
       // pattern package.
       final path = join(
         // Store the picture in the temp directory.
         // Find the temp directory using the `path_provider` plugin.
-        (await getTemporaryDirectory()).path,
+        _tmpDir.path,
         '${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
 
@@ -2220,7 +2236,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         children: [
           Flexible(
               child: FutureBuilder<void>(
-            future: _initializeControllerFuture,
+            future: _setupControllerFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 // If the Future is complete, display the preview.
