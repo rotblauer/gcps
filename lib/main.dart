@@ -2508,22 +2508,16 @@ class TrackListScreen extends StatelessWidget {
   Widget _buildListTileTitle(
       {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
     Row row = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [],
     );
 
-    if (prev == null) row.children.add(Text('${point.time} '));
-
-    if (next != null) {
+    if (prev == null) {
+      row.children.add(Text('${point.time} '));
+    } else {
       row.children.add(Text(
-          '${"+" + secondsToPrettyDuration((point.timestamp - next.timestamp).toDouble())}'));
+          '${"-" + secondsToPrettyDuration((prev.timestamp - point.timestamp).toDouble())}'));
     }
-
-    if (point.event != '')
-      row.children.add(Chip(
-        backgroundColor: Colors.teal,
-        label: Text(point.event),
-      ));
 
     return row;
   }
@@ -2531,7 +2525,22 @@ class TrackListScreen extends StatelessWidget {
   Widget _buildListTileSubtitle(
       {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
     return Text(
-        '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m 🔋${point.battery_level}\ntripstart=${point.tripStarted?.toIso8601String()}');
+        '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m 🔋${point.battery_level}\ntripstart=${point.tripStarted?.toLocal()}');
+  }
+
+  Widget _buildListTileTrailing(
+      {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
+    if (point.event != '') {
+      return Column(
+        children: [
+          Chip(
+            backgroundColor: Colors.teal,
+            label: Text(point.event),
+          ),
+        ],
+      );
+    }
+    return Container(width: 1, height: 1);
   }
 
   @override
@@ -2605,6 +2614,15 @@ class TrackListScreen extends StatelessWidget {
                             prev: prev,
                             point: point,
                             next: next,
+                          ),
+                          trailing: Padding(
+                            padding: EdgeInsets.all(0),
+                            child: _buildListTileTrailing(
+                              context: context,
+                              prev: prev,
+                              point: point,
+                              next: next,
+                            ),
                           ),
                         );
                       });
