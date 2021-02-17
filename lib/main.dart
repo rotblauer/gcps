@@ -2020,9 +2020,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   Widget continueButton = ElevatedButton(
                     child: Text('Yes, reset'),
                     onPressed: () {
+                      bg.BackgroundGeolocation.setOdometer(0);
                       setState(() {
-                        bg.BackgroundGeolocation.setOdometer(0);
                         _distanceTracker.reset();
+                        _tripDistance = 0;
+                        glocation.odometer = 0;
                         _paintList = [];
                         _tripStarted = DateTime.now().toUtc();
                       });
