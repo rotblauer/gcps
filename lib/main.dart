@@ -522,7 +522,7 @@ Icon buildActivityIcon(BuildContext context, String activity, double size) {
   switch (activity) {
     case 'still':
       return Icon(
-        Icons.airline_seat_legroom_extra,
+        Icons.weekend,
         size: size,
         // color: Theme.of(context).primaryColor,
         color: getActivityColor(activity),
@@ -1687,8 +1687,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             _buildSnackBar(
                                 Text(targetState
-                                    ? 'Device is in motion.'
-                                    : 'Device is stationary.'),
+                                    ? 'Cat is moving.'
+                                    : 'Cat is napping.'),
                                 backgroundColor:
                                     targetState ? Colors.green : Colors.red),
                           );
@@ -2525,7 +2525,7 @@ class TrackListScreen extends StatelessWidget {
   Widget _buildListTileSubtitle(
       {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
     return Text(
-        '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ↑${point.altitude}m 🔋${point.battery_level}\ntripstart=${point.tripStarted?.toLocal()}');
+        '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ⛰${point.altitude}m 🔋${point.battery_level}\ntripstart=${point.tripStarted?.toLocal()}');
   }
 
   Widget _buildListTileTrailing(
