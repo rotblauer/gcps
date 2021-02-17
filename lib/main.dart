@@ -2595,13 +2595,24 @@ class TrackListScreen extends StatelessWidget {
                                   ? MyTheme.canvasColor.withBlue(62)
                                   : null,
                           leading: Column(children: [
-                            if (point.uploaded != null && point.uploaded > 0)
-                              Icon(
-                                Icons.cloud_done_outlined,
-                                size: 12,
-                                color: Colors.grey,
-                              ),
+                            // if (point.uploaded != null && point.uploaded > 0)
+                            //   Icon(
+                            //     Icons.cloud_done_outlined,
+                            //     size: 12,
+                            //     color: Colors.grey,
+                            //   ),
                             buildActivityIcon(context, point.activity_type, 16),
+                            (!point.isMoving)
+                                ? Icon(
+                                    Icons.trip_origin,
+                                    size: 12,
+                                    color: Colors.redAccent,
+                                  )
+                                : Icon(
+                                    Icons.speed,
+                                    size: 12,
+                                    color: Colors.lightGreenAccent,
+                                  )
                           ]),
                           title: _buildListTileTitle(
                             context: context,

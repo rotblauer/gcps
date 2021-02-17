@@ -33,6 +33,7 @@ const dbSchemaColumns = [
   'distance real',
   'trip_started text',
   'trip_started_timestamp integer',
+  'is_moving integer',
   'event text',
   'image_file_path text',
   'uploaded integer'
@@ -90,6 +91,8 @@ class AppPoint {
   final double battery_level;
   final bool battery_is_charging;
   final String event;
+  final bool isMoving;
+
   int uploaded;
 
   double distance;
@@ -158,6 +161,7 @@ class AppPoint {
     this.activity_type,
     this.battery_level,
     this.battery_is_charging,
+    this.isMoving,
     this.event,
     this.uploaded,
   });
@@ -203,6 +207,7 @@ class AppPoint {
       'distance': distance?.floorToDouble(),
       'trip_started': _tripStarted?.toUtc()?.toIso8601String(),
       'trip_started_timestamp': _tripStartedTimestamp,
+      'is_moving': isMoving ? 1 : 0,
       'event': event,
       'image_file_path': image_file_path,
       // 'uploaded': uploaded,
@@ -249,6 +254,7 @@ class AppPoint {
       activity_type: appMap['activity_type'] ?? "Unknown",
       battery_level: appMap['battery_level'] ?? -1.0,
       battery_is_charging: appMap['battery_is_charging'] == 1 ? true : false,
+      isMoving: appMap['is_moving'] == 1,
       event: appMap['event'] ?? "",
       uploaded: appMap['uploaded'] ?? 0,
     );
@@ -262,6 +268,7 @@ class AppPoint {
     var tripStart = DateTime.parse(appMap['trip_started']) ?? null;
     ap._tripStarted = tripStart;
     ap._tripStartedTimestamp = tripStart?.millisecondsSinceEpoch ~/ 1000;
+
     return ap;
   }
 
@@ -301,6 +308,7 @@ class AppPoint {
       battery_level: location.battery.level,
       battery_is_charging: location.battery.isCharging,
       event: location.event,
+      isMoving: location.isMoving,
       uploaded: 0,
     );
   }
