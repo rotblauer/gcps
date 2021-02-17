@@ -101,7 +101,9 @@ class AppPoint {
 
   set tripStarted(DateTime start) {
     _tripStarted = start;
-    _tripStartedTimestamp = _tripStarted.millisecondsSinceEpoch ~/ 1000;
+    if (start != null) {
+      _tripStartedTimestamp = _tripStarted.millisecondsSinceEpoch ~/ 1000;
+    }
   }
 
   DateTime get tripStarted {
@@ -265,9 +267,10 @@ class AppPoint {
 
     ap.distance = appMap['distance'] ?? 0.0;
 
-    var tripStart = DateTime.parse(appMap['trip_started']) ?? null;
-    ap._tripStarted = tripStart;
-    ap._tripStartedTimestamp = tripStart?.millisecondsSinceEpoch ~/ 1000;
+    var tripStart = appMap['trip_started'] != null
+        ? DateTime.parse(appMap['trip_started'])
+        : null;
+    ap.tripStarted = tripStart;
 
     return ap;
   }
