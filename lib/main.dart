@@ -190,10 +190,99 @@ String countAbbrev(int count) {
   return '$count';
 }
 
-class ShapesPainter extends CustomPainter {
+class ElevationProfilePainter extends CustomPainter {
   List<AppPoint> locations = [];
 
-  ShapesPainter({this.locations});
+  ElevationProfilePainter({this.locations});
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var shouldDraw = (locations.length > 0); // HACK/develop
+    if (!shouldDraw) return;
+
+    double minAlt, maxAlt;
+    for (var loc in locations) {
+      // altitude
+      if (minAlt == null || loc.altitude < minAlt) minAlt = loc.altitude;
+      if (maxAlt == null || loc.altitude > maxAlt) maxAlt = loc.altitude;
+    }
+
+    final double elevSpread = (maxAlt - minAlt);
+
+    final double sizeW = size.width; // * 0.95;
+    final double sizeH = size.height; //  * 0.95;
+    final double wMargin = (size.width - sizeW) / 2;
+    final double hMargin = (size.height - sizeH) / 2;
+
+    // Altitude/elevation stuff
+    final double sizeAltW = sizeW;
+    final double sizeAltH = sizeH;
+
+    Paint lastElevPointPaint = Paint()
+      ..color = Colors.tealAccent
+      ..style = PaintingStyle.fill;
+
+    Path elevPath = Path();
+    final elevPaint = Paint()
+      ..color = Colors.cyan.withAlpha(155)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    final double elevScaleY = sizeAltH / (elevSpread > 0 ? elevSpread : 1);
+    final double elevScaleX = sizeAltW / locations.length;
+    final Offset elevGraphOrigin = Offset(wMargin, sizeAltH);
+
+    var i = 1;
+
+    Offset elevPoint = elevGraphOrigin.translate(
+        elevScaleX * i, -1 * (locations.first.altitude - minAlt) * elevScaleY);
+    elevPath.moveTo(elevPoint.dx, elevPoint.dy);
+
+    for (var loc in locations.skip(1)) {
+      i++;
+      elevPoint = elevGraphOrigin.translate(
+          elevScaleX * i.toDouble(), -1 * (loc.altitude - minAlt) * elevScaleY);
+
+      elevPath.arcToPoint(elevPoint);
+    }
+
+    // Draw the elevation path.
+    canvas.drawCircle(elevPoint, 4, lastElevPointPaint);
+    canvas.drawPath(elevPath, elevPaint);
+
+    // Elevation legend.
+    final TextPainter tp = TextPainter(
+        text: TextSpan(
+            text: '${elevSpread ~/ 1}',
+            style: MyTheme.copyWith()
+                .textTheme
+                .apply(bodyColor: lastElevPointPaint.color.withAlpha(155))
+                .overline),
+        maxLines: 1,
+        textDirection: TextDirection.ltr);
+
+    lastElevPointPaint.color = MyTheme.buttonColor;
+    canvas.drawLine(Offset(sizeW + wMargin, 0),
+        Offset(sizeW + wMargin, sizeAltH), lastElevPointPaint);
+
+    tp.layout();
+    tp.paint(canvas, Offset(wMargin + sizeW - (tp.width), -tp.height - 4 / 2));
+
+    canvas.drawRect(
+        Rect.fromPoints(Offset(wMargin, 0), Offset(sizeW + wMargin, sizeAltH)),
+        elevPaint
+          ..color = elevPaint.color.withAlpha(10)
+          ..style = PaintingStyle.fill);
+  }
+}
+
+class TrackPainter extends CustomPainter {
+  List<AppPoint> locations = [];
+
+  TrackPainter({this.locations});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -201,14 +290,12 @@ class ShapesPainter extends CustomPainter {
 
     double minLat, minLon, maxLat, maxLon, minAlt, maxAlt;
     for (var loc in locations) {
-      if (minLat == null || loc.latitude < minLat) minLat = loc.latitude;
-      if (maxLat == null || loc.latitude > maxLat) maxLat = loc.latitude;
+      if (minLat == null || loc.latitude.abs() < minLat.abs())
+        minLat = loc.latitude;
+      if (maxLat == null || loc.latitude.abs() > maxLat.abs())
+        maxLat = loc.latitude;
       if (minLon == null || loc.longitude < minLon) minLon = loc.longitude;
       if (maxLon == null || loc.longitude > maxLon) maxLon = loc.longitude;
-
-      // altitude
-      if (minAlt == null || loc.altitude < minAlt) minAlt = loc.altitude;
-      if (maxAlt == null || loc.altitude > maxAlt) maxAlt = loc.altitude;
     }
 
     var dH = maxLon - minLon;
@@ -231,23 +318,6 @@ class ShapesPainter extends CustomPainter {
 
     Path path = Path();
 
-    // Altitude/elevation stuff
-    double sizeAltW = sizeW;
-    double sizeAltH = sizeH / 4;
-
-    Paint lastElevPointPaint = Paint()
-      ..color = Colors.tealAccent
-      ..style = PaintingStyle.fill;
-    Path elevPath = Path();
-    final elevPaint = Paint();
-    elevPaint.color = Colors.cyan.withAlpha(155);
-    elevPaint.style = PaintingStyle.stroke;
-    elevPaint.strokeWidth = 1;
-    double elevSpread = (maxAlt - minAlt);
-    double elevScaleY = sizeAltH / (elevSpread > 0 ? elevSpread : 1);
-    double elevScaleX = sizeAltW / locations.length;
-    Offset elevGraphOrigin = Offset(wMargin, sizeAltH);
-
     final paintStationaryConnections = Paint();
     paintStationaryConnections.color = Colors.white24;
     paintStationaryConnections.strokeWidth = 0.8;
@@ -268,19 +338,17 @@ class ShapesPainter extends CustomPainter {
 
     int i = 0;
     for (var loc in locations) {
-      if (!uniqActivities.contains(loc.activity_type))
-        uniqActivities.add(loc.activity_type);
-
       bool isLast = i == locations.length - 1;
       bool isFirst = i == 0;
+      i++;
+
+      if (!uniqActivities.contains(loc.activity_type))
+        uniqActivities.add(loc.activity_type);
 
       Color activityColor =
           getActivityColor(loc.activity_type); //.withAlpha(255 - accFade);
       paint.color = activityColor;
 
-      // }
-
-      i++;
       var x = loc.longitude;
       var y = loc.latitude;
 
@@ -293,12 +361,6 @@ class ShapesPainter extends CustomPainter {
       relY -= (sizeH - (scale * (maxLat - minLat))) / 2;
 
       // shape the path
-      Offset elevPoint = elevGraphOrigin.translate(
-          elevScaleX * i.toDouble(), -1 * (loc.altitude - minAlt) * elevScaleY);
-
-      if (loc.activity_type == 'still') {
-      } else {}
-
       if (isFirst) {
         if (loc.activity_type == 'still') paint.style = PaintingStyle.fill;
 
@@ -306,7 +368,6 @@ class ShapesPainter extends CustomPainter {
         paint.style = PaintingStyle.stroke;
 
         path.moveTo(relX, relY);
-        elevPath.moveTo(elevPoint.dx, elevPoint.dy);
       } else {
         if (loc.activity_type == 'still') {
           paint.style = PaintingStyle.fill;
@@ -329,7 +390,6 @@ class ShapesPainter extends CustomPainter {
             path.moveTo(relX, relY);
           }
         }
-        elevPath.arcToPoint(elevPoint);
       }
 
       if (isLast) {
@@ -351,16 +411,8 @@ class ShapesPainter extends CustomPainter {
           paint.strokeWidth = 1;
           canvas.drawCircle(Offset(relX, relY), 6, paint);
         }
-
-        // Draw dot indicating last elevation point.
-        if (locations.length > 30 && elevSpread > 5)
-          canvas.drawCircle(elevPoint, 4, lastElevPointPaint);
       }
     } // for loc in locations
-
-    // Draw the elevation path.
-    if (locations.length > 30 && elevSpread > 5)
-      canvas.drawPath(elevPath, elevPaint);
 
     // elevPaint.style = PaintingStyle.fill;
     // elevPaint.color = elevPaint.color.withAlpha(30);
@@ -455,31 +507,6 @@ class ShapesPainter extends CustomPainter {
         TextPainter(text: ts, maxLines: 1, textDirection: TextDirection.ltr);
     tp.layout();
     tp.paint(canvas, Offset(wMargin, size.height /*- hMargin - 16*/));
-
-    // Elevation legend.
-    lastElevPointPaint.color = MyTheme.buttonColor;
-    if (locations.length > 30 && elevSpread > 5) {
-      canvas.drawLine(Offset(sizeW + wMargin, 0),
-          Offset(sizeW + wMargin, sizeAltH), lastElevPointPaint);
-
-      TextSpan tsa = TextSpan(
-          text: '${elevSpread ~/ 1}',
-          style: MyTheme.copyWith()
-              .textTheme
-              .apply(bodyColor: lastElevPointPaint.color.withAlpha(155))
-              .overline);
-      tp.text = tsa;
-      tp.layout();
-      tp.paint(
-          canvas, Offset(wMargin + sizeW - (tp.width), -tp.height - 4 / 2));
-
-      canvas.drawRect(
-          Rect.fromPoints(
-              Offset(wMargin, 0), Offset(sizeW + wMargin, sizeAltH)),
-          elevPaint
-            ..color = elevPaint.color.withAlpha(10)
-            ..style = PaintingStyle.fill);
-    }
 
     // Color legend.
     paint.style = PaintingStyle.fill;
@@ -1927,8 +1954,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             children: [
                               Icon(
                                 Icons.settings,
-                                color:
-                                    MyTheme.colorScheme.onSurface.withAlpha(64),
+                                color: MyTheme.colorScheme.onSurface,
                               ),
                             ],
                           ),
@@ -1951,17 +1977,49 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                 child: Container(
                   margin: EdgeInsets.symmetric(vertical: 16),
-                  child: CustomPaint(
-                    // size: Size.infinite,
-                    painter: ShapesPainter(locations: _paintList),
-                    child: Container(
-                      height: 400,
-                    ),
+                  child: Stack(
+                    children: [
+                      CustomPaint(
+                        // size: Size.infinite,
+                        painter: TrackPainter(locations: _paintList),
+                        child: Container(
+                          height: 400,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: CustomPaint(
+                          // size: Size.infinite,
+                          painter:
+                              ElevationProfilePainter(locations: _paintList),
+                          child: Container(
+                            height: 100,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
+          // // Paint a map!
+          // Row(
+          //   children: [
+          //     Expanded(
+          //       child: Container(
+          //         margin: EdgeInsets.symmetric(vertical: 16),
+          //         child: CustomPaint(
+          //           // size: Size.infinite,
+          //           painter: ElevationProfilePainter(locations: _paintList),
+          //           child: Container(
+          //             height: 100,
+          //           ),
+          //         ),
+          //       ),
+          //     ),
+          //   ],
+          // ),
 
           // Location measurements!
           Row(
