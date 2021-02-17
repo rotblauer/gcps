@@ -47,12 +47,13 @@ dependencies:
   just_debounce_it:
 
 dev_dependencies:
-  flutter_launcher_icons: "^0.8.0"
-  test:
+  flutter_launcher_icons: "^0.8.1"
+  test: "^1.15.7"
   flutter_test:
     sdk: flutter
-  integration_test:
-    sdk: flutter
+  # integration_test: # 1.0.1
+#    sdk: flutter
+
 flutter_icons:
   android: "launcher_icon"
   ios: true
