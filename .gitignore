@@ -50,3 +50,5 @@ secrets.dart*
 
 testdata/
 .vscode/
+
+secrets/
