@@ -633,7 +633,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarIconBrightness: Brightness.light,
-      statusBarColor: MyTheme.canvasColor,
+      statusBarColor: MyTheme.canvasColor.withOpacity(0),
       systemNavigationBarIconBrightness: Theme.of(context).brightness,
       systemNavigationBarColor: MyTheme.canvasColor,
     ));
@@ -1259,8 +1259,6 @@ class _MyHomePageState extends State<MyHomePage> {
         uuid: _deviceUUID,
         name: _deviceName,
         version: _deviceAppVersion,
-        tripStarted: _tripStarted,
-        distance: _tripDistance.toPrecision(1),
       );
       pushable.add(js);
     }
@@ -1474,22 +1472,25 @@ class _MyHomePageState extends State<MyHomePage> {
       glocation = location;
     });
 
-    // Persist the position.
-    // print("saving position");
-    var ap = AppPoint.fromLocationProvider(location);
-    await insertTrack(ap);
-
     _distanceTracker.add(
         lon: location.coords.longitude,
         lat: location.coords.latitude,
         elevation: location.coords.altitude,
         isMoving: location.isMoving && location.activity.type != "still");
 
+    // Persist the position.
+    // print("saving position");
+    var ap = AppPoint.fromLocationProvider(location);
+    ap.distance = _distanceTracker.distance;
+    ap.tripStarted = _tripStarted;
+    await insertTrack(ap);
+
     var countStored = await countTracks();
     var vcountSnaps = await countSnaps();
 
     // Update the persistent-state display.
     setState(() {
+      // print('SETTING STATE FOR NEW POINT');
       _tripDistance = _distanceTracker.distance;
       _countStored = countStored;
       _countSnaps = vcountSnaps;
@@ -1560,9 +1561,28 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Visibility(
-            visible: _appErrorStatus != "" || _appLocationErrorStatus != '',
-            child: Container(
+          // Visibility(
+          //   visible: _appErrorStatus != "" || _appLocationErrorStatus != '',
+          //   child: Container(
+          //     color: MyTheme.errorColor,
+          //     // decoration: BoxDecoration(
+          //     //     border: Border(
+          //     //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
+          //     padding: EdgeInsets.all(8),
+          //     child: Row(
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       children: [
+          //         Flexible(
+          //             child: Text(
+          //           [_appErrorStatus, _appLocationErrorStatus].join(' '),
+          //         ))
+          //       ],
+          //     ),
+          //   ),
+          // ),
+
+          if (_appErrorStatus != "" || _appLocationErrorStatus != '')
+            Container(
               color: MyTheme.errorColor,
               // decoration: BoxDecoration(
               //     border: Border(
@@ -1577,10 +1597,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   ))
                 ],
               ),
-            ),
-          ),
+            )
 
           // Status row!
+          ,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

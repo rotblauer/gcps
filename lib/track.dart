@@ -3,12 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
-import 'package:image/image.dart' as img;
+import 'package:geolocator/geolocator.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 // import 'config.dart' as config;
 
 const _cDatabaseName = 'cattracks_database.db';
@@ -31,6 +30,9 @@ const dbSchemaColumns = [
   'activity_type text',
   'battery_level real',
   'battery_is_charging integer',
+  'distance real',
+  'trip_started text',
+  'trip_started_timestamp integer',
   'event text',
   'image_file_path text',
   'uploaded integer'
@@ -90,8 +92,24 @@ class AppPoint {
   final String event;
   int uploaded;
 
-  String _uuid;
+  double distance;
   DateTime _tripStarted;
+  int _tripStartedTimestamp;
+
+  set tripStarted(DateTime start) {
+    _tripStarted = start;
+    _tripStartedTimestamp = _tripStarted.millisecondsSinceEpoch ~/ 1000;
+  }
+
+  DateTime get tripStarted {
+    return _tripStarted;
+  }
+
+  int get tripStartedTimestamp {
+    return _tripStartedTimestamp;
+  }
+
+  String _uuid;
   String _imgB64;
   String _image_file_path;
 
@@ -109,14 +127,6 @@ class AppPoint {
 
   set image_file_path(String path) {
     this._image_file_path = path;
-  }
-
-  DateTime get tripStarted {
-    return _tripStarted;
-  }
-
-  set tripStarted(DateTime dt) {
-    this._tripStarted = dt;
   }
 
   String get imgB64 {
@@ -190,6 +200,9 @@ class AppPoint {
       'activity_type': activity_type,
       'battery_level': battery_level?.toPrecision(2),
       'battery_is_charging': battery_is_charging ? 1 : 0,
+      'distance': distance?.floorToDouble(),
+      'trip_started': _tripStarted?.toUtc()?.toIso8601String(),
+      'trip_started_timestamp': _tripStartedTimestamp,
       'event': event,
       'image_file_path': image_file_path,
       // 'uploaded': uploaded,
@@ -243,6 +256,12 @@ class AppPoint {
     if (appMap['image_file_path'] != null && appMap['image_file_path'] != "") {
       ap.image_file_path = appMap['image_file_path'].toString();
     }
+
+    ap.distance = appMap['distance'] ?? 0.0;
+
+    var tripStart = DateTime.parse(appMap['trip_started']) ?? null;
+    ap._tripStarted = tripStart;
+    ap._tripStartedTimestamp = tripStart?.millisecondsSinceEpoch ~/ 1000;
     return ap;
   }
 
@@ -287,12 +306,11 @@ class AppPoint {
   }
 
   // toCattrackJSON creates a dynamic map for JSON (push).
-  Future<Map<String, dynamic>> toCattrackJSON(
-      {String uuid = "",
-      String name = "",
-      String version = "",
-      DateTime tripStarted,
-      double distance = 0}) async {
+  Future<Map<String, dynamic>> toCattrackJSON({
+    String uuid = "",
+    String name = "",
+    String version = "",
+  }) async {
     /*
     type TrackPoint struct {
       Uuid       string    `json:"uuid"`
