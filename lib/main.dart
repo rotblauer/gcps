@@ -1566,6 +1566,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _exampleStuff() {
+    double height = MediaQuery.of(context).size.height;
     return Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
@@ -1983,7 +1984,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         // size: Size.infinite,
                         painter: TrackPainter(locations: _paintList),
                         child: Container(
-                          height: 400,
+                          height: height / 2,
                         ),
                       ),
                       Padding(
@@ -1993,7 +1994,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           painter:
                               ElevationProfilePainter(locations: _paintList),
                           child: Container(
-                            height: 100,
+                            height: height / 2 / 4,
                           ),
                         ),
                       ),
