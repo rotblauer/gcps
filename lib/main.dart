@@ -1984,7 +1984,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         // size: Size.infinite,
                         painter: TrackPainter(locations: _paintList),
                         child: Container(
-                          height: height / 2,
+                          height: height / 2.2,
                         ),
                       ),
                       Padding(
@@ -1994,7 +1994,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           painter:
                               ElevationProfilePainter(locations: _paintList),
                           child: Container(
-                            height: height / 2 / 4,
+                            height: height / 2.2 / 4,
                           ),
                         ),
                       ),
