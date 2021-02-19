@@ -1,12 +1,9 @@
 // import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:gcps/config.dart';
-import 'package:shared_preferences_settings/shared_preferences_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
-import 'package:just_debounce_it/just_debounce_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Network settings
 const String kAllowPushWithMobile = "allowPushWithMobile"; //
@@ -541,8 +538,8 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 title: 'Stop timeout',
                 subtitle: 'Minutes of stillness before cat naps.',
                 min: 1,
-                max: 10,
-                divisions: 9,
+                max: 30,
+                divisions: 29,
                 value: _kLocationUpdateStopTimeout,
                 onChanged: (value) {
                   value = value.ceilToDouble();
