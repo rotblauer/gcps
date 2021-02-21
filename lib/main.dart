@@ -2449,9 +2449,45 @@ class DisplayPictureScreen extends StatelessWidget {
       ),
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      body: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        Flexible(child: Image.file(File(imagePath))),
-      ]),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            return Stack(
+              children: [
+                Container(
+                  height: constraints.biggest.height,
+                  width: constraints.biggest.width,
+                  child: Image.file(File(imagePath)),
+                ),
+                Container(
+                    alignment: Alignment.bottomLeft,
+                    margin: EdgeInsets.all(16),
+                    child: ElevatedButton.icon(
+                        style: ButtonStyle(
+                          padding:
+                              MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                  EdgeInsets.symmetric(
+                                      vertical: 4, horizontal: 12)),
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Colors.deepOrange),
+                          foregroundColor: MaterialStateProperty.all<Color>(
+                              Colors.deepPurple),
+                        ),
+                        onPressed: () async {
+                          // Delete the original image file.
+                          File(imagePath).delete();
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.arrow_back),
+                        label: Text('Retake')))
+              ],
+            );
+          },
+        ),
+      ),
+      //   Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+      //
+      // ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         icon: Icon(Icons.save),
