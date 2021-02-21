@@ -1340,6 +1340,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         var cp = await countPushed();
         setState(() {
+          _countStored = count;
           _countPushed = cp;
         });
 
@@ -1975,7 +1976,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // Paint a map!
           Row(
             children: [
-              Expanded(
+              Flexible(
                 child: Container(
                   margin: EdgeInsets.symmetric(vertical: 16),
                   child: Stack(
@@ -1983,9 +1984,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       CustomPaint(
                         // size: Size.infinite,
                         painter: TrackPainter(locations: _paintList),
-                        child: Container(
-                          height: height / 2.2,
-                        ),
+                        child: Container(height: height / 2.2),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -1998,6 +1997,17 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                       ),
+                      if (_paintList.length >= 3600)
+                        Container(
+                          alignment: Alignment.bottomLeft,
+                          child: Padding(
+                            padding: EdgeInsets.all(8),
+                            child: Text(
+                              "Only showing the last 3600 tracks.",
+                              style: Theme.of(context).textTheme.overline,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
