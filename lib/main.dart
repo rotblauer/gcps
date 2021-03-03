@@ -25,6 +25,7 @@ import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 // import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:path/path.dart' show basename, join;
 import 'package:path_provider/path_provider.dart';
+import 'package:sensors/sensors.dart';
 
 import 'config.dart';
 import 'prefs.dart' as prefs;
@@ -38,7 +39,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //
   // // Development: reset (rm -rf db) if exists.
-  resetDB();
+  // resetDB();
 
   // Initialize preferences singleton.
   await prefs.sharedPrefs.init();
@@ -64,8 +65,29 @@ void _handleStreamLocationSave(bg.Location location) async {
 
   // Persist the position.
   var ap = AppPoint.fromLocationProvider(location);
+  barometerEvents.last
+      .then((value) => ap.barometer = value?.reading?.toPrecision(2));
   lightmeterEvents.last
-      .then((value) => ap.lightmeter = value?.reading?.toPrecision(0));
+      .then((value) => ap.lightmeter = value?.reading?.toPrecision(2));
+  ambientTempEvents.last
+      .then((value) => ap.ambient_temp = value?.reading?.toPrecision(2));
+  humidityEvents.last
+      .then((value) => ap.humidity = value?.reading?.toPrecision(2));
+  accelerometerEvents.last.then((AccelerometerEvent event) {
+    ap.accelerometer_x = event?.x;
+    ap.accelerometer_y = event?.y;
+    ap.accelerometer_z = event?.z;
+  });
+  userAccelerometerEvents.last.then((UserAccelerometerEvent event) {
+    ap.user_accelerometer_x = event?.x;
+    ap.user_accelerometer_y = event?.y;
+    ap.user_accelerometer_z = event?.z;
+  });
+  gyroscopeEvents.last.then((GyroscopeEvent event) {
+    ap.gyroscope_x = event?.x;
+    ap.gyroscope_y = event?.y;
+    ap.gyroscope_z = event?.z;
+  });
   await insertTrack(ap);
 }
 
@@ -903,6 +925,16 @@ class _MyHomePageState extends State<MyHomePage> {
   AmbientTempEvent _latest_ambientTemp;
   HumidityEvent _latest_humidity;
 
+  double _accelerometer_x;
+  double _accelerometer_y;
+  double _accelerometer_z;
+  double _user_accelerometer_x;
+  double _user_accelerometer_y;
+  double _user_accelerometer_z;
+  double _gyroscope_x;
+  double _gyroscope_y;
+  double _gyroscope_z;
+
   // Display location information
   bg.Location glocation = new bg.Location({
     'timestamp': DateTime.now().toIso8601String(),
@@ -1070,11 +1102,44 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  initSensorsState() async {
+    accelerometerEvents.listen((AccelerometerEvent event) {
+      // print(event);
+      setState(() {
+        _accelerometer_x = event?.x;
+        _accelerometer_y = event?.y;
+        _accelerometer_z = event?.z;
+      });
+    });
+// [AccelerometerEvent (x: 0.0, y: 9.8, z: 0.0)]
+
+    userAccelerometerEvents.listen((UserAccelerometerEvent event) {
+      // print(event);
+      setState(() {
+        _user_accelerometer_x = event?.x;
+        _user_accelerometer_y = event?.y;
+        _user_accelerometer_z = event?.z;
+      });
+    });
+// [UserAccelerometerEvent (x: 0.0, y: 0.0, z: 0.0)]
+
+    gyroscopeEvents.listen((GyroscopeEvent event) {
+      // print(event);
+      setState(() {
+        _gyroscope_x = event?.x;
+        _gyroscope_y = event?.y;
+        _gyroscope_z = event?.z;
+      });
+    });
+// [GyroscopeEvent (x: 0.0, y: 0.0, z: 0.0)]
+  }
+
   @override
   void initState() {
     super.initState();
 
     initPlatformState();
+    initSensorsState();
 
     glocation.isMoving = true;
     _tripStarted = DateTime.now().toUtc();
@@ -1619,6 +1684,15 @@ class _MyHomePageState extends State<MyHomePage> {
     ap.lightmeter = _latest_lightmeter?.reading;
     ap.ambient_temp = _latest_ambientTemp?.reading;
     ap.humidity = _latest_humidity?.reading;
+    ap.accelerometer_x = _accelerometer_x;
+    ap.accelerometer_y = _accelerometer_y;
+    ap.accelerometer_z = _accelerometer_z;
+    ap.user_accelerometer_x = _user_accelerometer_x;
+    ap.user_accelerometer_y = _user_accelerometer_y;
+    ap.user_accelerometer_z = _user_accelerometer_z;
+    ap.gyroscope_x = _gyroscope_x;
+    ap.gyroscope_y = _gyroscope_y;
+    ap.gyroscope_z = _gyroscope_z;
     await insertTrack(ap);
 
     var countStored = await countTracks();
@@ -2088,46 +2162,17 @@ class _MyHomePageState extends State<MyHomePage> {
               Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
               Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
               Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
-              // StreamBuilder(
-              //     stream: _pressureStream,
-              //     builder: (BuildContext context, dynamic snapshot) {
-              //       if (snapshot.connectionState == ConnectionState.active) {
-              //         return Text((snapshot.data.reading == null)
-              //             ? 'null'
-              //             : '${snapshot.data.reading.toStringAsFixed(1)} hPa');
-              //       }
-              //       return Text('Barometer stream value');
-              //     }),
-              // StreamBuilder(
-              //     stream: _lightmeterStream,
-              //     builder: (BuildContext context, dynamic snapshot) {
-              //       if (snapshot.connectionState == ConnectionState.active) {
-              //         return Text((snapshot.data.reading == null)
-              //             ? 'null'
-              //             : '${snapshot.data.reading.toStringAsFixed(1)} lx');
-              //       }
-              //       return Text('Light sensor stream value');
-              //     }),
-              // StreamBuilder(
-              //     stream: _ambientTempStream,
-              //     builder: (BuildContext context, dynamic snapshot) {
-              //       if (snapshot.connectionState == ConnectionState.active) {
-              //         return Text((snapshot.data.reading == null)
-              //             ? 'null'
-              //             : '${snapshot.data.reading.toStringAsFixed(1)} °C');
-              //       }
-              //       return Text('Ambient temp stream value');
-              //     }),
-              // StreamBuilder(
-              //     stream: _humidityStream,
-              //     builder: (BuildContext context, dynamic snapshot) {
-              //       if (snapshot.connectionState == ConnectionState.active) {
-              //         return Text((snapshot.data.reading == null)
-              //             ? 'null'
-              //             : '${snapshot.data.reading.toStringAsFixed(1)} %');
-              //       }
-              //       return Text('Humidity stream value');
-              //     }),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(
+                  'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
+              Text(
+                  'ux: ${_user_accelerometer_x?.toPrecision(2)},${_user_accelerometer_y?.toPrecision(2)},${_user_accelerometer_z?.toPrecision(2)}'),
+              Text(
+                  'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
             ],
           ),
 

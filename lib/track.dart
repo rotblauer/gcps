@@ -41,6 +41,15 @@ const dbSchemaColumns = [
   'lightmeter real',
   'ambient_temp real',
   'humidity real',
+  'accelerometer_x real',
+  'accelerometer_y real',
+  'accelerometer_z real',
+  'user_accelerometer_x real',
+  'user_accelerometer_y real',
+  'user_accelerometer_z real',
+  'gyroscope_x real',
+  'gyroscope_y real',
+  'gyroscope_z real',
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -122,6 +131,16 @@ class AppPoint {
   double lightmeter;
   double ambient_temp;
   double humidity;
+
+  double accelerometer_x;
+  double accelerometer_y;
+  double accelerometer_z;
+  double user_accelerometer_x;
+  double user_accelerometer_y;
+  double user_accelerometer_z;
+  double gyroscope_x;
+  double gyroscope_y;
+  double gyroscope_z;
 
   String _uuid;
   String _imgB64;
@@ -222,10 +241,21 @@ class AppPoint {
       'event': event,
       'image_file_path': image_file_path,
       // 'uploaded': uploaded,
-      'barometer': barometer?.toPrecision(0),
-      'lightmeter': lightmeter?.toPrecision(0),
-      'ambient_temp': ambient_temp?.toPrecision(0),
-      'humidity': humidity?.toPrecision(0),
+
+      'barometer': barometer?.toPrecision(2),
+      'lightmeter': lightmeter?.toPrecision(2),
+      'ambient_temp': ambient_temp?.toPrecision(2),
+      'humidity': humidity?.toPrecision(2),
+
+      'accelerometer_x': accelerometer_x?.toPrecision(2),
+      'accelerometer_y': accelerometer_y?.toPrecision(2),
+      'accelerometer_z': accelerometer_z?.toPrecision(2),
+      'user_accelerometer_x': user_accelerometer_x?.toPrecision(2),
+      'user_accelerometer_y': user_accelerometer_y?.toPrecision(2),
+      'user_accelerometer_z': user_accelerometer_z?.toPrecision(2),
+      'gyroscope_x': gyroscope_x?.toPrecision(2),
+      'gyroscope_y': gyroscope_y?.toPrecision(2),
+      'gyroscope_z': gyroscope_z?.toPrecision(2),
     };
   }
 
@@ -289,6 +319,16 @@ class AppPoint {
     ap.lightmeter = appMap['lightmeter'];
     ap.ambient_temp = appMap['ambient_temp'];
     ap.humidity = appMap['humidity'];
+
+    ap.accelerometer_x = appMap['accelerometer_x'];
+    ap.accelerometer_y = appMap['accelerometer_y'];
+    ap.accelerometer_z = appMap['accelerometer_z'];
+    ap.user_accelerometer_x = appMap['user_accelerometer_x'];
+    ap.user_accelerometer_y = appMap['user_accelerometer_y'];
+    ap.user_accelerometer_z = appMap['user_accelerometer_z'];
+    ap.gyroscope_x = appMap['gyroscope_x'];
+    ap.gyroscope_y = appMap['gyroscope_y'];
+    ap.gyroscope_z = appMap['gyroscope_z'];
 
     return ap;
   }
@@ -384,6 +424,15 @@ class AppPoint {
       'lightmeter': lightmeter,
       'ambient_temp': ambient_temp,
       'humidity': humidity,
+      'accelerometer_x': accelerometer_x,
+      'accelerometer_y': accelerometer_y,
+      'accelerometer_z': accelerometer_z,
+      'user_accelerometer_x': user_accelerometer_x,
+      'user_accelerometer_y': user_accelerometer_y,
+      'user_accelerometer_z': user_accelerometer_z,
+      'gyroscope_x': gyroscope_x,
+      'gyroscope_y': gyroscope_y,
+      'gyroscope_z': gyroscope_z,
     };
     if (_tripStarted != null) {
       notes['currentTripStart'] = _tripStarted.toUtc().toIso8601String();
