@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:device_info/device_info.dart';
+import 'package:enviro_sensors/enviro_sensors.dart';
 import 'package:flutter/material.dart';
 // import 'package:english_words/english_words.dart' as ew;
 import 'package:flutter/services.dart';
@@ -37,7 +38,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //
   // // Development: reset (rm -rf db) if exists.
-  // resetDB();
+  resetDB();
 
   // Initialize preferences singleton.
   await prefs.sharedPrefs.init();
@@ -63,6 +64,8 @@ void _handleStreamLocationSave(bg.Location location) async {
 
   // Persist the position.
   var ap = AppPoint.fromLocationProvider(location);
+  lightmeterEvents.last
+      .then((value) => ap.lightmeter = value?.reading?.toPrecision(0));
   await insertTrack(ap);
 }
 
@@ -890,6 +893,16 @@ class _MyHomePageState extends State<MyHomePage> {
   // StreamSubscription<Position> positionStream;
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
+  StreamSubscription<BarometerEvent> _pressureStream;
+  StreamSubscription<LightmeterEvent> _lightmeterStream;
+  StreamSubscription<AmbientTempEvent> _ambientTempStream;
+  StreamSubscription<HumidityEvent> _humidityStream;
+
+  BarometerEvent _latest_pressure;
+  LightmeterEvent _latest_lightmeter;
+  AmbientTempEvent _latest_ambientTemp;
+  HumidityEvent _latest_humidity;
+
   // Display location information
   bg.Location glocation = new bg.Location({
     'timestamp': DateTime.now().toIso8601String(),
@@ -968,9 +981,100 @@ class _MyHomePageState extends State<MyHomePage> {
   //   });
   // }
 
+  // handleBarometerStream(Stream<BarometerEvent> stream) async {
+  //   await for (var value in stream) {
+  //     setState(() {
+  //       _latest_pressure = value;
+  //     });
+  //   }
+  // }
+  //
+  // handleLightmeterStream(Stream<LightmeterEvent> stream) async {
+  //   await for (var value in stream) {
+  //     setState(() {
+  //       _latest_lightmeter = value;
+  //     });
+  //   }
+  // }
+  //
+  // handleAmbientTempStream(Stream<AmbientTempEvent> stream) async {
+  //   await for (var value in stream) {
+  //     setState(() {
+  //       _latest_ambientTemp = value;
+  //     });
+  //   }
+  // }
+  //
+  // handleHumidityStream(Stream<HumidityEvent> stream) async {
+  //   await for (var value in stream) {
+  //     setState(() {
+  //       _latest_humidity = value;
+  //     });
+  //   }
+  // }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initPlatformState() async {
+    // double barometerReading;
+    StreamSubscription<BarometerEvent> pressureStreamSub;
+    StreamSubscription<LightmeterEvent> lightmeterStreamSub;
+    StreamSubscription<AmbientTempEvent> ambientTempStreamSub;
+    StreamSubscription<HumidityEvent> humidityStreamSub;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      // pressureStream = barometerEvents.asBroadcastStream();
+      pressureStreamSub = barometerEvents.listen((event) {
+        setState(() {
+          _latest_pressure = event;
+        });
+      });
+      // lightmeterStream = lightmeterEvents.asBroadcastStream();
+      lightmeterStreamSub = lightmeterEvents.listen((event) {
+        setState(() {
+          _latest_lightmeter = event;
+        });
+      });
+      // ambientTempStream = ambientTempEvents.asBroadcastStream();
+      ambientTempStreamSub = ambientTempEvents.listen((event) {
+        setState(() {
+          _latest_ambientTemp = event;
+        });
+      });
+      // humidityStream = humidityEvents.asBroadcastStream();
+      humidityStreamSub = humidityEvents.listen((event) {
+        setState(() {
+          _latest_humidity = event;
+        });
+      });
+      // barometerReading = await EnviroSensors.barometerReading;
+    } on PlatformException {
+      // barometerReading = null;
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+    _pressureStream = pressureStreamSub;
+    _lightmeterStream = lightmeterStreamSub;
+    _ambientTempStream = ambientTempStreamSub;
+    _humidityStream = humidityStreamSub;
+
+    // handleBarometerStream(pressureStream);
+    // handleLightmeterStream(lightmeterStream);
+    // handleAmbientTempStream(ambientTempStream);
+    // handleHumidityStream(humidityStream);
+    //
+    setState(() {
+      // _barometerReading = barometerReading;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+
+    initPlatformState();
 
     glocation.isMoving = true;
     _tripStarted = DateTime.now().toUtc();
@@ -1511,6 +1615,10 @@ class _MyHomePageState extends State<MyHomePage> {
     var ap = AppPoint.fromLocationProvider(location);
     ap.distance = _distanceTracker.distance;
     ap.tripStarted = _tripStarted;
+    ap.barometer = _latest_pressure?.reading;
+    ap.lightmeter = _latest_lightmeter?.reading;
+    ap.ambient_temp = _latest_ambientTemp?.reading;
+    ap.humidity = _latest_humidity?.reading;
     await insertTrack(ap);
 
     var countStored = await countTracks();
@@ -1970,6 +2078,56 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
               )),
+            ],
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
+              Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
+              Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
+              Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
+              // StreamBuilder(
+              //     stream: _pressureStream,
+              //     builder: (BuildContext context, dynamic snapshot) {
+              //       if (snapshot.connectionState == ConnectionState.active) {
+              //         return Text((snapshot.data.reading == null)
+              //             ? 'null'
+              //             : '${snapshot.data.reading.toStringAsFixed(1)} hPa');
+              //       }
+              //       return Text('Barometer stream value');
+              //     }),
+              // StreamBuilder(
+              //     stream: _lightmeterStream,
+              //     builder: (BuildContext context, dynamic snapshot) {
+              //       if (snapshot.connectionState == ConnectionState.active) {
+              //         return Text((snapshot.data.reading == null)
+              //             ? 'null'
+              //             : '${snapshot.data.reading.toStringAsFixed(1)} lx');
+              //       }
+              //       return Text('Light sensor stream value');
+              //     }),
+              // StreamBuilder(
+              //     stream: _ambientTempStream,
+              //     builder: (BuildContext context, dynamic snapshot) {
+              //       if (snapshot.connectionState == ConnectionState.active) {
+              //         return Text((snapshot.data.reading == null)
+              //             ? 'null'
+              //             : '${snapshot.data.reading.toStringAsFixed(1)} °C');
+              //       }
+              //       return Text('Ambient temp stream value');
+              //     }),
+              // StreamBuilder(
+              //     stream: _humidityStream,
+              //     builder: (BuildContext context, dynamic snapshot) {
+              //       if (snapshot.connectionState == ConnectionState.active) {
+              //         return Text((snapshot.data.reading == null)
+              //             ? 'null'
+              //             : '${snapshot.data.reading.toStringAsFixed(1)} %');
+              //       }
+              //       return Text('Humidity stream value');
+              //     }),
             ],
           ),
 
@@ -2623,7 +2781,7 @@ class TrackListScreen extends StatelessWidget {
   Widget _buildListTileSubtitle(
       {BuildContext context, AppPoint prev, AppPoint point, AppPoint next}) {
     return Text(
-        '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ⛰${point.altitude}m 🔋${point.battery_level}\ntripstart=${point.tripStarted?.toLocal()}');
+        '+/-${point.accuracy}m  ${(point.speed * 3.6).toPrecision(1)}km/h  ⛰${point.altitude}m 🔋${point.battery_level} lx=${point.lightmeter}\ntripstart=${point.tripStarted?.toLocal()}');
   }
 
   Widget _buildListTileTrailing(

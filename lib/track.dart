@@ -36,7 +36,11 @@ const dbSchemaColumns = [
   'is_moving integer',
   'event text',
   'image_file_path text',
-  'uploaded integer'
+  'uploaded integer',
+  'barometer real',
+  'lightmeter real',
+  'ambient_temp real',
+  'humidity real',
 ];
 
 // https://github.com/flutter/website/issues/2774
@@ -113,6 +117,11 @@ class AppPoint {
   int get tripStartedTimestamp {
     return _tripStartedTimestamp;
   }
+
+  double barometer;
+  double lightmeter;
+  double ambient_temp;
+  double humidity;
 
   String _uuid;
   String _imgB64;
@@ -213,6 +222,10 @@ class AppPoint {
       'event': event,
       'image_file_path': image_file_path,
       // 'uploaded': uploaded,
+      'barometer': barometer?.toPrecision(0),
+      'lightmeter': lightmeter?.toPrecision(0),
+      'ambient_temp': ambient_temp?.toPrecision(0),
+      'humidity': humidity?.toPrecision(0),
     };
   }
 
@@ -271,6 +284,11 @@ class AppPoint {
         ? DateTime.parse(appMap['trip_started'])
         : null;
     ap.tripStarted = tripStart;
+
+    ap.barometer = appMap['barometer'];
+    ap.lightmeter = appMap['lightmeter'];
+    ap.ambient_temp = appMap['ambient_temp'];
+    ap.humidity = appMap['humidity'];
 
     return ap;
   }
@@ -362,6 +380,10 @@ class AppPoint {
       'distance': distance,
       'batteryStatus': batteryStatusString,
       'currentTripStart': tripStarted?.toUtc()?.toIso8601String(),
+      'pressure': barometer,
+      'lightmeter': lightmeter,
+      'ambient_temp': ambient_temp,
+      'humidity': humidity,
     };
     if (_tripStarted != null) {
       notes['currentTripStart'] = _tripStarted.toUtc().toIso8601String();
