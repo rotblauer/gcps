@@ -1317,7 +1317,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // All conditions passed, attempt to push all stored points.
     int resCode = 0;
     for (var count = await countTracks();
-        count > 0;
+        count > 10;
         count = await countTracks()) {
       var tracks = await firstTracksWithLimit(
           (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt());
@@ -2231,7 +2231,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   Future<void> _setupController() async {
     await _controller.initialize();
-    await _controller.setFocusMode(FocusMode.auto);
+    return _controller.setFocusMode(FocusMode.auto);
     return _controller.unlockCaptureOrientation();
   }
 
@@ -2444,11 +2444,7 @@ class DisplayPictureScreen extends StatelessWidget {
             // Icon(Icons.add_a_photo_outlined, color: Colors.deepOrange),
           ],
         ),
-
-        // backgroundColor: Colors.lime,
       ),
-      // The image is stored as a file on the device. Use the `Image.file`
-      // constructor with the given path to display the image.
       body: SafeArea(
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -2473,9 +2469,9 @@ class DisplayPictureScreen extends StatelessWidget {
                           foregroundColor: MaterialStateProperty.all<Color>(
                               Colors.deepPurple),
                         ),
-                        onPressed: () async {
+                        onPressed: () {
                           // Delete the original image file.
-                          File(imagePath).delete();
+                          File(imagePath).deleteSync();
                           Navigator.pop(context);
                         },
                         icon: Icon(Icons.arrow_back),
@@ -2485,9 +2481,6 @@ class DisplayPictureScreen extends StatelessWidget {
           },
         ),
       ),
-      //   Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-      //
-      // ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         icon: Icon(Icons.save),
