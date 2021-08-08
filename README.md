@@ -22,6 +22,26 @@
   - [ ] distance, pace recording
 
 ## Development
+
+1. Connect Android device.
+2. Go to Settings > Connected Devices > USB Preferences: File Transfer mode.
+
+3.
+
+```
+> flutter devices
+3 connected devices:
+
+moto g power (mobile) • ZY22BK96TD • android-arm64  • Android 11 (API 30)
+Linux (desktop)       • linux      • linux-x64      • Linux
+Chrome (web)          • chrome     • web-javascript • Google Chrome 90.0.4430.212
+```
+
+4.
+```
+flutter run -d ZY22BK96TD
+```
+
 ### Flutter console
 
 ```
