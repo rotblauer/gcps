@@ -334,7 +334,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
           // App Display settings
           _buildSwitchTile(
               context: context,
-              leading: Icon(Icons.wifi),
+              leading: Icon(Icons.accessibility_new_outlined),
               title: 'Drive mode display',
               subtitle: 'Hide map, show big numbers.',
               value: _kDriveModeDisplay,
