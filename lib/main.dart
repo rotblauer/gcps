@@ -621,6 +621,12 @@ Icon buildActivityIcon(BuildContext context, String activity, double size) {
   }
 }
 
+/*
+I/flutter (31248): uuid: 3582fb4e0c347601
+I/flutter (31248): device name: sofia-moto-fdb7
+I/flutter (31248): device app version: gcps/v0.0.0+1
+*/
+
 Future<String> _getId() async {
   var deviceInfo = DeviceInfoPlugin();
   if (Platform.isIOS) {
@@ -644,7 +650,12 @@ Future<String> _getName() async {
     if (!androidDeviceInfo.isPhysicalDevice) {
       return 'sofia3585 moto g power';
     }
-    return '${androidDeviceInfo.board}-${androidDeviceInfo.model.split(" ")[0]}-${androidDeviceInfo.androidId.substring(0, 4)}'; // unique ID on Android
+    var out =
+        '${androidDeviceInfo.board}-${androidDeviceInfo.model.split(" ")[0]}-${androidDeviceInfo.androidId.substring(0, 4)}'; // unique ID on Android
+    if (out.contains("moto")) {
+      return "sofia-moto-fdb7";
+    }
+    return out;
   }
 }
 
