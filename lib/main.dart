@@ -2191,9 +2191,11 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             InfoDisplay2(
               keyname: "mph",
-              value: (glocation.coords.speed.isNaN)
+              value: (glocation.coords.speed == null ||
+                      glocation.coords.speed.isNaN ||
+                      glocation.coords.speed < 0.1)
                   ? 0
-                  : (glocation.coords.speed * 2.236936) / ~1,
+                  : (glocation.coords.speed * 2.236936).toInt(),
               options: {
                 'third': Text(glocation.coords.speedAccuracy != null
                     ? glocation.coords.speedAccuracy.toString()
@@ -2217,6 +2219,7 @@ class _MyHomePageState extends State<MyHomePage> {
               keyname: "heading",
               value: degreeToCardinalDirection(glocation.coords.heading),
               options: {
+                't2.font': TextStyle(color: Colors.blue, fontSize: 36),
                 'third': Text(
                     glocation.coords.headingAccuracy?.toPrecision(1).toString())
               },
@@ -2234,13 +2237,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: InfoDisplay2(
                   keyname: "distance",
                   value: _tripDistance < 1609.344
-                      ? (_tripDistance ~/ 1).toString()
-                      : ((_tripDistance / 1609.344).toPrecision(2)).toString(),
+                      ? _tripDistance == null ||
+                              _tripDistance.isNaN ||
+                              _tripDistance == 0
+                          ? '0'
+                          : (_tripDistance ~/ 3.28084).toString()
+                      : ((_tripDistance / 1609.344).toPrecision(1)).toString(),
                   options: {
                     // 't2.font': Theme.of(context).textTheme.headline6,
-                    'third': _tripDistance < 1609.344
-                        ? Text('meters')
-                        : Text('miles')
+                    'third':
+                        _tripDistance < 1609.344 ? Text('feet') : Text('miles')
                   },
                 ),
               ),
@@ -2296,11 +2302,13 @@ class _MyHomePageState extends State<MyHomePage> {
               keyname: "elevation (ft)",
               value: (glocation.coords.altitude * 3.28084).toInt(),
               options: {
-                'third': Text(glocation.coords.altitudeAccuracy.isNaN
-                    ? '-1'
-                    : (glocation.coords.altitudeAccuracy * 3.28084)
-                        .toInt()
-                        .toString())
+                'third': Text(glocation.coords.altitudeAccuracy == null ||
+                        glocation.coords.altitudeAccuracy.isNaN
+                    ? '--'
+                    : '~ ' +
+                        (glocation.coords.altitudeAccuracy * 3.28084)
+                            .toInt()
+                            .toString())
               },
             ),
           ],
@@ -2311,8 +2319,8 @@ class _MyHomePageState extends State<MyHomePage> {
             Container(
               padding: EdgeInsets.all(12),
               child: InfoDisplay2(
-                keyname: "accuracy",
-                value: glocation.coords.accuracy,
+                keyname: "accuracy (ft)",
+                value: (glocation.coords.accuracy * 3.28084).toInt(),
                 options: {'t2.font': Theme.of(context).textTheme.headline6},
               ),
             ),
@@ -2968,6 +2976,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       myWidget = _exampleStuff;
     }
+    // myWidget = _exampleStuff;
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -3302,6 +3311,7 @@ class DisplayPictureScreen extends StatelessWidget {
 }
 
 String degreeToCardinalDirection(double heading) {
+  if (heading < 0) return '-';
   var directions = [
     "N",
     "NNE",
