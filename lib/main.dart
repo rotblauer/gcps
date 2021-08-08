@@ -803,7 +803,10 @@ class InfoDisplay2 extends StatelessWidget {
                       '$value',
                       style: options != null && options.containsKey('t2.font')
                           ? options['t2.font']
-                          : Theme.of(context).textTheme.headline2,
+                          : TextStyle(
+                              color: Colors.orangeAccent,
+                              fontSize: 54,
+                            ),
                       maxLines: 2,
                     )
                   : value,
@@ -2210,7 +2213,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            InfoDisplay(
+            InfoDisplay2(
               keyname: "heading",
               value: degreeToCardinalDirection(glocation.coords.heading),
               options: {
@@ -2223,34 +2226,21 @@ class _MyHomePageState extends State<MyHomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            InfoDisplay2(keyname: "accuracy", value: glocation.coords.accuracy),
-            InfoDisplay2(
-              keyname: "elevation",
-              value: glocation.coords.altitude.toInt(),
-              options: {
-                'third':
-                    Text(glocation.coords.altitudeAccuracy?.toInt().toString())
-              },
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+            // InfoDisplay2(keyname: "accuracy", value: glocation.coords.accuracy),
             InkWell(
               borderRadius: BorderRadius.only(topRight: Radius.circular(8)),
               child: Container(
                 padding: EdgeInsets.all(12),
                 child: InfoDisplay2(
                   keyname: "distance",
-                  value: _tripDistance < 1000
-                      ? (_tripDistance ~/ 1).toString() + 'm'
-                      : ((_tripDistance / 1000).toPrecision(2)).toString() +
-                          'km',
+                  value: _tripDistance < 1609.344
+                      ? (_tripDistance ~/ 1).toString()
+                      : ((_tripDistance / 1609.344).toPrecision(2)).toString(),
                   options: {
-                    't2.font': Theme.of(context).textTheme.headline6,
-                    'third':
-                        Text(glocation.odometer.toInt().toString() + ' steps')
+                    // 't2.font': Theme.of(context).textTheme.headline6,
+                    'third': _tripDistance < 1609.344
+                        ? Text('meters')
+                        : Text('miles')
                   },
                 ),
               ),
@@ -2301,6 +2291,30 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 );
               },
+            ),
+            InfoDisplay2(
+              keyname: "elevation (ft)",
+              value: (glocation.coords.altitude * 3.28084).toInt(),
+              options: {
+                'third': Text(glocation.coords.altitudeAccuracy.isNaN
+                    ? '-1'
+                    : (glocation.coords.altitudeAccuracy * 3.28084)
+                        .toInt()
+                        .toString())
+              },
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: EdgeInsets.all(12),
+              child: InfoDisplay2(
+                keyname: "accuracy",
+                value: glocation.coords.accuracy,
+                options: {'t2.font': Theme.of(context).textTheme.headline6},
+              ),
             ),
             Container(
               padding: EdgeInsets.all(12),
