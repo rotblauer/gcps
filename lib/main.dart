@@ -1496,7 +1496,7 @@ class _MyHomePageState extends State<MyHomePage> {
           encoding: Encoding.getByName("utf-8"),
           body: jsonEncode(body),
         )
-        .timeout(const Duration(seconds: 10));
+        .timeout(const Duration(seconds: 60));
 
     // return res.statusCode;
   }
