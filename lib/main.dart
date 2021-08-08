@@ -773,6 +773,47 @@ class InfoDisplay extends StatelessWidget {
   }
 }
 
+class InfoDisplay2 extends StatelessWidget {
+  InfoDisplay2({this.keyname, this.value, this.options});
+
+  final String keyname;
+  final dynamic value;
+  Map<String, dynamic> options;
+
+  @override
+  Widget build(BuildContext context) {
+    // var mytheme = Theme.of(context).textTheme.overline;
+    // mytheme = mytheme.apply(color: Colors.white70);
+    return Container(
+        padding: const EdgeInsets.all(8),
+        // color: Colors.green[500],
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$keyname', style: Theme.of(context).textTheme.overline,
+                // style: mytheme,
+              ),
+              value.runtimeType == String ||
+                      value.runtimeType == double ||
+                      value.runtimeType == int ||
+                      value.runtimeType == DateTime
+                  ? Text(
+                      '$value',
+                      style: options != null && options.containsKey('t2.font')
+                          ? options['t2.font']
+                          : Theme.of(context).textTheme.headline2,
+                      maxLines: 2,
+                    )
+                  : value,
+              options != null && options['third'] != null
+                  ? options['third']
+                  : Text('')
+            ]));
+  }
+}
+
 class MovingAverager {
   final int max;
   List<double> vals;
@@ -2140,43 +2181,35 @@ class _MyHomePageState extends State<MyHomePage> {
             )),
           ],
         ),
-        // Row(
-        //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        //   children: [
-        //     Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
-        //     Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
-        //     Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
-        //     Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
-        //   ],
-        // ),
-        // Row(
-        //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        //   children: [
-        //     Text(
-        //         'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
-        //     Text(
-        //         'ux: ${_user_accelerometer_x?.toPrecision(2)},${_user_accelerometer_y?.toPrecision(2)},${_user_accelerometer_z?.toPrecision(2)}'),
-        //     Text(
-        //         'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
-        //   ],
-        // ),
 
         // Location measurements!
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            InfoDisplay(
-              keyname: "km/h",
-              value: (glocation.coords.speed == null ||
-                      glocation.coords.speed <= 0.000001)
+            InfoDisplay2(
+              keyname: "mph",
+              value: (glocation.coords.speed.isNaN)
                   ? 0
-                  : (glocation.coords.speed * 3.6).toPrecision(1),
+                  : (glocation.coords.speed * 2.236936) / ~1,
               options: {
                 'third': Text(glocation.coords.speedAccuracy != null
                     ? glocation.coords.speedAccuracy.toString()
                     : '')
               },
             ),
+            // InfoDisplay2(
+            //   keyname: "heading",
+            //   value: degreeToCardinalDirection(glocation.coords.heading),
+            //   options: {
+            //     'third': Text(
+            //         glocation.coords.headingAccuracy?.toPrecision(1).toString())
+            //   },
+            // ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
             InfoDisplay(
               keyname: "heading",
               value: degreeToCardinalDirection(glocation.coords.heading),
@@ -2190,14 +2223,13 @@ class _MyHomePageState extends State<MyHomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            InfoDisplay(keyname: "accuracy", value: glocation.coords.accuracy),
-            InfoDisplay(
+            InfoDisplay2(keyname: "accuracy", value: glocation.coords.accuracy),
+            InfoDisplay2(
               keyname: "elevation",
-              value: glocation.coords.altitude,
+              value: glocation.coords.altitude.toInt(),
               options: {
-                'third': Text(glocation.coords.altitudeAccuracy
-                    ?.toPrecision(1)
-                    .toString())
+                'third':
+                    Text(glocation.coords.altitudeAccuracy?.toInt().toString())
               },
             ),
           ],
@@ -2209,7 +2241,7 @@ class _MyHomePageState extends State<MyHomePage> {
               borderRadius: BorderRadius.only(topRight: Radius.circular(8)),
               child: Container(
                 padding: EdgeInsets.all(12),
-                child: InfoDisplay(
+                child: InfoDisplay2(
                   keyname: "distance",
                   value: _tripDistance < 1000
                       ? (_tripDistance ~/ 1).toString() + 'm'
@@ -2272,7 +2304,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Container(
               padding: EdgeInsets.all(12),
-              child: InfoDisplay(
+              child: InfoDisplay2(
                   keyname: "elevation Δ",
                   value: '+${_distanceTracker.up}-${_distanceTracker.dn}',
                   options: {
