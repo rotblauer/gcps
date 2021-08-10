@@ -1503,6 +1503,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<int> _pushTracks(List<AppPoint> tracks) async {
     print("=====> ... Pushing tracks: " + tracks.length.toString());
+    return 666;
 
     final List<Map<String, dynamic>> pushable = [];
     for (var t in tracks) {
@@ -1830,32 +1831,60 @@ class _MyHomePageState extends State<MyHomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            // if (_appErrorStatus != "" || _appLocationErrorStatus != '')
+            //   Row(
+            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //     mainAxisSize: MainAxisSize.max,
+            //     children: [
+            //       // Visibility(
+            //       // visible: _appErrorStatus != "" ||
+            //       // _appLocationErrorStatus != '',
+            //       // child:
+            //       Container(
+            //         color: MyTheme.errorColor,
+            //         // decoration: BoxDecoration(
+            //         //     border: Border(
+            //         //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
+            //         padding: EdgeInsets.all(8),
+            //         child: Row(
+            //           mainAxisAlignment: MainAxisAlignment.center,
+            //           children: [
+            //             Flexible(
+            //                 child: Text(
+            //               [_appErrorStatus, _appLocationErrorStatus].join(' '),
+            //             ))
+            //           ],
+            //         ),
+            //       ),
+            //       // ),
+            //     ],
+            //   ),
             Expanded(
                 // padding: EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               // mainAxisSize: MainAxisSize.max,
               children: [
-                if (_appErrorStatus != "" || _appLocationErrorStatus != '')
-                  Container(
-                    color: MyTheme.errorColor,
-                    // decoration: BoxDecoration(
-                    //     border: Border(
-                    //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
-                    padding: EdgeInsets.all(8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                            child: Text(
-                          [_appErrorStatus, _appLocationErrorStatus].join(' '),
-                        ))
-                      ],
-                    ),
-                  )
+                // if (_appErrorStatus != "" || _appLocationErrorStatus != '')
+                // Container(
+                //   color: MyTheme.errorColor,
+                //   // decoration: BoxDecoration(
+                //   //     border: Border(
+                //   //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
+                //   padding: EdgeInsets.all(8),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     children: [
+                //       Flexible(
+                //           child: Text(
+                //         [_appErrorStatus, _appLocationErrorStatus].join(' '),
+                //       ))
+                //     ],
+                //   ),
+                // )
 
-                // Status row!
-                ,
+                // // Status row!
+                // ,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -2986,12 +3015,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     Widget Function(BuildContext context) myWidget;
-    // if (prefs.sharedPrefs.getBool(prefs.kDriveModeDisplay)) {
-    //   myWidget = _driveModeStuff;
-    // } else {
-    //   myWidget = _exampleStuff;
-    // }
-    myWidget = _exampleStuff;
+    if (prefs.sharedPrefs.getBool(prefs.kDriveModeDisplay)) {
+      myWidget = _driveModeStuff;
+    } else {
+      myWidget = _exampleStuff;
+    }
+    // myWidget = _exampleStuff;
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -2999,7 +3028,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      body: myWidget(context),
+      body: Builder(builder: myWidget),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         materialTapTargetSize: MaterialTapTargetSize.padded,
