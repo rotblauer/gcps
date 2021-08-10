@@ -1520,7 +1520,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // print(jsonEncode(pushable));
 
-    int resCode = 9696;
+    int resCode = 666;
     try {
       final res = await postTracks(pushable);
       resCode = res.statusCode;
@@ -1803,11 +1803,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Widget _driveModeStuff() {
+  Widget _driveModeStuff(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     return Center(
         child: SafeArea(
-            child: Column(
+            child: Expanded(
+                child: Column(
       // Column is also a layout widget. It takes a list of children and
       // arranges them vertically. By default, it sizes itself to fit its
       // children horizontally, and tries to be as tall as its parent.
@@ -1824,6 +1825,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // horizontal).
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      // mainAxisSize: MainAxisSize.max,
       children: <Widget>[
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1832,6 +1834,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // padding: EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // mainAxisSize: MainAxisSize.max,
               children: [
                 if (_appErrorStatus != "" || _appLocationErrorStatus != '')
                   Container(
@@ -2338,290 +2341,368 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ],
-    )));
+    ))));
   }
 
-  Widget _exampleStuff() {
+  Widget _exampleStuff(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     return Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: SafeArea(
-      child: Column(
-        // Column is also a layout widget. It takes a list of children and
-        // arranges them vertically. By default, it sizes itself to fit its
-        // children horizontally, and tries to be as tall as its parent.
-        //
-        // Invoke "debug painting" (press "p" in the console, choose the
-        // "Toggle Debug Paint" action from the Flutter Inspector in Android
-        // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-        // to see the wireframe for each widget.
-        //
-        // Column has various properties to control how it sizes itself and
-        // how it positions its children. Here we use mainAxisAlignment to
-        // center the children vertically; the main axis here is the vertical
-        // axis because Columns are vertical (the cross axis would be
-        // horizontal).
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          // Visibility(
-          //   visible: _appErrorStatus != "" || _appLocationErrorStatus != '',
-          //   child: Container(
-          //     color: MyTheme.errorColor,
-          //     // decoration: BoxDecoration(
-          //     //     border: Border(
-          //     //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
-          //     padding: EdgeInsets.all(8),
-          //     child: Row(
-          //       mainAxisAlignment: MainAxisAlignment.center,
-          //       children: [
-          //         Flexible(
-          //             child: Text(
-          //           [_appErrorStatus, _appLocationErrorStatus].join(' '),
-          //         ))
-          //       ],
-          //     ),
-          //   ),
-          // ),
+      child: Expanded(
+        child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Invoke "debug painting" (press "p" in the console, choose the
+          // "Toggle Debug Paint" action from the Flutter Inspector in Android
+          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+          // to see the wireframe for each widget.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // mainAxisSize: MainAxisSize.max,
 
-          if (_appErrorStatus != "" || _appLocationErrorStatus != '')
-            Container(
-              color: MyTheme.errorColor,
-              // decoration: BoxDecoration(
-              //     border: Border(
-              //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
-              padding: EdgeInsets.all(8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                      child: Text(
-                    [_appErrorStatus, _appLocationErrorStatus].join(' '),
-                  ))
-                ],
-              ),
-            )
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            // Visibility(
+            //   visible: _appErrorStatus != "" || _appLocationErrorStatus != '',
+            //   child: Container(
+            //     color: MyTheme.errorColor,
+            //     // decoration: BoxDecoration(
+            //     //     border: Border(
+            //     //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
+            //     padding: EdgeInsets.all(8),
+            //     child: Row(
+            //       mainAxisAlignment: MainAxisAlignment.center,
+            //       children: [
+            //         Flexible(
+            //             child: Text(
+            //           [_appErrorStatus, _appLocationErrorStatus].join(' '),
+            //         ))
+            //       ],
+            //     ),
+            //   ),
+            // ),
 
-          // Status row!
-          ,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                  // padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  //
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      InkWell(
-                        onLongPress: _countStored > 0 &&
-                                (_connectionStatus.contains('wifi') ||
-                                    _connectionStatus.contains('mobile'))
-                            ? () {
-                                if (_countStored == 0) return;
+            if (_appErrorStatus != "" || _appLocationErrorStatus != '')
+              Container(
+                color: MyTheme.errorColor,
+                // decoration: BoxDecoration(
+                //     border: Border(
+                //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
+                padding: EdgeInsets.all(8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                        child: Text(
+                      [_appErrorStatus, _appLocationErrorStatus].join(' '),
+                    ))
+                  ],
+                ),
+              )
 
-                                // set up the buttons
-                                Widget cancelButton = ElevatedButton(
-                                  child: Text("Cancel"),
-                                  style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                              Colors.grey)),
-                                  onPressed: () {
-                                    Navigator.of(context, rootNavigator: true)
-                                        .pop('dialog');
-                                  },
-                                ); // set up the AlertDialog
-                                Widget continueButton = ElevatedButton(
-                                  child: Text("Yes, upload"),
-                                  onPressed: () async {
-                                    this._pushTracksBatching();
-                                    Navigator.of(context, rootNavigator: true)
-                                        .pop('dialog');
-                                  },
-                                ); // set up the AlertDialog
-                                AlertDialog alert = AlertDialog(
-                                  title: Text("Confirm upload"),
-                                  content: Text(
-                                      'Would you like to upload ${_countStored} tracks?'),
-                                  actions: [
-                                    cancelButton,
-                                    continueButton,
-                                  ],
-                                ); // show the dialog
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return alert;
-                                  },
-                                );
-                              }
-                            : () {
-                                _connectivity.checkConnectivity().then(
-                                    (value) => _updateConnectionStatus(value));
-                              },
-                        child: Container(
-                          padding: EdgeInsets.only(left: 8.0, right: 4),
-                          child: buildConnectStatusIcon(_connectionStatus),
+            // Status row!
+            ,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                    // padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // mainAxisSize: MainAxisSize.max,
+                  children: [
+                    //
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                          onLongPress: _countStored > 0 &&
+                                  (_connectionStatus.contains('wifi') ||
+                                      _connectionStatus.contains('mobile'))
+                              ? () {
+                                  if (_countStored == 0) return;
+
+                                  // set up the buttons
+                                  Widget cancelButton = ElevatedButton(
+                                    child: Text("Cancel"),
+                                    style: ButtonStyle(
+                                        backgroundColor:
+                                            MaterialStateProperty.all<Color>(
+                                                Colors.grey)),
+                                    onPressed: () {
+                                      Navigator.of(context, rootNavigator: true)
+                                          .pop('dialog');
+                                    },
+                                  ); // set up the AlertDialog
+                                  Widget continueButton = ElevatedButton(
+                                    child: Text("Yes, upload"),
+                                    onPressed: () async {
+                                      this._pushTracksBatching();
+                                      Navigator.of(context, rootNavigator: true)
+                                          .pop('dialog');
+                                    },
+                                  ); // set up the AlertDialog
+                                  AlertDialog alert = AlertDialog(
+                                    title: Text("Confirm upload"),
+                                    content: Text(
+                                        'Would you like to upload ${_countStored} tracks?'),
+                                    actions: [
+                                      cancelButton,
+                                      continueButton,
+                                    ],
+                                  ); // show the dialog
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return alert;
+                                    },
+                                  );
+                                }
+                              : () {
+                                  _connectivity.checkConnectivity().then(
+                                      (value) =>
+                                          _updateConnectionStatus(value));
+                                },
+                          child: Container(
+                            padding: EdgeInsets.only(left: 8.0, right: 4),
+                            child: buildConnectStatusIcon(_connectionStatus),
+                          ),
                         ),
-                      ),
-                      InkWell(
-                        onTap: () async {
-                          setState(() {
-                            _isManuallyRequestingLocation = true;
-                          });
-                          try {
-                            var loc = await bg.BackgroundGeolocation
-                                .getCurrentPosition();
-                            _handleStreamLocationUpdate(loc);
-                          } catch (err) {
-                            _handleStreamLocationError(err);
-                          }
-                          setState(() {
-                            _isManuallyRequestingLocation = false;
-                          });
-                        },
-                        onLongPress: () async {
-                          var targetState = !glocation.isMoving;
-                          bg.BackgroundGeolocation.changePace(targetState);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            _buildSnackBar(
-                                Text(targetState
-                                    ? 'Cat is moving.'
-                                    : 'Cat is napping.'),
-                                backgroundColor:
-                                    targetState ? Colors.green : Colors.red),
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.symmetric(horizontal: 4.0),
-                              child: buildActivityIcon(
-                                  context, glocation.activity.type, null),
-                            ),
+                        InkWell(
+                          onTap: () async {
+                            setState(() {
+                              _isManuallyRequestingLocation = true;
+                            });
+                            try {
+                              var loc = await bg.BackgroundGeolocation
+                                  .getCurrentPosition();
+                              _handleStreamLocationUpdate(loc);
+                            } catch (err) {
+                              _handleStreamLocationError(err);
+                            }
+                            setState(() {
+                              _isManuallyRequestingLocation = false;
+                            });
+                          },
+                          onLongPress: () async {
+                            var targetState = !glocation.isMoving;
+                            bg.BackgroundGeolocation.changePace(targetState);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              _buildSnackBar(
+                                  Text(targetState
+                                      ? 'Cat is moving.'
+                                      : 'Cat is napping.'),
+                                  backgroundColor:
+                                      targetState ? Colors.green : Colors.red),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 4.0),
+                                child: buildActivityIcon(
+                                    context, glocation.activity.type, null),
+                              ),
 
-                            //
-                            Visibility(
-                              visible: !glocation.isMoving,
-                              child: Container(
-                                  margin: EdgeInsets.symmetric(horizontal: 4.0),
-                                  // margin: EdgeInsets.only(left: 6),
-                                  // height: 16,
-                                  // width: 16,
-                                  child: Icon(
-                                    Icons.trip_origin,
-                                    color: Colors.red[700],
-                                  )),
-                            ),
-                            // ^^
+                              //
+                              Visibility(
+                                visible: !glocation.isMoving,
+                                child: Container(
+                                    margin:
+                                        EdgeInsets.symmetric(horizontal: 4.0),
+                                    // margin: EdgeInsets.only(left: 6),
+                                    // height: 16,
+                                    // width: 16,
+                                    child: Icon(
+                                      Icons.trip_origin,
+                                      color: Colors.red[700],
+                                    )),
+                              ),
+                              // ^^
 
-                            Visibility(
-                              visible: glocation.isMoving,
-                              child: Container(
-                                  margin: EdgeInsets.symmetric(horizontal: 4.0),
-                                  height: 16,
-                                  width: 16,
+                              Visibility(
+                                visible: glocation.isMoving,
+                                child: Container(
+                                    margin:
+                                        EdgeInsets.symmetric(horizontal: 4.0),
+                                    height: 16,
+                                    width: 16,
+                                    decoration: BoxDecoration(
+                                      color: Colors.deepOrange,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: CircularProgressIndicator(
+                                        value: 1 -
+                                            ((DateTime.now().millisecondsSinceEpoch /
+                                                            1000) -
+                                                        DateTime.parse(glocation
+                                                                    .timestamp)
+                                                                .millisecondsSinceEpoch /
+                                                            1000)
+                                                    .toDouble() /
+                                                (prefs.sharedPrefs.getDouble(prefs
+                                                        .kLocationUpdateStopTimeout) *
+                                                    60),
+                                        strokeWidth: 3,
+                                        backgroundColor: Colors.deepOrange)),
+                              ),
+                              Visibility(
+                                visible: true,
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 4),
+                                  padding: EdgeInsets.only(
+                                      left: 4, right: 4, bottom: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.deepOrange,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: CircularProgressIndicator(
-                                      value: 1 -
-                                          ((DateTime.now().millisecondsSinceEpoch /
-                                                          1000) -
-                                                      DateTime.parse(glocation
-                                                                  .timestamp)
-                                                              .millisecondsSinceEpoch /
-                                                          1000)
-                                                  .toDouble() /
-                                              (prefs.sharedPrefs.getDouble(prefs
-                                                      .kLocationUpdateStopTimeout) *
-                                                  60),
-                                      strokeWidth: 3,
-                                      backgroundColor: Colors.deepOrange)),
-                            ),
-                            Visibility(
-                              visible: true,
-                              child: Container(
-                                margin: EdgeInsets.symmetric(horizontal: 4),
-                                padding: EdgeInsets.only(
-                                    left: 4, right: 4, bottom: 4),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
+                                      border: Border(
+                                          bottom: BorderSide(
+                                              color:
+                                                  colorForDurationSinceLastPoint(
+                                                      _secondsSinceLastPoint),
+                                              width: 2))),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.timelapse,
+                                          color: colorForDurationSinceLastPoint(
+                                              _secondsSinceLastPoint),
+                                          size: 16),
+                                      Container(
+                                        width: 4,
+                                      ),
+                                      Text(
+                                        '-' +
+                                            secondsToPrettyDuration(
+                                                _secondsSinceLastPoint
+                                                    .toDouble(),
+                                                true),
+                                        style: TextStyle(
                                             color:
                                                 colorForDurationSinceLastPoint(
-                                                    _secondsSinceLastPoint),
-                                            width: 2))),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.timelapse,
-                                        color: colorForDurationSinceLastPoint(
-                                            _secondsSinceLastPoint),
-                                        size: 16),
-                                    Container(
-                                      width: 4,
-                                    ),
-                                    Text(
-                                      '-' +
-                                          secondsToPrettyDuration(
-                                              _secondsSinceLastPoint.toDouble(),
-                                              true),
-                                      style: TextStyle(
-                                          color: colorForDurationSinceLastPoint(
-                                              _secondsSinceLastPoint)),
-                                    ),
-                                  ],
+                                                    _secondsSinceLastPoint)),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            Visibility(
-                              visible: _isManuallyRequestingLocation,
-                              child: Container(
-                                padding: EdgeInsets.only(left: 4.0),
-                                height: 4,
-                                width: 24,
-                                child: LinearProgressIndicator(
-                                  minHeight: 2,
-                                  backgroundColor: Colors.deepOrange,
+                              Visibility(
+                                visible: _isManuallyRequestingLocation,
+                                child: Container(
+                                  padding: EdgeInsets.only(left: 4.0),
+                                  height: 4,
+                                  width: 24,
+                                  child: LinearProgressIndicator(
+                                    minHeight: 2,
+                                    backgroundColor: Colors.deepOrange,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
 
-                  // ^^
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      InkWell(
-                        onLongPress: () async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TrackListScreen(),
+                    // ^^
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        InkWell(
+                          onLongPress: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TrackListScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(4),
+                            child: Row(
+                              children: [
+                                Icon(Icons.storage,
+                                    color: MyTheme.accentColor, size: 16),
+                                Container(
+                                  width: 4,
+                                ),
+                                Text(
+                                  countAbbrev(_countStored),
+                                  style: TextStyle(color: Colors.white),
+                                )
+                              ],
                             ),
-                          );
-                        },
-                        child: Container(
+                            decoration: BoxDecoration(
+                                border: Border(
+                                    bottom: BorderSide(
+                                        color: MyTheme.accentColor, width: 2))),
+                          ),
+                        ),
+                        InkWell(
+                          onLongPress: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    MyCatSnapsScreen(onExit: refreshSnapCount),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(4),
+                            child: Row(
+                              children: [
+                                Icon(Icons.camera_alt_outlined,
+                                    color: Colors.deepPurple[400], size: 16),
+                                Container(
+                                  width: 4,
+                                ),
+                                Text(
+                                  _countSnaps.toString(),
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                            decoration: BoxDecoration(
+                                border: Border(
+                                    bottom: BorderSide(
+                                        color: Colors.deepPurple[700],
+                                        width: 2))),
+                          ),
+                        ),
+                        if (_isPushing)
+                          Container(
+                            width: 24,
+                            padding: EdgeInsets.all(4),
+                            child: LinearProgressIndicator(
+                              backgroundColor: MyTheme.buttonColor,
+                            ),
+                          ),
+                        Container(
                           padding: EdgeInsets.all(4),
                           child: Row(
                             children: [
-                              Icon(Icons.storage,
-                                  color: MyTheme.accentColor, size: 16),
+                              Icon(
+                                Icons.cloud_done_outlined,
+                                color: (prefs.sharedPrefs.getBool(
+                                            prefs.kAllowPushWithWifi) ||
+                                        prefs.sharedPrefs.getBool(
+                                            prefs.kAllowPushWithMobile))
+                                    ? MyTheme.buttonColor
+                                    : MyTheme.disabledColor,
+                                size: 16,
+                              ),
                               Container(
                                 width: 4,
                               ),
                               Text(
-                                countAbbrev(_countStored),
+                                countAbbrev(_countPushed),
                                 style: TextStyle(color: Colors.white),
                               )
                             ],
@@ -2629,331 +2710,265 @@ class _MyHomePageState extends State<MyHomePage> {
                           decoration: BoxDecoration(
                               border: Border(
                                   bottom: BorderSide(
-                                      color: MyTheme.accentColor, width: 2))),
-                        ),
-                      ),
-                      InkWell(
-                        onLongPress: () async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  MyCatSnapsScreen(onExit: refreshSnapCount),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(4),
-                          child: Row(
-                            children: [
-                              Icon(Icons.camera_alt_outlined,
-                                  color: Colors.deepPurple[400], size: 16),
-                              Container(
-                                width: 4,
-                              ),
-                              Text(
-                                _countSnaps.toString(),
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                          decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      color: Colors.deepPurple[700],
+                                      color: (prefs.sharedPrefs.getBool(
+                                                  prefs.kAllowPushWithWifi) ||
+                                              prefs.sharedPrefs.getBool(
+                                                  prefs.kAllowPushWithMobile))
+                                          ? MyTheme.buttonColor
+                                          : MyTheme.disabledColor,
                                       width: 2))),
                         ),
-                      ),
-                      if (_isPushing)
                         Container(
-                          width: 24,
                           padding: EdgeInsets.all(4),
-                          child: LinearProgressIndicator(
-                            backgroundColor: MyTheme.buttonColor,
-                          ),
-                        ),
-                      Container(
-                        padding: EdgeInsets.all(4),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.cloud_done_outlined,
-                              color: (prefs.sharedPrefs
-                                          .getBool(prefs.kAllowPushWithWifi) ||
-                                      prefs.sharedPrefs
-                                          .getBool(prefs.kAllowPushWithMobile))
-                                  ? MyTheme.buttonColor
-                                  : MyTheme.disabledColor,
-                              size: 16,
-                            ),
-                            Container(
-                              width: 4,
-                            ),
-                            Text(
-                              countAbbrev(_countPushed),
-                              style: TextStyle(color: Colors.white),
-                            )
-                          ],
-                        ),
-                        decoration: BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                                    color: (prefs.sharedPrefs.getBool(
-                                                prefs.kAllowPushWithWifi) ||
-                                            prefs.sharedPrefs.getBool(
-                                                prefs.kAllowPushWithMobile))
-                                        ? MyTheme.buttonColor
-                                        : MyTheme.disabledColor,
-                                    width: 2))),
-                      ),
-                      Container(
-                        padding: EdgeInsets.all(4),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => prefs.MySettingsScreen(
-                                  deviceUUID: _deviceUUID,
-                                  deviceName: _deviceName,
-                                  deviceVersion: _deviceAppVersion,
-                                ),
-                              ),
-                            );
-                          },
-                          onLongPress: () {
-                            Navigator.push(
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => LoggerScreen()));
-                          },
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.settings,
-                                color: MyTheme.colorScheme.onSurface,
-                              ),
-                            ],
+                                  builder: (context) => prefs.MySettingsScreen(
+                                    deviceUUID: _deviceUUID,
+                                    deviceName: _deviceName,
+                                    deviceVersion: _deviceAppVersion,
+                                  ),
+                                ),
+                              );
+                            },
+                            onLongPress: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => LoggerScreen()));
+                            },
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.settings,
+                                  color: MyTheme.colorScheme.onSurface,
+                                ),
+                              ],
+                            ),
                           ),
+                          // decoration: BoxDecoration(
+                          //     border: Border(
+                          //         bottom: BorderSide(
+                          //             color: MyTheme.accentColor, width: 2))),
                         ),
-                        // decoration: BoxDecoration(
-                        //     border: Border(
-                        //         bottom: BorderSide(
-                        //             color: MyTheme.accentColor, width: 2))),
-                      ),
-                    ],
-                  ),
-                ],
-              )),
-            ],
-          ),
+                      ],
+                    ),
+                  ],
+                )),
+              ],
+            ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
-              Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
-              Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
-              Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Text(
-                  'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
-              Text(
-                  'ux: ${_user_accelerometer_x?.toPrecision(2)},${_user_accelerometer_y?.toPrecision(2)},${_user_accelerometer_z?.toPrecision(2)}'),
-              Text(
-                  'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
-            ],
-          ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
+                Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
+                Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
+                Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(
+                    'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
+                Text(
+                    'ux: ${_user_accelerometer_x?.toPrecision(2)},${_user_accelerometer_y?.toPrecision(2)},${_user_accelerometer_z?.toPrecision(2)}'),
+                Text(
+                    'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
+              ],
+            ),
 
-          // Paint a map!
-          Row(
-            children: [
-              Flexible(
-                child: Container(
-                  margin: EdgeInsets.symmetric(vertical: 16),
-                  child: Stack(
-                    children: [
-                      CustomPaint(
-                        // size: Size.infinite,
-                        painter: TrackPainter(locations: _paintList),
-                        child: Container(height: height / 2.2),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: CustomPaint(
+            // Paint a map!
+            Row(
+              children: [
+                Flexible(
+                  child: Container(
+                    margin: EdgeInsets.symmetric(vertical: 16),
+                    child: Stack(
+                      children: [
+                        CustomPaint(
                           // size: Size.infinite,
-                          painter:
-                              ElevationProfilePainter(locations: _paintList),
-                          child: Container(
-                            height: height / 2.2 / 4,
-                          ),
+                          painter: TrackPainter(locations: _paintList),
+                          child: Container(height: height / 2.2),
                         ),
-                      ),
-                      if (_paintList.length >= 3600)
-                        Container(
-                          alignment: Alignment.bottomLeft,
-                          child: Padding(
-                            padding: EdgeInsets.all(8),
-                            child: Text(
-                              "Only showing the last 3600 tracks.",
-                              style: Theme.of(context).textTheme.overline,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: CustomPaint(
+                            // size: Size.infinite,
+                            painter:
+                                ElevationProfilePainter(locations: _paintList),
+                            child: Container(
+                              height: height / 2.2 / 4,
                             ),
                           ),
                         ),
-                    ],
+                        if (_paintList.length >= 3600)
+                          Container(
+                            alignment: Alignment.bottomLeft,
+                            child: Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Text(
+                                "Only showing the last 3600 tracks.",
+                                style: Theme.of(context).textTheme.overline,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
 
-          // // Paint a map!
-          // Row(
-          //   children: [
-          //     Expanded(
-          //       child: Container(
-          //         margin: EdgeInsets.symmetric(vertical: 16),
-          //         child: CustomPaint(
-          //           // size: Size.infinite,
-          //           painter: ElevationProfilePainter(locations: _paintList),
-          //           child: Container(
-          //             height: 100,
-          //           ),
-          //         ),
-          //       ),
-          //     ),
-          //   ],
-          // ),
+            // // Paint a map!
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: Container(
+            //         margin: EdgeInsets.symmetric(vertical: 16),
+            //         child: CustomPaint(
+            //           // size: Size.infinite,
+            //           painter: ElevationProfilePainter(locations: _paintList),
+            //           child: Container(
+            //             height: 100,
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //   ],
+            // ),
 
-          // Location measurements!
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              InfoDisplay(
-                keyname: "km/h",
-                value: (glocation.coords.speed == null ||
-                        glocation.coords.speed <= 0.000001)
-                    ? 0
-                    : (glocation.coords.speed * 3.6).toPrecision(1),
-                options: {
-                  'third': Text(glocation.coords.speedAccuracy != null
-                      ? glocation.coords.speedAccuracy.toString()
-                      : '')
-                },
-              ),
-              InfoDisplay(
-                keyname: "heading",
-                value: degreeToCardinalDirection(glocation.coords.heading),
-                options: {
-                  'third': Text(glocation.coords.headingAccuracy
-                      ?.toPrecision(1)
-                      .toString())
-                },
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              InfoDisplay(
-                  keyname: "accuracy", value: glocation.coords.accuracy),
-              InfoDisplay(
-                keyname: "elevation",
-                value: glocation.coords.altitude,
-                options: {
-                  'third': Text(glocation.coords.altitudeAccuracy
-                      ?.toPrecision(1)
-                      .toString())
-                },
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.only(topRight: Radius.circular(8)),
-                child: Container(
+            // Location measurements!
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                InfoDisplay(
+                  keyname: "km/h",
+                  value: (glocation.coords.speed == null ||
+                          glocation.coords.speed <= 0.000001)
+                      ? 0
+                      : (glocation.coords.speed * 3.6).toPrecision(1),
+                  options: {
+                    'third': Text(glocation.coords.speedAccuracy != null
+                        ? glocation.coords.speedAccuracy.toString()
+                        : '')
+                  },
+                ),
+                InfoDisplay(
+                  keyname: "heading",
+                  value: degreeToCardinalDirection(glocation.coords.heading),
+                  options: {
+                    'third': Text(glocation.coords.headingAccuracy
+                        ?.toPrecision(1)
+                        .toString())
+                  },
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                InfoDisplay(
+                    keyname: "accuracy", value: glocation.coords.accuracy),
+                InfoDisplay(
+                  keyname: "elevation",
+                  value: glocation.coords.altitude,
+                  options: {
+                    'third': Text(glocation.coords.altitudeAccuracy
+                        ?.toPrecision(1)
+                        .toString())
+                  },
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                InkWell(
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(8)),
+                  child: Container(
+                    padding: EdgeInsets.all(12),
+                    child: InfoDisplay(
+                      keyname: "distance",
+                      value: _tripDistance < 1000
+                          ? (_tripDistance ~/ 1).toString() + 'm'
+                          : ((_tripDistance / 1000).toPrecision(2)).toString() +
+                              'km',
+                      options: {
+                        't2.font': Theme.of(context).textTheme.headline6,
+                        'third': Text(
+                            glocation.odometer.toInt().toString() + ' steps')
+                      },
+                    ),
+                  ),
+                  onLongPress: () {
+                    // set up the buttons
+                    Widget cancelButton = ElevatedButton(
+                      child: Text("Cancel"),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(Colors.grey)),
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true)
+                            .pop('dialog');
+                      },
+                    ); // set up the AlertDialog
+                    Widget continueButton = ElevatedButton(
+                      child: Text('Yes, reset'),
+                      onPressed: () {
+                        bg.BackgroundGeolocation.setOdometer(0);
+                        setState(() {
+                          _distanceTracker.reset();
+                          _tripDistance = 0;
+                          glocation.odometer = 0;
+                          _paintList = [];
+                          _tripStarted = DateTime.now().toUtc();
+                        });
+
+                        Navigator.of(context, rootNavigator: true)
+                            .pop('dialog');
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          _buildSnackBar(Text('Trip has been reset.'),
+                              backgroundColor: Colors.green),
+                        );
+                      },
+                    ); // set up the AlertDialog
+                    AlertDialog alert = AlertDialog(
+                      title: Text("Confirm trip reset"),
+                      content: Text(
+                          "This will reset the map, odometer, and distance."),
+                      actions: [
+                        cancelButton,
+                        continueButton,
+                      ],
+                    ); // show the dialog
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return alert;
+                      },
+                    );
+                  },
+                ),
+                Container(
                   padding: EdgeInsets.all(12),
                   child: InfoDisplay(
-                    keyname: "distance",
-                    value: _tripDistance < 1000
-                        ? (_tripDistance ~/ 1).toString() + 'm'
-                        : ((_tripDistance / 1000).toPrecision(2)).toString() +
-                            'km',
-                    options: {
-                      't2.font': Theme.of(context).textTheme.headline6,
-                      'third':
-                          Text(glocation.odometer.toInt().toString() + ' steps')
-                    },
-                  ),
+                      keyname: "elevation Δ",
+                      value: '+${_distanceTracker.up}-${_distanceTracker.dn}',
+                      options: {
+                        't2.font': Theme.of(context).textTheme.headline6,
+                        'third': Text(
+                            (_distanceTracker.elev_rel()).toInt().toString()),
+                      }),
                 ),
-                onLongPress: () {
-                  // set up the buttons
-                  Widget cancelButton = ElevatedButton(
-                    child: Text("Cancel"),
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Colors.grey)),
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).pop('dialog');
-                    },
-                  ); // set up the AlertDialog
-                  Widget continueButton = ElevatedButton(
-                    child: Text('Yes, reset'),
-                    onPressed: () {
-                      bg.BackgroundGeolocation.setOdometer(0);
-                      setState(() {
-                        _distanceTracker.reset();
-                        _tripDistance = 0;
-                        glocation.odometer = 0;
-                        _paintList = [];
-                        _tripStarted = DateTime.now().toUtc();
-                      });
-
-                      Navigator.of(context, rootNavigator: true).pop('dialog');
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        _buildSnackBar(Text('Trip has been reset.'),
-                            backgroundColor: Colors.green),
-                      );
-                    },
-                  ); // set up the AlertDialog
-                  AlertDialog alert = AlertDialog(
-                    title: Text("Confirm trip reset"),
-                    content: Text(
-                        "This will reset the map, odometer, and distance."),
-                    actions: [
-                      cancelButton,
-                      continueButton,
-                    ],
-                  ); // show the dialog
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return alert;
-                    },
-                  );
-                },
-              ),
-              Container(
-                padding: EdgeInsets.all(12),
-                child: InfoDisplay(
-                    keyname: "elevation Δ",
-                    value: '+${_distanceTracker.up}-${_distanceTracker.dn}',
-                    options: {
-                      't2.font': Theme.of(context).textTheme.headline6,
-                      'third': Text(
-                          (_distanceTracker.elev_rel()).toInt().toString()),
-                    }),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     ));
   }
@@ -2970,13 +2985,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget Function() myWidget;
-    if (prefs.sharedPrefs.getBool(prefs.kDriveModeDisplay)) {
-      myWidget = _driveModeStuff;
-    } else {
-      myWidget = _exampleStuff;
-    }
-    // myWidget = _exampleStuff;
+    Widget Function(BuildContext context) myWidget;
+    // if (prefs.sharedPrefs.getBool(prefs.kDriveModeDisplay)) {
+    //   myWidget = _driveModeStuff;
+    // } else {
+    //   myWidget = _exampleStuff;
+    // }
+    myWidget = _exampleStuff;
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -2984,7 +2999,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      body: myWidget(),
+      body: myWidget(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         materialTapTargetSize: MaterialTapTargetSize.padded,
