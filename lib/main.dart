@@ -941,6 +941,7 @@ Color colorForDurationSinceLastPoint(int duration) {
 class _MyHomePageState extends State<MyHomePage> {
   String _appErrorStatus = "";
   String _appLocationErrorStatus = "";
+  int _pointsSinceError = 0;
   String _deviceUUID = "";
   String _deviceName = "";
   String _deviceAppVersion = "";
@@ -1503,7 +1504,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<int> _pushTracks(List<AppPoint> tracks) async {
     print("=====> ... Pushing tracks: " + tracks.length.toString());
-    return 666;
+    // return 666;
 
     final List<Map<String, dynamic>> pushable = [];
     for (var t in tracks) {
@@ -1528,6 +1529,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch (err) {
       setState(() {
         _appErrorStatus = err.toString();
+        _pointsSinceError = 0;
       });
     }
     return resCode;
@@ -1626,6 +1628,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (resCode == 200) {
       setState(() {
         _appErrorStatus = "";
+        _pointsSinceError = 0;
       });
 
       // delete from background geolocation database
@@ -1638,6 +1641,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       setState(() {
         _appErrorStatus = 'Push failed. Status code: ' + resCode.toString();
+        _pointsSinceError = 0;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1764,6 +1768,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (_paintList.length > 3600) {
         _paintList.removeAt(0);
       }
+      _pointsSinceError++;
     });
 
     // If we're not at a push mod, we're done.
@@ -1809,82 +1814,50 @@ class _MyHomePageState extends State<MyHomePage> {
     return Center(
         child: SafeArea(
             child: Expanded(
-                child: Column(
-      // Column is also a layout widget. It takes a list of children and
-      // arranges them vertically. By default, it sizes itself to fit its
-      // children horizontally, and tries to be as tall as its parent.
-      //
-      // Invoke "debug painting" (press "p" in the console, choose the
-      // "Toggle Debug Paint" action from the Flutter Inspector in Android
-      // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-      // to see the wireframe for each widget.
-      //
-      // Column has various properties to control how it sizes itself and
-      // how it positions its children. Here we use mainAxisAlignment to
-      // center the children vertically; the main axis here is the vertical
-      // axis because Columns are vertical (the cross axis would be
-      // horizontal).
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      // mainAxisSize: MainAxisSize.max,
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // if (_appErrorStatus != "" || _appLocationErrorStatus != '')
-            //   Row(
-            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //     mainAxisSize: MainAxisSize.max,
-            //     children: [
-            //       // Visibility(
-            //       // visible: _appErrorStatus != "" ||
-            //       // _appLocationErrorStatus != '',
-            //       // child:
-            //       Container(
-            //         color: MyTheme.errorColor,
-            //         // decoration: BoxDecoration(
-            //         //     border: Border(
-            //         //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
-            //         padding: EdgeInsets.all(8),
-            //         child: Row(
-            //           mainAxisAlignment: MainAxisAlignment.center,
-            //           children: [
-            //             Flexible(
-            //                 child: Text(
-            //               [_appErrorStatus, _appLocationErrorStatus].join(' '),
-            //             ))
-            //           ],
-            //         ),
-            //       ),
-            //       // ),
-            //     ],
-            //   ),
-            Expanded(
-                // padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              // mainAxisSize: MainAxisSize.max,
-              children: [
-                // if (_appErrorStatus != "" || _appLocationErrorStatus != '')
-                // Container(
-                //   color: MyTheme.errorColor,
-                //   // decoration: BoxDecoration(
-                //   //     border: Border(
-                //   //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
-                //   padding: EdgeInsets.all(8),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     children: [
-                //       Flexible(
-                //           child: Text(
-                //         [_appErrorStatus, _appLocationErrorStatus].join(' '),
-                //       ))
-                //     ],
-                //   ),
-                // )
+      child: Column(
+        // Column is also a layout widget. It takes a list of children and
+        // arranges them vertically. By default, it sizes itself to fit its
+        // children horizontally, and tries to be as tall as its parent.
+        //
+        // Invoke "debug painting" (press "p" in the console, choose the
+        // "Toggle Debug Paint" action from the Flutter Inspector in Android
+        // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+        // to see the wireframe for each widget.
+        //
+        // Column has various properties to control how it sizes itself and
+        // how it positions its children. Here we use mainAxisAlignment to
+        // center the children vertically; the main axis here is the vertical
+        // axis because Columns are vertical (the cross axis would be
+        // horizontal).
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        // mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          if ((_appErrorStatus != "" || _appLocationErrorStatus != '') &&
+              _pointsSinceError < 60)
+            Container(
+              color: MyTheme.errorColor,
+              // decoration: BoxDecoration(
+              //     border: Border(
+              //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
+              padding: EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                      child: Text(
+                    [_appErrorStatus, _appLocationErrorStatus].join(' '),
+                  ))
+                ],
+              ),
+            ),
 
-                // // Status row!
-                // ,
+          // // Status row!
+          // ,
+          Row(
+              // mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -2212,165 +2185,167 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ],
                 ),
-              ],
-            )),
-          ],
-        ),
+              ]),
 
-        // Location measurements!
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            InfoDisplay2(
-              keyname: "mph",
-              value: (glocation.coords.speed == null ||
-                      glocation.coords.speed.isNaN ||
-                      glocation.coords.speed < 0.1)
-                  ? 0
-                  : (glocation.coords.speed * 2.236936).toInt(),
-              options: {
-                'third': Text(glocation.coords.speedAccuracy != null
-                    ? glocation.coords.speedAccuracy.toString()
-                    : '')
-              },
-            ),
-            // InfoDisplay2(
-            //   keyname: "heading",
-            //   value: degreeToCardinalDirection(glocation.coords.heading),
-            //   options: {
-            //     'third': Text(
-            //         glocation.coords.headingAccuracy?.toPrecision(1).toString())
-            //   },
-            // ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            InfoDisplay2(
-              keyname: "heading",
-              value: degreeToCardinalDirection(glocation.coords.heading),
-              options: {
-                't2.font': TextStyle(color: Colors.blue, fontSize: 36),
-                'third': Text(
-                    glocation.coords.headingAccuracy?.toPrecision(1).toString())
-              },
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            // InfoDisplay2(keyname: "accuracy", value: glocation.coords.accuracy),
-            InkWell(
-              borderRadius: BorderRadius.only(topRight: Radius.circular(8)),
-              child: Container(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InfoDisplay2(
+                keyname: "mph",
+                value: (glocation.coords.speed == null ||
+                        glocation.coords.speed.isNaN ||
+                        glocation.coords.speed < 0.1)
+                    ? 0
+                    : (glocation.coords.speed * 2.236936).toInt(),
+                options: {
+                  'third': Text(glocation.coords.speedAccuracy != null
+                      ? glocation.coords.speedAccuracy.toString()
+                      : '')
+                },
+              ),
+              // InfoDisplay2(
+              //   keyname: "heading",
+              //   value: degreeToCardinalDirection(glocation.coords.heading),
+              //   options: {
+              //     'third': Text(
+              //         glocation.coords.headingAccuracy?.toPrecision(1).toString())
+              //   },
+              // ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InfoDisplay2(
+                keyname: "heading",
+                value: degreeToCardinalDirection(glocation.coords.heading),
+                options: {
+                  't2.font': TextStyle(color: Colors.blue, fontSize: 36),
+                  'third': Text(glocation.coords.headingAccuracy
+                      ?.toPrecision(1)
+                      .toString())
+                },
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              // InfoDisplay2(keyname: "accuracy", value: glocation.coords.accuracy),
+              InkWell(
+                borderRadius: BorderRadius.only(topRight: Radius.circular(8)),
+                child: Container(
+                  padding: EdgeInsets.all(12),
+                  child: InfoDisplay2(
+                    keyname: "distance",
+                    value: _tripDistance < 1609.344
+                        ? _tripDistance == null ||
+                                _tripDistance.isNaN ||
+                                _tripDistance == 0
+                            ? '0'
+                            : (_tripDistance ~/ 3.28084).toString()
+                        : ((_tripDistance / 1609.344).toPrecision(1))
+                            .toString(),
+                    options: {
+                      // 't2.font': Theme.of(context).textTheme.headline6,
+                      'third': _tripDistance < 1609.344
+                          ? Text('feet')
+                          : Text('miles')
+                    },
+                  ),
+                ),
+                onLongPress: () {
+                  // set up the buttons
+                  Widget cancelButton = ElevatedButton(
+                    child: Text("Cancel"),
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Colors.grey)),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop('dialog');
+                    },
+                  ); // set up the AlertDialog
+                  Widget continueButton = ElevatedButton(
+                    child: Text('Yes, reset'),
+                    onPressed: () {
+                      bg.BackgroundGeolocation.setOdometer(0);
+                      setState(() {
+                        _distanceTracker.reset();
+                        _tripDistance = 0;
+                        glocation.odometer = 0;
+                        _paintList = [];
+                        _tripStarted = DateTime.now().toUtc();
+                      });
+
+                      Navigator.of(context, rootNavigator: true).pop('dialog');
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        _buildSnackBar(Text('Trip has been reset.'),
+                            backgroundColor: Colors.green),
+                      );
+                    },
+                  ); // set up the AlertDialog
+                  AlertDialog alert = AlertDialog(
+                    title: Text("Confirm trip reset"),
+                    content: Text(
+                        "This will reset the map, odometer, and distance."),
+                    actions: [
+                      cancelButton,
+                      continueButton,
+                    ],
+                  ); // show the dialog
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return alert;
+                    },
+                  );
+                },
+              ),
+              InfoDisplay2(
+                keyname: "elevation (ft)",
+                value: (glocation.coords.altitude * 3.28084).toInt(),
+                options: {
+                  'third': Text(glocation.coords.altitudeAccuracy == null ||
+                          glocation.coords.altitudeAccuracy.isNaN
+                      ? '--'
+                      : '~ ' +
+                          (glocation.coords.altitudeAccuracy * 3.28084)
+                              .toInt()
+                              .toString())
+                },
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
                 padding: EdgeInsets.all(12),
                 child: InfoDisplay2(
-                  keyname: "distance",
-                  value: _tripDistance < 1609.344
-                      ? _tripDistance == null ||
-                              _tripDistance.isNaN ||
-                              _tripDistance == 0
-                          ? '0'
-                          : (_tripDistance ~/ 3.28084).toString()
-                      : ((_tripDistance / 1609.344).toPrecision(1)).toString(),
-                  options: {
-                    // 't2.font': Theme.of(context).textTheme.headline6,
-                    'third':
-                        _tripDistance < 1609.344 ? Text('feet') : Text('miles')
-                  },
+                  keyname: "accuracy (ft)",
+                  value: (glocation.coords.accuracy * 3.28084).toInt(),
+                  options: {'t2.font': Theme.of(context).textTheme.headline6},
                 ),
               ),
-              onLongPress: () {
-                // set up the buttons
-                Widget cancelButton = ElevatedButton(
-                  child: Text("Cancel"),
-                  style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all<Color>(Colors.grey)),
-                  onPressed: () {
-                    Navigator.of(context, rootNavigator: true).pop('dialog');
-                  },
-                ); // set up the AlertDialog
-                Widget continueButton = ElevatedButton(
-                  child: Text('Yes, reset'),
-                  onPressed: () {
-                    bg.BackgroundGeolocation.setOdometer(0);
-                    setState(() {
-                      _distanceTracker.reset();
-                      _tripDistance = 0;
-                      glocation.odometer = 0;
-                      _paintList = [];
-                      _tripStarted = DateTime.now().toUtc();
-                    });
-
-                    Navigator.of(context, rootNavigator: true).pop('dialog');
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      _buildSnackBar(Text('Trip has been reset.'),
-                          backgroundColor: Colors.green),
-                    );
-                  },
-                ); // set up the AlertDialog
-                AlertDialog alert = AlertDialog(
-                  title: Text("Confirm trip reset"),
-                  content:
-                      Text("This will reset the map, odometer, and distance."),
-                  actions: [
-                    cancelButton,
-                    continueButton,
-                  ],
-                ); // show the dialog
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return alert;
-                  },
-                );
-              },
-            ),
-            InfoDisplay2(
-              keyname: "elevation (ft)",
-              value: (glocation.coords.altitude * 3.28084).toInt(),
-              options: {
-                'third': Text(glocation.coords.altitudeAccuracy == null ||
-                        glocation.coords.altitudeAccuracy.isNaN
-                    ? '--'
-                    : '~ ' +
-                        (glocation.coords.altitudeAccuracy * 3.28084)
-                            .toInt()
-                            .toString())
-              },
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              padding: EdgeInsets.all(12),
-              child: InfoDisplay2(
-                keyname: "accuracy (ft)",
-                value: (glocation.coords.accuracy * 3.28084).toInt(),
-                options: {'t2.font': Theme.of(context).textTheme.headline6},
+              Container(
+                padding: EdgeInsets.all(12),
+                child: InfoDisplay2(
+                    keyname: "elevation Δ",
+                    value: '+${_distanceTracker.up}-${_distanceTracker.dn}',
+                    options: {
+                      't2.font': Theme.of(context).textTheme.headline6,
+                      'third': Text(
+                          (_distanceTracker.elev_rel()).toInt().toString()),
+                    }),
               ),
-            ),
-            Container(
-              padding: EdgeInsets.all(12),
-              child: InfoDisplay2(
-                  keyname: "elevation Δ",
-                  value: '+${_distanceTracker.up}-${_distanceTracker.dn}',
-                  options: {
-                    't2.font': Theme.of(context).textTheme.headline6,
-                    'third':
-                        Text((_distanceTracker.elev_rel()).toInt().toString()),
-                  }),
-            ),
-          ],
-        ),
-      ],
-    ))));
+            ],
+          ),
+        ],
+      ),
+
+      // Location measurements!
+    )));
   }
 
   Widget _exampleStuff(BuildContext context) {
@@ -2420,7 +2395,8 @@ class _MyHomePageState extends State<MyHomePage> {
             //   ),
             // ),
 
-            if (_appErrorStatus != "" || _appLocationErrorStatus != '')
+            if ((_appErrorStatus != "" || _appLocationErrorStatus != '') &&
+                _pointsSinceError < 60)
               Container(
                 color: MyTheme.errorColor,
                 // decoration: BoxDecoration(
