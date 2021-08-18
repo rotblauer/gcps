@@ -1853,7 +1853,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // center the children vertically; the main axis here is the vertical
         // axis because Columns are vertical (the cross axis would be
         // horizontal).
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         // mainAxisSize: MainAxisSize.max,
         children: <Widget>[
@@ -1878,10 +1878,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
           // // Status row!
           // ,
-          Row(
+          Column(
               // mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              // crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -3080,7 +3080,8 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         materialTapTargetSize: MaterialTapTargetSize.padded,
-        backgroundColor: Colors.deepPurple[700],
+        // backgroundColor: Colors.deepPurple[700],
+        backgroundColor: Colors.black,
         foregroundColor: Colors.deepOrange,
         elevation: 50,
         onPressed: () {
