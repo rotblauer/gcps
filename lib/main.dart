@@ -1835,11 +1835,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _driveModeStuff(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
     return Center(
         child: SafeArea(
             child: Expanded(
-      child: Column(
+      child: Row(
         // Column is also a layout widget. It takes a list of children and
         // arranges them vertically. By default, it sizes itself to fit its
         // children horizontally, and tries to be as tall as its parent.
@@ -1854,34 +1853,35 @@ class _MyHomePageState extends State<MyHomePage> {
         // center the children vertically; the main axis here is the vertical
         // axis because Columns are vertical (the cross axis would be
         // horizontal).
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         // mainAxisSize: MainAxisSize.max,
         children: <Widget>[
-          if ((_appErrorStatus != "" || _appLocationErrorStatus != '') &&
-              _pointsSinceError < 60)
-            Container(
-              color: MyTheme.errorColor,
-              // decoration: BoxDecoration(
-              //     border: Border(
-              //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
-              padding: EdgeInsets.all(8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                      child: Text(
-                    [_appErrorStatus, _appLocationErrorStatus].join(' '),
-                  ))
-                ],
-              ),
-            ),
+          // if ((_appErrorStatus != "" || _appLocationErrorStatus != '') &&
+          //     _pointsSinceError < 60)
+          //   Container(
+          //     color: MyTheme.errorColor,
+          //     // decoration: BoxDecoration(
+          //     //     border: Border(
+          //     //         top: BorderSide(color: MyTheme.errorColor, width: 4))),
+          //     padding: EdgeInsets.all(8),
+          //     child: Row(
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       children: [
+          //         Flexible(
+          //             child: Text(
+          //           [_appErrorStatus, _appLocationErrorStatus].join(' '),
+          //         ))
+          //       ],
+          //     ),
+          //   ),
 
           // // Status row!
           // ,
           Row(
               // mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -2066,9 +2066,28 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
 
+                Row(
+                  children: [
+                    InfoDisplay2(
+                      keyname: "mph",
+                      value: (glocation.coords.speed == null ||
+                          glocation.coords.speed.isNaN ||
+                          glocation.coords.speed < 0.1)
+                          ? 0
+                          : (glocation.coords.speed * 2.236936).toInt(),
+                      options: {
+                        't2.font': TextStyle(color: Colors.white, fontSize: 96),
+                        'third': Text(glocation.coords.speedAccuracy != null
+                            ? glocation.coords.speedAccuracy.toString()
+                            : '')
+                      },
+                    ),
+                  ],
+                ),
+
                 // ^^
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  // mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     InkWell(
                       onLongPress: () async {
@@ -2212,35 +2231,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ]),
 
-          Row(
+          Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              InfoDisplay2(
-                keyname: "mph",
-                value: (glocation.coords.speed == null ||
-                        glocation.coords.speed.isNaN ||
-                        glocation.coords.speed < 0.1)
-                    ? 0
-                    : (glocation.coords.speed * 2.236936).toInt(),
-                options: {
-                  'third': Text(glocation.coords.speedAccuracy != null
-                      ? glocation.coords.speedAccuracy.toString()
-                      : '')
-                },
-              ),
               // InfoDisplay2(
-              //   keyname: "heading",
-              //   value: degreeToCardinalDirection(glocation.coords.heading),
+              //   keyname: "mph",
+              //   value: (glocation.coords.speed == null ||
+              //           glocation.coords.speed.isNaN ||
+              //           glocation.coords.speed < 0.1)
+              //       ? 0
+              //       : (glocation.coords.speed * 2.236936).toInt(),
               //   options: {
-              //     'third': Text(
-              //         glocation.coords.headingAccuracy?.toPrecision(1).toString())
+              //     'third': Text(glocation.coords.speedAccuracy != null
+              //         ? glocation.coords.speedAccuracy.toString()
+              //         : '')
               //   },
               // ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
               InfoDisplay2(
                 keyname: "heading",
                 value: degreeToCardinalDirection(glocation.coords.heading),
@@ -2251,9 +2257,31 @@ class _MyHomePageState extends State<MyHomePage> {
                       .toString())
                 },
               ),
+              // InfoDisplay2(
+              //   keyname: "heading",
+              //   value: degreeToCardinalDirection(glocation.coords.heading),
+              //   options: {
+              //     'third': Text(
+              //         glocation.coords.headingAccuracy?.toPrecision(1).toString())
+              //   },
+              // ),
+              InfoDisplay2(
+                keyname: "elevation (ft)",
+                value: (glocation.coords.altitude * 3.28084).toInt(),
+                options: {
+                  't2.font': TextStyle(color: Colors.white, fontSize: 48),
+                  'third': Text(glocation.coords.altitudeAccuracy == null ||
+                      glocation.coords.altitudeAccuracy.isNaN
+                      ? '--'
+                      : '~ ' +
+                      (glocation.coords.altitudeAccuracy * 3.28084)
+                          .toInt()
+                          .toString())
+                },
+              ),
             ],
           ),
-          Row(
+          Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               // InfoDisplay2(keyname: "accuracy", value: glocation.coords.accuracy),
@@ -2263,6 +2291,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: EdgeInsets.all(12),
                   child: InfoDisplay2(
                     keyname: "distance",
+                    // value: "225",
                     value: _tripDistance < 1609.344
                         ? _tripDistance == null ||
                                 _tripDistance.isNaN ||
@@ -2273,7 +2302,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             .toString(),
                     options: {
                       // 't2.font': Theme.of(context).textTheme.headline6,
-                      't2.font': TextStyle(color: Colors.white, fontSize: 48),
+                      't2.font': TextStyle(color: Colors.white, fontSize: 64),
                       'third': _tripDistance < 1609.344
                           ? Text('feet')
                           : Text('miles')
@@ -2328,24 +2357,24 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
               ),
-              InfoDisplay2(
-                keyname: "elevation (ft)",
-                value: (glocation.coords.altitude * 3.28084).toInt(),
-                options: {
-                  't2.font': TextStyle(color: Colors.white, fontSize: 48),
-                  'third': Text(glocation.coords.altitudeAccuracy == null ||
-                          glocation.coords.altitudeAccuracy.isNaN
-                      ? '--'
-                      : '~ ' +
-                          (glocation.coords.altitudeAccuracy * 3.28084)
-                              .toInt()
-                              .toString())
-                },
-              ),
+              // InfoDisplay2(
+              //   keyname: "elevation (ft)",
+              //   value: (glocation.coords.altitude * 3.28084).toInt(),
+              //   options: {
+              //     't2.font': TextStyle(color: Colors.white, fontSize: 48),
+              //     'third': Text(glocation.coords.altitudeAccuracy == null ||
+              //             glocation.coords.altitudeAccuracy.isNaN
+              //         ? '--'
+              //         : '~ ' +
+              //             (glocation.coords.altitudeAccuracy * 3.28084)
+              //                 .toInt()
+              //                 .toString())
+              //   },
+              // ),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
                 padding: EdgeInsets.all(12),
@@ -3021,20 +3050,22 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     Widget Function(BuildContext context) myWidget;
     if (prefs.sharedPrefs.getBool(prefs.kDriveModeDisplay)) {
-      if (_isPortraitMode) {
-        _landscapeModeOnly();
-        setState(() {
-          _isPortraitMode = false;
-        });
-      }
+      _landscapeModeOnly();
+      // if (_isPortraitMode) {
+      //
+      //   setState(() {
+      //     _isPortraitMode = false;
+      //   });
+      // }
       myWidget = _driveModeStuff;
     } else {
-      if (!_isPortraitMode) {
-        _portraitModeOnly();
-        setState(() {
-          _isPortraitMode = true;
-        });
-      }
+      _portraitModeOnly();
+
+      // if (!_isPortraitMode) {
+      //   setState(() {
+      //     _isPortraitMode = true;
+      //   });
+      // }
       myWidget = _exampleStuff;
     }
     // myWidget = _exampleStuff;
