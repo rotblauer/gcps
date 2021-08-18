@@ -732,6 +732,31 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+// https://stackoverflow.com/questions/50322054/flutter-how-to-set-and-lock-screen-orientation-on-demand
+/// blocks rotation; sets orientation to: portrait
+void _portraitModeOnly() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+}
+
+void _enableRotation() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+}
+
+void _landscapeModeOnly() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+}
+
 class InfoDisplay extends StatelessWidget {
   InfoDisplay({this.keyname, this.value, this.options});
 
@@ -804,8 +829,8 @@ class InfoDisplay2 extends StatelessWidget {
                       style: options != null && options.containsKey('t2.font')
                           ? options['t2.font']
                           : TextStyle(
-                              color: Colors.orangeAccent,
-                              fontSize: 54,
+                              color: Colors.white,
+                              fontSize: 64,
                             ),
                       maxLines: 2,
                     )
@@ -2220,7 +2245,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 keyname: "heading",
                 value: degreeToCardinalDirection(glocation.coords.heading),
                 options: {
-                  't2.font': TextStyle(color: Colors.blue, fontSize: 36),
+                  't2.font': TextStyle(color: Colors.white, fontSize: 48),
                   'third': Text(glocation.coords.headingAccuracy
                       ?.toPrecision(1)
                       .toString())
@@ -2248,6 +2273,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             .toString(),
                     options: {
                       // 't2.font': Theme.of(context).textTheme.headline6,
+                      't2.font': TextStyle(color: Colors.white, fontSize: 48),
                       'third': _tripDistance < 1609.344
                           ? Text('feet')
                           : Text('miles')
@@ -2306,6 +2332,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 keyname: "elevation (ft)",
                 value: (glocation.coords.altitude * 3.28084).toInt(),
                 options: {
+                  't2.font': TextStyle(color: Colors.white, fontSize: 48),
                   'third': Text(glocation.coords.altitudeAccuracy == null ||
                           glocation.coords.altitudeAccuracy.isNaN
                       ? '--'
@@ -2988,12 +3015,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // int _currentIndex = 0;
 
+  bool _isPortraitMode = false;
+
   @override
   Widget build(BuildContext context) {
     Widget Function(BuildContext context) myWidget;
     if (prefs.sharedPrefs.getBool(prefs.kDriveModeDisplay)) {
+      if (_isPortraitMode) {
+        _landscapeModeOnly();
+        setState(() {
+          _isPortraitMode = false;
+        });
+      }
       myWidget = _driveModeStuff;
     } else {
+      if (!_isPortraitMode) {
+        _portraitModeOnly();
+        setState(() {
+          _isPortraitMode = true;
+        });
+      }
       myWidget = _exampleStuff;
     }
     // myWidget = _exampleStuff;
