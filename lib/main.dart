@@ -2066,24 +2066,58 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
 
-                Row(
-                  children: [
+                // Column(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
                     InfoDisplay2(
-                      keyname: "mph",
-                      value: (glocation.coords.speed == null ||
-                          glocation.coords.speed.isNaN ||
-                          glocation.coords.speed < 0.1)
-                          ? 0
-                          : (glocation.coords.speed * 2.236936).toInt(),
+                      keyname: "heading",
+                      value: degreeToCardinalDirection(glocation.coords.heading),
                       options: {
-                        't2.font': TextStyle(color: Colors.white, fontSize: 96),
-                        'third': Text(glocation.coords.speedAccuracy != null
-                            ? glocation.coords.speedAccuracy.toString()
-                            : '')
+                        't2.font': TextStyle(color: Colors.white, fontSize: 48),
+                        'third': Text(glocation.coords.headingAccuracy
+                            ?.toPrecision(1)
+                            .toString())
                       },
                     ),
-                  ],
-                ),
+                    // InfoDisplay2(
+                    //   keyname: "heading",
+                    //   value: degreeToCardinalDirection(glocation.coords.heading),
+                    //   options: {
+                    //     'third': Text(
+                    //         glocation.coords.headingAccuracy?.toPrecision(1).toString())
+                    //   },
+                    // ),
+                    InfoDisplay2(
+                      keyname: "elevation (ft)",
+                      value: (glocation.coords.altitude * 3.28084).toInt(),
+                      options: {
+                        't2.font': TextStyle(color: Colors.white, fontSize: 48),
+                        'third': Text(glocation.coords.altitudeAccuracy == null ||
+                            glocation.coords.altitudeAccuracy.isNaN
+                            ? '--'
+                            : '~ ' +
+                            (glocation.coords.altitudeAccuracy * 3.28084)
+                                .toInt()
+                                .toString())
+                      },
+                    ),
+
+                    // InfoDisplay2(
+                    //   keyname: "mph",
+                    //   value: (glocation.coords.speed == null ||
+                    //       glocation.coords.speed.isNaN ||
+                    //       glocation.coords.speed < 0.1)
+                    //       ? 0
+                    //       : (glocation.coords.speed * 2.236936).toInt(),
+                    //   options: {
+                    //     't2.font': TextStyle(color: Colors.white, fontSize: 96),
+                    //     'third': Text(glocation.coords.speedAccuracy != null
+                    //         ? glocation.coords.speedAccuracy.toString()
+                    //         : '')
+                    //   },
+                    // ),
+                  // ],
+                // ),
 
                 // ^^
                 Row(
@@ -2247,38 +2281,56 @@ class _MyHomePageState extends State<MyHomePage> {
               //         : '')
               //   },
               // ),
-              InfoDisplay2(
-                keyname: "heading",
-                value: degreeToCardinalDirection(glocation.coords.heading),
-                options: {
-                  't2.font': TextStyle(color: Colors.white, fontSize: 48),
-                  'third': Text(glocation.coords.headingAccuracy
-                      ?.toPrecision(1)
-                      .toString())
-                },
-              ),
+
               // InfoDisplay2(
               //   keyname: "heading",
               //   value: degreeToCardinalDirection(glocation.coords.heading),
               //   options: {
-              //     'third': Text(
-              //         glocation.coords.headingAccuracy?.toPrecision(1).toString())
+              //     't2.font': TextStyle(color: Colors.white, fontSize: 48),
+              //     'third': Text(glocation.coords.headingAccuracy
+              //         ?.toPrecision(1)
+              //         .toString())
               //   },
               // ),
+              // // InfoDisplay2(
+              // //   keyname: "heading",
+              // //   value: degreeToCardinalDirection(glocation.coords.heading),
+              // //   options: {
+              // //     'third': Text(
+              // //         glocation.coords.headingAccuracy?.toPrecision(1).toString())
+              // //   },
+              // // ),
+              // InfoDisplay2(
+              //   keyname: "elevation (ft)",
+              //   value: (glocation.coords.altitude * 3.28084).toInt(),
+              //   options: {
+              //     't2.font': TextStyle(color: Colors.white, fontSize: 48),
+              //     'third': Text(glocation.coords.altitudeAccuracy == null ||
+              //         glocation.coords.altitudeAccuracy.isNaN
+              //         ? '--'
+              //         : '~ ' +
+              //         (glocation.coords.altitudeAccuracy * 3.28084)
+              //             .toInt()
+              //             .toString())
+              //   },
+              // ),
+
               InfoDisplay2(
-                keyname: "elevation (ft)",
-                value: (glocation.coords.altitude * 3.28084).toInt(),
+                keyname: "mph",
+                // value: "81",
+                value: (glocation.coords.speed == null ||
+                    glocation.coords.speed.isNaN ||
+                    glocation.coords.speed < 0.1)
+                    ? 0
+                    : (glocation.coords.speed * 2.236936).toInt(),
                 options: {
-                  't2.font': TextStyle(color: Colors.white, fontSize: 48),
-                  'third': Text(glocation.coords.altitudeAccuracy == null ||
-                      glocation.coords.altitudeAccuracy.isNaN
-                      ? '--'
-                      : '~ ' +
-                      (glocation.coords.altitudeAccuracy * 3.28084)
-                          .toInt()
-                          .toString())
+                  't2.font': TextStyle(color: Colors.white, fontSize: 96),
+                  'third': Text(glocation.coords.speedAccuracy != null
+                      ? glocation.coords.speedAccuracy.toString()
+                      : '')
                 },
               ),
+
             ],
           ),
           Column(
@@ -2302,7 +2354,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             .toString(),
                     options: {
                       // 't2.font': Theme.of(context).textTheme.headline6,
-                      't2.font': TextStyle(color: Colors.white, fontSize: 64),
+                      't2.font': TextStyle(color: Colors.white, fontSize: 96),
                       'third': _tripDistance < 1609.344
                           ? Text('feet')
                           : Text('miles')
@@ -2374,7 +2426,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
                 padding: EdgeInsets.all(12),
@@ -3049,6 +3101,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     Widget Function(BuildContext context) myWidget;
+    FloatingActionButtonLocation fabLocation = FloatingActionButtonLocation.centerFloat;
     if (prefs.sharedPrefs.getBool(prefs.kDriveModeDisplay)) {
       _landscapeModeOnly();
       // if (_isPortraitMode) {
@@ -3058,6 +3111,7 @@ class _MyHomePageState extends State<MyHomePage> {
       //   });
       // }
       myWidget = _driveModeStuff;
+      fabLocation = FloatingActionButtonLocation.endFloat;
     } else {
       _portraitModeOnly();
 
@@ -3078,7 +3132,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: Builder(builder: myWidget),
       // backgroundColor: Colors.black,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: fabLocation,
       floatingActionButton: FloatingActionButton.extended(
         materialTapTargetSize: MaterialTapTargetSize.padded,
         backgroundColor: Colors.deepPurple[700],
