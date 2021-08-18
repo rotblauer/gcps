@@ -681,7 +681,7 @@ final ThemeData MyTheme = ThemeData(
     // is not restarted.
     brightness: Brightness.dark,
     // canvasColor: Colors.blueGrey[900],
-    canvasColor: Color.fromRGBO(18, 18, 36, 1), // Colors.blueGrey[900],
+    canvasColor: Colors.black, //Color.fromRGBO(18, 18, 36, 1), // Colors.blueGrey[900],
     accentColor: Colors.lightGreenAccent,
     textTheme: TextTheme(headline4: TextStyle(fontFamily: 'mono'))
     // primarySwatch: Colors.lightGreen, // Colors.amber,
@@ -3077,11 +3077,11 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       body: Builder(builder: myWidget),
+      // backgroundColor: Colors.black,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         materialTapTargetSize: MaterialTapTargetSize.padded,
-        // backgroundColor: Colors.deepPurple[700],
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.deepPurple[700],
         foregroundColor: Colors.deepOrange,
         elevation: 50,
         onPressed: () {
