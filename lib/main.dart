@@ -7,6 +7,7 @@ import 'package:camera/camera.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:device_info/device_info.dart';
 import 'package:enviro_sensors/enviro_sensors.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 // import 'package:english_words/english_words.dart' as ew;
 import 'package:flutter/services.dart';
@@ -26,6 +27,7 @@ import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 import 'package:path/path.dart' show basename, join;
 import 'package:path_provider/path_provider.dart';
 import 'package:sensors/sensors.dart';
+// import 'package:intl/intl.dart';
 
 import 'config.dart';
 import 'prefs.dart' as prefs;
@@ -973,6 +975,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isPushing = false;
   bool _isManuallyRequestingLocation = false;
   double _tripDistance = 0.0;
+  DateTime _tripStarted = DateTime.now().toUtc();
   List<AppPoint> _paintList = [];
 
   // MapboxMapController mapController;
@@ -985,7 +988,6 @@ class _MyHomePageState extends State<MyHomePage> {
   // String geolocation_api_text = '<api.somewhere>';
   // String geolocation_api_stream_text = '<apistream.somewhere>';
   GeolocationData geolocationData;
-  DateTime _tripStarted;
   bool _bgGeolocationIsEnabled = false;
 
   String _connectionStatus = '-';
@@ -1015,6 +1017,8 @@ class _MyHomePageState extends State<MyHomePage> {
   double _gyroscope_x;
   double _gyroscope_y;
   double _gyroscope_z;
+
+  // DateFormat myClockFormat = new DateFormat('hh:mm');
 
   // Display location information
   bg.Location glocation = new bg.Location({
@@ -1786,7 +1790,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // Update the persistent-state display.
     setState(() {
       // print('SETTING STATE FOR NEW POINT');
-      _tripDistance = _distanceTracker.distance;
+      _tripDistance = _distanceTracker.distance != null && !_distanceTracker.distance.isNaN ? _distanceTracker.distance : 0.0;
       _countStored = countStored;
       _countSnaps = vcountSnaps;
       _paintList.add(ap);
@@ -2354,7 +2358,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             .toString(),
                     options: {
                       // 't2.font': Theme.of(context).textTheme.headline6,
-                      't2.font': TextStyle(color: Colors.white, fontSize: 96),
+                      't2.font': TextStyle(color: Colors.white, fontSize: 72),
                       'third': _tripDistance < 1609.344
                           ? Text('feet')
                           : Text('miles')
@@ -2409,27 +2413,42 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
               ),
-              // InfoDisplay2(
-              //   keyname: "elevation (ft)",
-              //   value: (glocation.coords.altitude * 3.28084).toInt(),
-              //   options: {
-              //     't2.font': TextStyle(color: Colors.white, fontSize: 48),
-              //     'third': Text(glocation.coords.altitudeAccuracy == null ||
-              //             glocation.coords.altitudeAccuracy.isNaN
-              //         ? '--'
-              //         : '~ ' +
-              //             (glocation.coords.altitudeAccuracy * 3.28084)
-              //                 .toInt()
-              //                 .toString())
-              //   },
-              // ),
+              InfoDisplay2(
+                keyname: "avg mph",
+                value: ((_tripDistance == null ||
+                    _tripDistance.isNaN ||
+                    _tripDistance == 0
+                    ? 0 : _tripDistance /1609.344) / (DateTime.now().difference(_tripStarted).inSeconds) / 3600).toInt(),
+                options: {
+                  't2.font': TextStyle(color: Colors.white, fontSize: 48),
+                },
+              ),
             ],
           ),
           Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              // (DateTime.now().difference(_tripStarted).inSeconds)
               Container(
-                padding: EdgeInsets.all(12),
+                padding: EdgeInsets.all(4),
+                child: InfoDisplay2(
+                  keyname: "clock",
+                  value: '${DateTime.now().hour.toString().padLeft(2, "0")}:${DateTime.now().minute.toString().padLeft(2, "0")}',
+                  options: {'t2.font': TextStyle(color: Colors.white, fontSize: 32)},
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(0),
+                child: InfoDisplay2(
+                  keyname: "trip time",
+                  // value: '${_tripStarted.hour.toString().padLeft(2, "0")}h ${_tripStarted.minute.toString().padLeft(2, "0")}m',
+                  // value: '5h 47m',
+                  value: '${DateTime.now().difference(_tripStarted).inHours.toString().padLeft(2, "0")}h ${DateTime.now().difference(_tripStarted).inMinutes.toString().padLeft(2, "0")}m',
+                  options: {'t2.font': Theme.of(context).textTheme.headline6},
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(0),
                 child: InfoDisplay2(
                   keyname: "accuracy (ft)",
                   value: (glocation.coords.accuracy * 3.28084).toInt(),
@@ -2437,7 +2456,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.all(12),
+                padding: EdgeInsets.all(0),
                 child: InfoDisplay2(
                     keyname: "elevation Δ",
                     value: '+${_distanceTracker.up}-${_distanceTracker.dn}',

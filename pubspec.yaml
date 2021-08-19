@@ -47,6 +47,8 @@ dependencies:
   just_debounce_it:
   enviro_sensors: ^1.0.1
   sensors: ^2.0.0
+  timeago: ^3.1.0
+#  intl: ^0.17.0
 
 dev_dependencies:
   flutter_launcher_icons: "^0.8.1"
