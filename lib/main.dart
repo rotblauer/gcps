@@ -7,7 +7,6 @@ import 'package:camera/camera.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:device_info/device_info.dart';
 import 'package:enviro_sensors/enviro_sensors.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 // import 'package:english_words/english_words.dart' as ew;
 import 'package:flutter/services.dart';
@@ -2077,7 +2076,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             keyname: "heading",
                             value: degreeToCardinalDirection(glocation.coords.heading),
                             options: {
-                              't2.font': TextStyle(color: Colors.white, fontSize: 48),
+                              't2.font': TextStyle(color: Colors.white, fontSize: 48, fontFamily: 'monospace'),
                               'third': Text(glocation.coords.headingAccuracy
                                   ?.toPrecision(1)
                                   .toString())
@@ -2095,7 +2094,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             keyname: "elevation (ft)",
                             value: (glocation.coords.altitude * 3.28084).toInt(),
                             options: {
-                              't2.font': TextStyle(color: Colors.white, fontSize: 48),
+                              't2.font': TextStyle(color: Colors.white, fontSize: 48, fontFamily: 'monospace'),
                               'third': Text(glocation.coords.altitudeAccuracy == null ||
                                   glocation.coords.altitudeAccuracy.isNaN
                                   ? '--'
@@ -2328,7 +2327,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ? 0
                           : (glocation.coords.speed * 2.236936).toInt(),
                       options: {
-                        't2.font': TextStyle(color: Colors.white, fontSize: 96),
+                        't2.font': TextStyle(color: Colors.white, fontSize: 96, fontFamily: 'monospace'),
                         'third': Text(glocation.coords.speedAccuracy != null
                             ? glocation.coords.speedAccuracy.toString()
                             : '')
@@ -2347,7 +2346,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: EdgeInsets.all(12),
                         child: InfoDisplay2(
                           keyname: "distance",
-                          // value: "225",
+                          // value: 225.4.toPrecision(1).toString(),
                           value: _tripDistance == null ||
                                       _tripDistance.isNaN ||
                                       _tripDistance == 0
@@ -2355,10 +2354,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   : (_tripDistance / 1609.344).toPrecision(1).toString(),
                           options: {
                             // 't2.font': Theme.of(context).textTheme.headline6,
-                            't2.font': TextStyle(color: Colors.white, fontSize: 72),
-                            'third': _tripDistance < 1609.344
-                                ? Text('feet')
-                                : Text('miles')
+                            't2.font': TextStyle(color: Colors.white, fontSize: 72, fontFamily: 'monospace'),
+                            'third': Text('miles')
                           },
                         ),
                       ),
@@ -2412,6 +2409,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     InfoDisplay2(
                       keyname: "avg mph",
+                      // value: 54,
                       value: ((_tripDistance == null ||
                           _tripDistance.isNaN ||
                           _tripDistance == 0
@@ -2420,7 +2418,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ? '0'
         : ((DateTime.now().difference(_tripStarted).inSeconds) / 3600).toInt(),
                       options: {
-                        't2.font': TextStyle(color: Colors.white, fontSize: 48),
+                        't2.font': TextStyle(color: Colors.white, fontSize: 48, fontFamily: 'monospace'),
                       },
                     ),
                   ],
@@ -2445,7 +2443,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         // value: '5h 47m',
                         value: '${DateTime.now().difference(_tripStarted).inHours.toString().padLeft(2, "0")}:${DateTime.now().difference(_tripStarted).inMinutes.toString().padLeft(2, "0")}m',
                         // options: {'t2.font': Theme.of(context).textTheme.headline6},
-                        options: {'t2.font': TextStyle(color: Colors.white, fontSize: 24a)},
+                        options: {'t2.font': TextStyle(color: Colors.white, fontSize: 24, fontFamily: 'monospace')},
                       ),
                     ),
                     Container(
