@@ -653,7 +653,7 @@ Future<String> _getName() async {
     }
     var out =
         '${androidDeviceInfo.board}-${androidDeviceInfo.model.split(" ")[0]}-${androidDeviceInfo.androidId.substring(0, 4)}'; // unique ID on Android
-    if (out.contains("moto")) {
+    if (out.contains("sofia-moto")) {
       return "sofia-moto-fdb7";
     }
     return out;
@@ -1669,7 +1669,7 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (resCode == 9696) {
     } else {
       setState(() {
-        _appErrorStatus = 'Push failed. Status code: ' + resCode.toString();
+        // _appErrorStatus = 'Push failed. Status code: ' + resCode.toString();
         _pointsSinceError = 0;
       });
 
