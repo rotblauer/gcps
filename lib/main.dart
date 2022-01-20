@@ -3269,8 +3269,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       );
 
       // Attempt to take a picture and log where it's been saved.
-      // var xpath =
       await _controller.takePicture().then((value) => value.saveTo(path));
+
+      // Capture orientation
+      // https://stackoverflow.com/a/62807277/4401322
+      final img.Image capturedImage = img.decodeImage(await File(path).readAsBytes());
+      final img.Image orientedImage = img.bakeOrientation(capturedImage);
+      await File(path).writeAsBytes(img.encodeJpg(orientedImage));
       // _controller.setFlashMode(FlashMode.off);
       // xpath.saveTo(path);
 
