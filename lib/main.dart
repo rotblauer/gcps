@@ -1811,7 +1811,17 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _pushEvery = pushevery;
     });
-    if (countStored % pushevery != 0) {
+
+    var shouldPush = countStored % pushevery != 0;
+    var atHome = Haversine.fromDegrees(
+        latitude1: 48.03463,
+        longitude1: -118.37449,
+        latitude2: location.coords.latitude,
+        longitude2: location.coords.longitude).distance() < 20;
+
+    shouldPush = shouldPush || (atHome && countStored > 500);
+
+    if (!shouldPush) {
       return;
     }
 
