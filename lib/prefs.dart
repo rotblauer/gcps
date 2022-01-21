@@ -23,7 +23,6 @@ const String kLocationDisableStopDetection = 'kLocationDisableStopDetection'; //
 const String kLocationDeviceInMotion = 'kLocationDeviceInMotion';
 
 // App Display settings
-const String kDriveModeDisplay = 'kDriveModeDashboard';
 
 class SharedPrefs {
   static SharedPreferences _sharedPrefs;
@@ -95,8 +94,6 @@ class SharedPrefs {
         return _sharedPrefs.getBool(kLocationDisableStopDetection) ?? false;
       case kLocationDeviceInMotion:
         return _sharedPrefs.getBool(kLocationDeviceInMotion) ?? true;
-      case kDriveModeDisplay:
-        return _sharedPrefs.getBool(kDriveModeDisplay) ?? false;
       default:
         print('!!!! I AM IMPOSSIBILITY');
         return false;
@@ -112,8 +109,6 @@ class SharedPrefs {
       case kLocationDisableStopDetection:
         break;
       case kLocationDeviceInMotion:
-        break;
-      case kDriveModeDisplay:
         break;
       default:
         print('!!!! I AM IMPOSSIBILITY');
@@ -319,8 +314,6 @@ class _SettingsScreen extends State<MySettingsScreen> {
   String _kLocationGarneringDesiredAccuracy =
       sharedPrefs.getString(kLocationGarneringDesiredAccuracy);
 
-  bool _kDriveModeDisplay = sharedPrefs.getBool(kDriveModeDisplay);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -331,19 +324,6 @@ class _SettingsScreen extends State<MySettingsScreen> {
       ),
       body: ListView(
         children: [
-          // App Display settings
-          _buildSwitchTile(
-              context: context,
-              leading: Icon(Icons.accessibility_new_outlined),
-              title: 'Drive mode display',
-              subtitle: 'Hide map, show big numbers.',
-              value: _kDriveModeDisplay,
-              onChanged: (bool value) {
-                setState(() {
-                  _kDriveModeDisplay = value;
-                });
-                sharedPrefs.setBool(kDriveModeDisplay, value);
-              }),
 
           // Network/upload settings
           Row(
