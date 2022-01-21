@@ -718,10 +718,10 @@ class MyApp extends StatelessWidget {
       systemNavigationBarIconBrightness: Theme.of(context).brightness,
       systemNavigationBarColor: MyTheme.canvasColor,
     ));
-    // SystemChrome.setPreferredOrientations([
-    //   DeviceOrientation.portraitUp,
-    // ]);
-    _enableRotation();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    // _enableRotation();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'global cat positioning system',
