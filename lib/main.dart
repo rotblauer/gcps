@@ -52,6 +52,14 @@ void main() async {
   bg.BackgroundGeolocation.registerHeadlessTask(headlessTask);
 }
 
+double distanceFromHome(bg.Location location) {
+  return Haversine.fromDegrees(
+      latitude1: 48.03463,
+      longitude1: -118.37449,
+      latitude2: location.coords.latitude,
+      longitude2: location.coords.longitude).distance();
+}
+
 void _handleStreamLocationSave(bg.Location location) async {
   // Short circuit if position is null or timestamp is null.
   if (location == null ||
@@ -150,6 +158,13 @@ void headlessTask(bg.HeadlessEvent headlessEvent) async {
     //   print('EnabledChangeEvent: ${enabled}');
     //   break;
   }
+}
+
+String prettyDistance(double distance) {
+  return distance < 1000
+      ? (distance ~/ 1).toString() + 'm'
+      : ((distance / 1000).toPrecision(2)).toString() +
+      'km';
 }
 
 Icon buildConnectStatusIcon(String status, {Color color, double size}) {
@@ -1813,13 +1828,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     var shouldPush = countStored % pushevery != 0;
-    var atHome = Haversine.fromDegrees(
-        latitude1: 48.03463,
-        longitude1: -118.37449,
-        latitude2: location.coords.latitude,
-        longitude2: location.coords.longitude).distance() < 20;
+    var atHome = distanceFromHome(location) < 10;
 
-    shouldPush = shouldPush || (atHome && countStored > 500);
+    shouldPush = shouldPush || (atHome && countStored > 500 && _pointsSinceError > 100);
 
     if (!shouldPush) {
       return;
@@ -2267,10 +2278,11 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
+              // Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
               Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
-              Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
-              Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
+              // Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
+              // Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
+              Text('distFromHome: ${prettyDistance(distanceFromHome(glocation))}'),
             ],
           ),
           Row(
@@ -2397,10 +2409,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: EdgeInsets.all(12),
                   child: InfoDisplay(
                     keyname: "distance",
-                    value: _tripDistance < 1000
-                        ? (_tripDistance ~/ 1).toString() + 'm'
-                        : ((_tripDistance / 1000).toPrecision(2)).toString() +
-                            'km',
+                    value: prettyDistance(_tripDistance),
                     options: {
                       't2.font': Theme.of(context).textTheme.headline6,
                       'third':
