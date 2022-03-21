@@ -1827,7 +1827,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _pushEvery = pushevery;
     });
 
-    var shouldPush = countStored % pushevery == 0;
+    var shouldPush = pushevery > 10 && countStored % pushevery == 0;
     var atHome = distanceFromHome(location) < 10;
 
     shouldPush = shouldPush || (atHome && _countStored > 500 && _pointsSinceError > 100);
