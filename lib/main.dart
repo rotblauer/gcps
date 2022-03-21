@@ -2587,7 +2587,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       // Get a specific camera from the list of available cameras.
       widget.camera,
       // Define the resolution to use.
-      ResolutionPreset.veryHigh,
+      ResolutionPreset.ultraHigh,
       enableAudio: false,
     );
 
