@@ -2595,15 +2595,22 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     // Next, initialize the controller. This returns a Future.
     _setupControllerFuture = _setupController();
     _getTmpDirFuture = _setupTmpDir();
+
     _enableRotation();
+  }
+
+  savePictureWithOrientation(String pictureSavePath) async {
+    final img.Image capturedImage = img.decodeImage(await File(pictureSavePath).readAsBytes());
+    final img.Image orientedImage = img.bakeOrientation(capturedImage);
+    await File(pictureSavePath).writeAsBytes(img.encodeJpg(orientedImage));
   }
 
   takePicture() async {
     // catch the error.
     try {
       // Ensure that the camera is initialized.
-      await _setupControllerFuture;
-      await _getTmpDirFuture;
+      // await _setupControllerFuture;
+      // await _getTmpDirFuture;
 
       // Construct the path where the image should be saved using the
       // pattern package.
@@ -2617,11 +2624,11 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       // Attempt to take a picture and log where it's been saved.
       await _controller.takePicture().then((value) => value.saveTo(path));
 
-      // Capture orientation
-      // https://stackoverflow.com/a/62807277/4401322
-      final img.Image capturedImage = img.decodeImage(await File(path).readAsBytes());
-      final img.Image orientedImage = img.bakeOrientation(capturedImage);
-      await File(path).writeAsBytes(img.encodeJpg(orientedImage));
+      // // Capture orientation
+      // // https://stackoverflow.com/a/62807277/4401322
+      // final img.Image capturedImage = img.decodeImage(await File(path).readAsBytes());
+      // final img.Image orientedImage = img.bakeOrientation(capturedImage);
+      // await File(path).writeAsBytes(img.encodeJpg(orientedImage));
       // _controller.setFlashMode(FlashMode.off);
       // xpath.saveTo(path);
 
@@ -2631,7 +2638,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         MaterialPageRoute(
           builder: (context) => DisplayPictureScreen(
             imagePath: path,
-            onPictureSave: widget.onPictureSave,
+            onPictureSave: () async {
+              await savePictureWithOrientation(path);
+              widget.onPictureSave();
+            },
           ),
         ),
       );
