@@ -2570,8 +2570,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   Future<void> _setupController() async {
     await _controller.initialize();
-    return _controller.setFocusMode(FocusMode.auto);
-    return _controller.unlockCaptureOrientation();
+    await _controller.setFocusMode(FocusMode.auto);
+    // await _controller.unlockCaptureOrientation();
+    // await _controller.lockCaptureOrientation();
   }
 
   _setupTmpDir() async {
@@ -2594,6 +2595,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     // Next, initialize the controller. This returns a Future.
     _setupControllerFuture = _setupController();
     _getTmpDirFuture = _setupTmpDir();
+    _enableRotation();
   }
 
   takePicture() async {
@@ -2643,6 +2645,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   void dispose() {
     // Dispose of the controller when the widget is disposed.
     _controller.dispose();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     super.dispose();
   }
 
