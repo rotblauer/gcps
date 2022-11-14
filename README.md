@@ -1,6 +1,6 @@
 # Global Cat Postioning System
 
-<!-- <img src="./assets/icon/catdroid-icon.png" width='100%' height='100%' align='right'/> -->
+<!-- <img src="./assets/icon/catdroid-icon.png" width='20%' height='20%' style="border-radius: 50%" align='right'/> -->
 
 
 
