@@ -590,7 +590,7 @@ Future<List<AppPoint>> lastTracksWithLimit(int limit,
   });
 }
 
-Future<void> setTracksPushedBetweenInclusive(
+Future<void> setTracksUploadedByTimeRange(
     int first, int last, int uploaded) async {
   final Database db = await database();
   await db.update(_cTableName, {'uploaded': uploaded},

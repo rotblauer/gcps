@@ -1608,7 +1608,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // Awkwardly placed but whatever.
         // Update the persistent-state display.
 
-        setTracksPushedBetweenInclusive(
+        setTracksUploadedByTimeRange(
             tracks[0].timestamp,
             tracks[tracks.length - 1].timestamp,
             (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1));
