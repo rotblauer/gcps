@@ -1592,8 +1592,11 @@ class _MyHomePageState extends State<MyHomePage> {
     for (var count = await countTracks();
         count > 10;
         count = await countTracks()) {
+
       var tracks = await firstTracksWithLimit(
-          (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt());
+          (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt(),
+        excludeUploaded: true,
+      );
       resCode = await _pushTracks(tracks);
 
       if (resCode == HttpStatus.ok) {
