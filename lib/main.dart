@@ -1647,7 +1647,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    if (resCode == 200) {
+    if (resCode == HttpStatus.ok) {
       ///
       //
       // UPLOADED tracks OLDER than 7 days get deleted.
