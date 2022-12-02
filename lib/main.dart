@@ -1595,8 +1595,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
       var tracks = await firstTracksWithLimit(
           (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt(),
-        excludeUploaded: true,
       );
+
+      tracks.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+      // DEBUGGING
+      // for (var i = 0; i < tracks.length; i++) {
+      //   var trackel = tracks.elementAt(i);
+      //   print('+ ${trackel.toString()} (u?=${trackel.isUploaded()})');
+      // }
+
+      // THIS IS THE PUSH.
       resCode = await _pushTracks(tracks);
 
       if (resCode == HttpStatus.ok) {
@@ -1608,6 +1617,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // Awkwardly placed but whatever.
         // Update the persistent-state display.
 
+        print('Labeling UPLOADED tracks in range: [${tracks[0].timestamp}, ${tracks[tracks.length - 1].timestamp}]');
         setTracksUploadedByTimeRange(
             tracks[0].timestamp,
             tracks[tracks.length - 1].timestamp,
