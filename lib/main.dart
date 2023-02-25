@@ -2412,7 +2412,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   keyname: "accuracy", value: glocation.coords.accuracy),
               InfoDisplay(
                 keyname: "elevation",
-                value: glocation.coords.altitude,
+                value: '${glocation.coords.altitude} (${(glocation.coords.altitude * 3.28084).toInt()}ft)' ,
                 options: {
                   'third': Text(glocation.coords.altitudeAccuracy
                       ?.toPrecision(1)

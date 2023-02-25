@@ -13,7 +13,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.0.0+1
+version: 0.0.0+4
 environment:
   sdk: ">=2.7.0 <3.0.0"
 dependencies:
@@ -52,10 +52,10 @@ dependencies:
 
 dev_dependencies:
   flutter_launcher_icons: "^0.8.1"
-#  test: "^1.15.7"
+  #  test: "^1.15.7"
   flutter_test:
     sdk: flutter
-  # integration_test: # 1.0.1
+    # integration_test: # 1.0.1
 #    sdk: flutter
 
 flutter_icons:
@@ -65,7 +65,6 @@ flutter_icons:
   # The next two attributes are only used when generating Android launcher icon
   adaptive_icon_background: "#FFFF5742"
   adaptive_icon_foreground: "assets/icon/catdroid-icon.png"
-
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -75,8 +74,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
-# To add assets to your application, add an assets section, like this:
+  # To add assets to your application, add an assets section, like this:
   assets:
     - "assets/catdroid-icon-cat-only.png"
 #   - images/a_dot_ham.jpeg
