@@ -671,6 +671,8 @@ Future<String> _getName() async {
         '${androidDeviceInfo.board}-${androidDeviceInfo.model.split(" ")[0]}-${androidDeviceInfo.androidId.substring(0, 4)}'; // unique ID on Android
     if (out.contains("sofia-moto")) {
       return "sofia-moto-fdb7";
+    } else if (out.contains("bsp-moto")) {
+      return "moto-i-2";
     }
     return out;
   }
@@ -2291,22 +2293,28 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
-              Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
+              Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
+              // Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
               // Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
               // Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
-              Text('distFromHome: ${prettyDistance(distanceFromHome(glocation))}'),
+              Text('⌂: ${prettyDistance(distanceFromHome(glocation))}'),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Text(
-                  'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
+                'lon: ${glocation.coords.longitude.toPrecision(5)}'
+              ),
               Text(
-                  'ux: ${_user_accelerometer_x?.toPrecision(2)},${_user_accelerometer_y?.toPrecision(2)},${_user_accelerometer_z?.toPrecision(2)}'),
-              Text(
-                  'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
+                  'lat: ${glocation.coords.latitude.toPrecision(5)}'
+              ),
+              // Text(
+              //     'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
+              // Text(
+              //     'ux: ${_user_accelerometer_x?.toPrecision(2)},${_user_accelerometer_y?.toPrecision(2)},${_user_accelerometer_z?.toPrecision(2)}'),
+              // Text(
+              //     'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
             ],
           ),
 

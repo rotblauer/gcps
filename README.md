@@ -6,6 +6,10 @@
 
 ### TODO
 
+- [ ] distance tool; start, stop, haversine!
+- [ ] show lat and long
+- [ ] usable ui for gyroscopes
+
 - [x] app icon
 - [x] battery status
 - [x] activity, healthkit stuff
@@ -25,8 +29,9 @@
 
 1. Connect Android device.
 2. Go to Settings > Connected Devices > USB Preferences: File Transfer mode.
+3. Make sure Settings > Developer Setting > USB Debug is enabled.
 
-3.
+4. 
 
 ```
 > flutter devices
@@ -41,6 +46,10 @@ Chrome (web)          • chrome     • web-javascript • Google Chrome 90.0.4
 ```
 flutter run -d ZY22BK96TD
 ```
+
+:information_source: If all of this fails to get your device to show up
+in the output of `flutter devices`, then maybe try sleeping the computer
+while the devices is plugged in, then re-awake it. It worked once for me.
 
 ### Flutter console
 
