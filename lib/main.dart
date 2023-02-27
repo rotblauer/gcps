@@ -2702,34 +2702,37 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       // Wait until the controller is initialized before displaying the
       // camera preview. Use a FutureBuilder to display a loading spinner
       // until the controller has finished initializing.
-      body: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Flexible(
-              child: FutureBuilder<void>(
-            future: _setupControllerFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                // If the Future is complete, display the preview.
-                return CameraPreview(_controller);
-              } else {
-                // Otherwise, display a loading indicator.
-                return Center(
-                    child: CircularProgressIndicator(
-                        backgroundColor: Colors.deepPurple));
-              }
-            },
-          )),
-        ],
+      body: GestureDetector(
+        onTap: takePicture,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Flexible(
+                child: FutureBuilder<void>(
+              future: _setupControllerFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  // If the Future is complete, display the preview.
+                  return CameraPreview(_controller);
+                } else {
+                  // Otherwise, display a loading indicator.
+                  return Center(
+                      child: CircularProgressIndicator(
+                          backgroundColor: Colors.deepPurple));
+                }
+              },
+            )),
+          ],
+        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        autofocus: true,
-        backgroundColor: Colors.deepOrange,
-        foregroundColor: Colors.deepPurple[700],
-        child: Icon(Icons.camera),
-        onPressed: takePicture,
-      ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      // floatingActionButton: FloatingActionButton(
+      //   autofocus: true,
+      //   backgroundColor: Colors.deepOrange,
+      //   foregroundColor: Colors.deepPurple[700],
+      //   child: Icon(Icons.camera),
+      //   onPressed: takePicture,
+      // ),
     );
   }
 }
