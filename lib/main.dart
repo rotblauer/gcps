@@ -2584,7 +2584,7 @@ class TakePictureScreen extends StatefulWidget {
 // https://flutter.dev/docs/cookbook/plugins/picture-using-camera
 
 class TakePictureScreenState extends State<TakePictureScreen> {
-  CameraController _controller;
+  CameraController? _controller;
   Future<void> _setupControllerFuture;
   Directory _tmpDir;
   Future<void> _getTmpDirFuture;
