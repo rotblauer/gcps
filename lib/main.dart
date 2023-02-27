@@ -26,7 +26,7 @@ import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 import 'package:path/path.dart' show basename, join;
 import 'package:path_provider/path_provider.dart';
 import 'package:sensors/sensors.dart';
-
+// import 'package:flutter_android_volume_keydown/flutter_android_volume_keydown.dart';
 // import 'package:intl/intl.dart';
 
 import 'config.dart';
@@ -2588,6 +2588,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   Future<void> _setupControllerFuture;
   Directory _tmpDir;
   Future<void> _getTmpDirFuture;
+  // StreamSubscription _volumeButtonSubscription;
 
   Future<void> _setupController() async {
     await _controller.initialize();
@@ -2618,6 +2619,17 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     _getTmpDirFuture = _setupTmpDir();
 
     _enableRotation();
+
+    // _volumeButtonSubscription = FlutterAndroidVolumeKeydown.stream.listen((event) {
+    //   print('Volume button pressed: $event');
+    //   if (event == HardwareButton.volume_down) {
+    //     print("Volume down received");
+    //     takePicture();
+    //   } else if (event == HardwareButton.volume_up) {
+    //     print("Volume up received");
+    //     takePicture();
+    //   }
+    // });
   }
 
   savePictureWithOrientation(String pictureSavePath) async {
@@ -2679,6 +2691,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+    // _volumeButtonSubscription?.cancel();
     super.dispose();
   }
 
