@@ -2584,7 +2584,7 @@ class TakePictureScreen extends StatefulWidget {
 // https://flutter.dev/docs/cookbook/plugins/picture-using-camera
 
 class TakePictureScreenState extends State<TakePictureScreen> {
-  CameraController? _controller;
+  CameraController _controller;
   Future<void> _setupControllerFuture;
   Directory _tmpDir;
   Future<void> _getTmpDirFuture;
@@ -2610,7 +2610,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       // Get a specific camera from the list of available cameras.
       widget.camera,
       // Define the resolution to use.
-      ResolutionPreset.max,
+      ResolutionPreset.max,  /// The highest resolution available.
       enableAudio: false,
     );
 
@@ -2630,6 +2630,17 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     //     takePicture();
     //   }
     // });
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the controller when the widget is disposed.
+    _controller.dispose();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    // _volumeButtonSubscription?.cancel();
+    super.dispose();
   }
 
   savePictureWithOrientation(String pictureSavePath) async {
@@ -2682,17 +2693,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       // If an error occurs, log the error to the console.
       print(e);
     }
-  }
-
-  @override
-  void dispose() {
-    // Dispose of the controller when the widget is disposed.
-    _controller.dispose();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
-    // _volumeButtonSubscription?.cancel();
-    super.dispose();
   }
 
   @override
