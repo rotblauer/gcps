@@ -30,6 +30,7 @@ dependencies:
   path_provider:
   device_info:
   http:
+  file: ^6.1.4
   connectivity:
   camera: "0.9.4+5"
   # workmanager: ^0.2.0
