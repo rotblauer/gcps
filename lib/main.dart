@@ -56,8 +56,8 @@ void main() async {
 
 double distanceFromHome(bg.Location location) {
   return Haversine.fromDegrees(
-      latitude1: 48.03463,
-      longitude1: -118.37449,
+      latitude1: 45.5710383,
+      longitude1: -111.6902772,
       latitude2: location.coords.latitude,
       longitude2: location.coords.longitude).distance();
 }
