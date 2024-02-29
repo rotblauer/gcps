@@ -1878,7 +1878,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _secondsSinceLastPoint = 0;
 
   Future<void> eachSecondGetLocation() async {
-    if (prefs.sharedPrefs.getBool(prefs.kTurboMode) && _secondsSinceLastPoint > 1) {
+    if (prefs.sharedPrefs.getBool(prefs.kTurboMode) && _secondsSinceLastPoint >
+    prefs.sharedPrefs.getDouble(prefs.kTurboModeInterval)) {
       var loc = await bg.BackgroundGeolocation
           .getCurrentPosition();
       _handleStreamLocationUpdate(loc);

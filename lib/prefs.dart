@@ -22,6 +22,7 @@ const String kLocationGarneringElasticityMultiplier =
 const String kLocationDisableStopDetection = 'kLocationDisableStopDetection'; //
 const String kLocationDeviceInMotion = 'kLocationDeviceInMotion';
 const String kTurboMode = 'kTurboMode';
+const String kTurboModeInterval = 'kTurboModeInterval';
 
 // App Display settings
 
@@ -54,6 +55,9 @@ class SharedPrefs {
       case kLocationGarneringElasticityMultiplier:
         return _sharedPrefs.get(kLocationGarneringElasticityMultiplier) ?? 0;
         break;
+      case kTurboModeInterval:
+        return _sharedPrefs.get(kTurboModeInterval) ?? 1;
+        break;
       default:
         print('!!!! I AM IMPOSSIBILITY');
         return 0;
@@ -77,6 +81,8 @@ class SharedPrefs {
       case kLocationGarneringDesiredAccuracy:
         break;
       case kLocationGarneringElasticityMultiplier:
+        break;
+      case kTurboModeInterval:
         break;
       default:
         print('!!!! I AM IMPOSSIBILITY');
@@ -307,6 +313,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
       sharedPrefs.getBool(kLocationDisableStopDetection);
   bool _kLocationDeviceInMotion = sharedPrefs.getBool(kLocationDeviceInMotion);
   bool _kTurboMode = sharedPrefs.getBool(kTurboMode);
+  double _kTurboModeInterval = sharedPrefs.getDouble(kTurboModeInterval);
   double _kPushInterval = sharedPrefs.getDouble(kPushInterval);
   double _kPushBatchSize = sharedPrefs.getDouble(kPushBatchSize);
   double _kLocationUpdateInterval =
@@ -380,6 +387,22 @@ class _SettingsScreen extends State<MySettingsScreen> {
                   _kTurboMode = value;
                 });
                 sharedPrefs.setBool(kTurboMode, value);
+              }),
+
+          _buildSliderTile(
+              context: context,
+              leading: Icon(Icons.fast_forward_outlined),
+              title: 'Turbo mode: track interval',
+              subtitle: 'Minimum seconds between turbo mode points.',
+              min: 1,
+              max: 60,
+              divisions: 30,
+              value: _kTurboModeInterval,
+              onChanged: (value) {
+                setState(() {
+                  _kTurboModeInterval = value.floorToDouble();
+                });
+                sharedPrefs.setDouble(kTurboModeInterval, value);
               }),
 
           _buildSliderTile(
