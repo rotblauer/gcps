@@ -21,6 +21,7 @@ const String kLocationGarneringElasticityMultiplier =
     'locationGarneringElasticityMultiplier';
 const String kLocationDisableStopDetection = 'kLocationDisableStopDetection'; //
 const String kLocationDeviceInMotion = 'kLocationDeviceInMotion';
+const String kTurboMode = 'kTurboMode';
 
 // App Display settings
 
@@ -94,6 +95,8 @@ class SharedPrefs {
         return _sharedPrefs.getBool(kLocationDisableStopDetection) ?? false;
       case kLocationDeviceInMotion:
         return _sharedPrefs.getBool(kLocationDeviceInMotion) ?? true;
+      case kTurboMode:
+        return _sharedPrefs.get(kTurboMode) ?? false;
       default:
         print('!!!! I AM IMPOSSIBILITY');
         return false;
@@ -109,6 +112,8 @@ class SharedPrefs {
       case kLocationDisableStopDetection:
         break;
       case kLocationDeviceInMotion:
+        break;
+      case kTurboMode:
         break;
       default:
         print('!!!! I AM IMPOSSIBILITY');
@@ -301,6 +306,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
   bool _kLocationDisableStopDetection =
       sharedPrefs.getBool(kLocationDisableStopDetection);
   bool _kLocationDeviceInMotion = sharedPrefs.getBool(kLocationDeviceInMotion);
+  bool _kTurboMode = sharedPrefs.getBool(kTurboMode);
   double _kPushInterval = sharedPrefs.getDouble(kPushInterval);
   double _kPushBatchSize = sharedPrefs.getDouble(kPushBatchSize);
   double _kLocationUpdateInterval =
@@ -361,6 +367,19 @@ class _SettingsScreen extends State<MySettingsScreen> {
                   _kAllowPushWithMobile = value;
                 });
                 sharedPrefs.setBool(kAllowPushWithMobile, value);
+              }),
+
+          _buildSwitchTile(
+              context: context,
+              leading: Icon(Icons.fast_forward),
+              title: 'Turbo mode',
+              subtitle: 'Collect points at least every second.',
+              value: _kTurboMode,
+              onChanged: (bool value) {
+                setState(() {
+                  _kTurboMode = value;
+                });
+                sharedPrefs.setBool(kTurboMode, value);
               }),
 
           _buildSliderTile(

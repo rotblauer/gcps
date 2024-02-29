@@ -1872,8 +1872,16 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   // runs every 1 second
-
   int _secondsSinceLastPoint = 0;
+
+  Future<void> eachSecondGetLocation() async {
+    if (prefs.sharedPrefs.getBool(prefs.kTurboMode) && _secondsSinceLastPoint > 1) {
+      var loc = await bg.BackgroundGeolocation
+          .getCurrentPosition();
+      _handleStreamLocationUpdate(loc);
+    }
+  }
+
   void eachSecond() {
     Timer.periodic(new Duration(seconds: 1), (timer) {
       var s = (DateTime.now().millisecondsSinceEpoch -
@@ -1881,6 +1889,7 @@ class _MyHomePageState extends State<MyHomePage> {
           1000;
       setState(() {
         _secondsSinceLastPoint = s;
+        eachSecondGetLocation();
       });
     });
   }
