@@ -1,8 +1,6 @@
-# Global Cat Postioning System
+# Global Cat Positioning System
 
 <!-- <img src="./assets/icon/catdroid-icon.png" width='20%' height='20%' style="border-radius: 50%" align='right'/> -->
-
-
 
 ### TODO
 

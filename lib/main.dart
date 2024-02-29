@@ -1040,6 +1040,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // DateFormat myClockFormat = new DateFormat('hh:mm');
 
   // Display location information
+  // bg.Location glocation;
+
   bg.Location glocation = new bg.Location({
     'timestamp': DateTime.now().toIso8601String(),
     'isMoving': true,
@@ -1050,8 +1052,12 @@ class _MyHomePageState extends State<MyHomePage> {
       'longitude': -69.0,
       'accuracy': 42.0,
       'altitude': 69.0,
+      'altitude_accuracy': -1,
       'speed': 69.0,
+      'speed_accuracy': 1.0,
       'heading': 69.0,
+      'heading_accuracy': -1,
+      'ellipsoidal_altitude': 42.0,
     },
     'battery': {
       'level': 1.0,
@@ -1325,7 +1331,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
     bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
-      print('[motionchange] - ${location.toString(compact: false)}');
+      print('[motionchange] - ${location.toString()}');
       _handleStreamLocationUpdate(location);
     });
 
@@ -2389,7 +2395,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ? 0
                     : (glocation.coords.speed * 3.6).toPrecision(1),
                 options: {
-                  'third': Text(glocation.coords.speedAccuracy != null
+                  'third': Text(glocation.coords.speedAccuracy != -1
                       ? glocation.coords.speedAccuracy.toString()
                       : '')
                 },
@@ -2400,7 +2406,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 options: {
                   'third': Text(glocation.coords.headingAccuracy
                       ?.toPrecision(1)
-                      .toString())
+                      ?.toString())
                 },
               ),
             ],

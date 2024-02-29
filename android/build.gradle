@@ -2,9 +2,9 @@ buildscript {
     ext.kotlin_version = '1.6.10'
     ext {
         compileSdkVersion   = 33                // or higher
-        targetSdkVersion    = 30                // or higher
+        targetSdkVersion    = 33                // or higher
         appCompatVersion    = "1.0.2"           // or higher
-        playServicesLocationVersion = "17.0.0"  // or higher
+        playServicesLocationVersion = "21.0.1"  // or higher
     }
     repositories {
         google()
@@ -30,6 +30,11 @@ allprojects {
             // [required] background_fetch
             url "${project(':background_fetch').projectDir}/libs"
         }
+//        configurations.all {
+//            resolutionStrategy {
+//                force "com.google.android.gms:play-services-location:21.0.1"
+//            }
+//        }
     }
 }
 
