@@ -1562,6 +1562,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<int> _pushTracks(List<AppPoint> tracks) async {
     print("=====> ... Pushing tracks: " + tracks.length.toString());
     // return 666;
+    if (tracks.length == 0) return 0;
 
     final GeoJSONFeatureCollection pushable = GeoJSONFeatureCollection([]);
     for (var t in tracks) {
