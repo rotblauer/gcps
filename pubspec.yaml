@@ -50,6 +50,7 @@ dependencies:
   just_debounce_it:
   enviro_sensors: ^1.0.1
   sensors: ^2.0.0
+  geojson_vi: ^2.2.1
 #  timeago: ^3.1.0
 #  intl: ^0.17.0
 

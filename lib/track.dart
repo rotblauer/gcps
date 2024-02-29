@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
+import 'package:geojson_vi/geojson_vi.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -374,6 +375,156 @@ class AppPoint {
     );
   }
 
+  Future<GeoJSONFeature> toGeoJSONFeature({
+    String uuid = "",
+    String name = "",
+    String version = "",
+  }) async {
+    var feat = GeoJSONFeature(GeoJSONPoint([longitude, latitude]), properties: {
+      /*
+        	props["UUID"] = trackPointCurrent.Uuid
+          props["Name"] = trackPointCurrent.Name
+          props["Time"] = trackPointCurrent.Time
+          props["UnixTime"] = trackPointCurrent.Time.Unix()
+          props["Version"] = trackPointCurrent.Version
+          props["Speed"] = toFixed(trackPointCurrent.Speed, 3)
+          props["Elevation"] = toFixed(trackPointCurrent.Elevation, 2)
+          props["Heading"] = toFixed(trackPointCurrent.Heading, 1)
+          props["Accuracy"] = toFixed(trackPointCurrent.Accuracy, 2)
+
+          	if ns.HasValidVisit() {
+			// TODO: ok to use mappy sub interface here?
+			props["Visit"] = ns.Visit
+		}
+
+		if trackPointCurrent.HeartRate == 0 {
+			if i := ns.HeartRateI(); i > 0 {
+				props["HeartRate"] = toFixed(i, 2)
+			}
+		}
+
+		// these properties might exist in the track, but we haven't been dumping them to json,
+		// they're not deal breakers, but nice to have
+		if ns.NumberOfSteps > 0 {
+			props["NumberOfSteps"] = ns.NumberOfSteps
+		}
+		if ns.AverageActivePace > 0 {
+			props["AverageActivePace"] = toFixed(ns.AverageActivePace, 2)
+		}
+		if ns.CurrentPace > 0 {
+			props["CurrentPace"] = toFixed(ns.CurrentPace, 2)
+		}
+		if ns.CurrentCadence > 0 {
+			props["CurrentCadence"] = toFixed(ns.CurrentCadence, 2)
+		}
+		if ns.CustomNote != "" {
+			props["CustomNote"] = ns.CustomNote
+		}
+		if ns.FloorsAscended > 0 {
+			props["FloorsAscended"] = ns.FloorsAscended
+		}
+		if ns.FloorsDescended > 0 {
+			props["FloorsDescended"] = ns.FloorsDescended
+		}
+		if !ns.CurrentTripStart.IsZero() {
+			props["CurrentTripStart"] = ns.CurrentTripStart
+		}
+		if ns.Distance > 0 {
+			props["Distance"] = toFixed(ns.Distance, 2)
+		}
+
+		if ns.Lightmeter > 0 {
+			props["Lightmeter"] = toFixed(ns.Lightmeter, 2)
+		}
+		if ns.AmbientTemp > 0 {
+			props["AmbientTemp"] = toFixed(ns.AmbientTemp, 2)
+		}
+		if ns.Humidity > 0 {
+			props["Humidity"] = toFixed(ns.Humidity, 2)
+		}
+		if v := ns.Accelerometer.X; v != nil {
+			props["AccelerometerX"] = *v
+		}
+		if v := ns.Accelerometer.Y; v != nil {
+			props["AccelerometerY"] = *v
+		}
+		if v := ns.Accelerometer.Z; v != nil {
+			props["AccelerometerZ"] = *v
+		}
+		if v := ns.UserAccelerometer.X; v != nil {
+			props["UserAccelerometerX"] = *v
+		}
+		if v := ns.UserAccelerometer.Y; v != nil {
+			props["UserAccelerometerY"] = *v
+		}
+		if v := ns.UserAccelerometer.Z; v != nil {
+			props["UserAccelerometerZ"] = *v
+		}
+		if v := ns.Gyroscope.X; v != nil {
+			props["GyroscopeX"] = *v
+		}
+		if v := ns.Gyroscope.Y; v != nil {
+			props["GyroscopeY"] = *v
+		}
+		if v := ns.Gyroscope.Z; v != nil {
+			props["GyroscopeZ"] = *v
+		}
+		if v := ns.BatteryStatus; v != "" {
+			bs := BatteryStatus{}
+			if err := json.Unmarshal([]byte(v), &bs); err == nil {
+				props["BatteryStatus"] = bs.Status
+				props["BatteryLevel"] = toFixed(bs.Level, 2)
+			}
+		}
+		if v := ns.NetworkInfo; v != "" {
+			props["NetworkInfo"] = v
+		}
+         */
+      'UUID': uuid,
+      'Name': name,
+      'Time': time.toUtc().toIso8601String(),
+      'UnixTime': time.millisecondsSinceEpoch / 1000 ~/ 1,
+      'Version': version,
+      'Speed': speed.toPrecision(2),
+      'Elevation': altitude.toPrecision(2),
+      'Heading': heading.toPrecision(0),
+      'Accuracy': accuracy.toPrecision(2),
+      'vAccuracy': altitude_accuracy.toPrecision(0),
+      'speed_accuracy': speed_accuracy.toPrecision(1),
+      'heading_accuracy': heading_accuracy.toPrecision(0),
+      'Activity': activityTypeApp(activity_type),
+      'ActivityConfidence': activity_confidence,
+      'BatteryLevel': battery_level.toPrecision(2),
+      'BatteryStatus': battery_is_charging
+          ? (battery_level == 1 ? 'full' : 'charging')
+          : 'unplugged',
+      'CurrentTripStart': tripStarted?.toUtc()?.toIso8601String(),
+      'NumberOfSteps': odometer.toInt(),
+      'Pressure': barometer?.toPrecision(1),
+      'Lightmeter': lightmeter?.toPrecision(1),
+      'AmbientTemp': ambient_temp?.toPrecision(1),
+      'Distance': distance.toPrecision(2),
+      'AccelerometerX': accelerometer_x?.toPrecision(2),
+      'AccelerometerY': accelerometer_y?.toPrecision(2),
+      'AccelerometerZ': accelerometer_z?.toPrecision(2),
+      'UserAccelerometerX': user_accelerometer_x?.toPrecision(2),
+      'UserAccelerometerY': user_accelerometer_y?.toPrecision(2),
+      'UserAccelerometerZ': user_accelerometer_z?.toPrecision(2),
+      'GyroscopeX': gyroscope_x?.toPrecision(2),
+      'GyroscopeY': gyroscope_y?.toPrecision(2),
+      'GyroscopeZ': gyroscope_z?.toPrecision(2),
+    });
+
+    if (image_file_path != null && image_file_path != '') {
+      // Add the snap to the cat track.
+      var encoded = base64Encode(File(image_file_path).readAsBytesSync());
+      // print('ENCODED image as base64: ${encoded}');
+      feat.properties['imgb64'] = encoded;
+    }
+
+    return feat;
+  }
+
   // toCattrackJSON creates a dynamic map for JSON (push).
   Future<Map<String, dynamic>> toCattrackJSON({
     String uuid = "",
@@ -461,7 +612,6 @@ class AppPoint {
       'heading': heading.toPrecision(0),
       'heading_accuracy': heading_accuracy.toPrecision(1),
       'elevation': altitude.toPrecision(2),
-      'vAccuracy': altitude_accuracy.toPrecision(1),
       'notes': notesString,
     };
   }

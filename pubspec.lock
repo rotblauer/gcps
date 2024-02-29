@@ -264,6 +264,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  geojson_vi:
+    dependency: "direct main"
+    description:
+      name: geojson_vi
+      sha256: "4f2786db7159c7cbd116b10c29ff396be1e6dd890f27b08d2a4e61162d999d85"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.1"
   geolocator:
     dependency: "direct main"
     description:

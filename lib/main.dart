@@ -18,6 +18,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
 import 'package:gcps/haversine.dart/lib/src/haversine_base.dart';
+import 'package:geojson_vi/geojson_vi.dart';
 import 'package:http/http.dart' as http;
 // import 'package:dio/dio.dart';
 import 'package:image/image.dart' as img;
@@ -28,6 +29,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sensors/sensors.dart';
 // import 'package:flutter_android_volume_keydown/flutter_android_volume_keydown.dart';
 // import 'package:intl/intl.dart';
+
 
 import 'config.dart';
 import 'prefs.dart' as prefs;
@@ -1525,8 +1527,8 @@ class _MyHomePageState extends State<MyHomePage> {
   //   }
   // }
 
-  Future<http.Response> postTracks(List<Map<String, dynamic>> body) {
-    print("body.length: " + body.length.toString());
+  Future<http.Response> postTracks(GeoJSONFeatureCollection collection) {
+    print("collection.length: " + collection.features.length.toString());
     // print(jsonEncode(body));
 
     // Dio dio = new Dio();
@@ -1550,7 +1552,7 @@ class _MyHomePageState extends State<MyHomePage> {
           postEndpoint,
           headers: headers,
           encoding: Encoding.getByName("utf-8"),
-          body: jsonEncode(body),
+          body: collection.toJSON(),
         )
         .timeout(const Duration(seconds: 60));
 
@@ -1561,19 +1563,19 @@ class _MyHomePageState extends State<MyHomePage> {
     print("=====> ... Pushing tracks: " + tracks.length.toString());
     // return 666;
 
-    final List<Map<String, dynamic>> pushable = [];
+    final GeoJSONFeatureCollection pushable = GeoJSONFeatureCollection([]);
     for (var t in tracks) {
-      Map<String, dynamic> js = await t.toCattrackJSON(
+      GeoJSONFeature feat = await t.toGeoJSONFeature(
         uuid: _deviceUUID,
         name: _deviceName,
         version: _deviceAppVersion,
       );
-      pushable.add(js);
+      pushable.features.add(feat);
     }
     print("=====> ... Pushing tracks: " +
         tracks.length.toString() +
         "/" +
-        pushable.length.toString());
+        pushable.features.length.toString());
 
     // print(jsonEncode(pushable));
 
