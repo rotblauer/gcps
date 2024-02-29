@@ -108,6 +108,7 @@ void headlessTask(bg.HeadlessEvent headlessEvent) async {
   // Implement a `case` for only those events you're interested in.
   switch (headlessEvent.name) {
     // case bg.Event.TERMINATE:
+
     //   bg.State state = headlessEvent.event;
     //   print('- State: ${state}');
     //   break;
@@ -2608,6 +2609,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   Future<void> _setupController() async {
     await _controller.initialize();
     await _controller.setFocusMode(FocusMode.auto);
+    await _controller.setFlashMode(FlashMode.off);
     // await _controller.unlockCaptureOrientation();
     // await _controller.lockCaptureOrientation();
   }
