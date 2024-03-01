@@ -375,13 +375,7 @@ class AppPoint {
     );
   }
 
-  GeoJSONFeature toGeoJSONFeature({
-    String uuid = "",
-    String name = "",
-    String version = "",
-  }) {
-    var feat = GeoJSONFeature(GeoJSONPoint([longitude, latitude]), properties: {
-      /*
+  /*
         	props["UUID"] = trackPointCurrent.Uuid
           props["Name"] = trackPointCurrent.Name
           props["Time"] = trackPointCurrent.Time
@@ -480,6 +474,12 @@ class AppPoint {
 			props["NetworkInfo"] = v
 		}
          */
+  GeoJSONFeature toGeoJSONFeature({
+    String uuid = "",
+    String name = "",
+    String version = "",
+  }) {
+    var feat = new GeoJSONFeature(GeoJSONPoint([longitude, latitude]), properties: {
       'UUID': uuid,
       'Name': name,
       'Time': time.toUtc().toIso8601String(),

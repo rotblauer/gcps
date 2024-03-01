@@ -1422,7 +1422,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       disableAutoSyncOnCellular: true,
       maxRecordsToPersist: 3600,
-      activityRecognitionInterval: 10000, // default=10000=10s
+      activityRecognitionInterval: 1000, // default=10000=10s
       minimumActivityRecognitionConfidence: 25, // default: 75
       allowIdenticalLocations: true,
 
@@ -1430,11 +1430,11 @@ class _MyHomePageState extends State<MyHomePage> {
       stopOnTerminate: false,
       enableHeadless: true,
       startOnBoot: true,
-      heartbeatInterval: 1800,
+      heartbeatInterval: 900,
 
       // Buggers.
       debug: false,
-      logLevel: bg.Config.LOG_LEVEL_INFO,
+      logLevel: bg.Config.LOG_LEVEL_ERROR,
       persistMode: bg.Config.PERSIST_MODE_NONE,
 
       backgroundPermissionRationale: bg.PermissionRationale(
@@ -1529,7 +1529,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<http.Response> postTracks(GeoJSONFeatureCollection collection) {
     print("collection.length: " + collection.features.length.toString());
-    // print(jsonEncode(body));
+    final body = collection.toJSON();
+
+    print(body);
 
     // Dio dio = new Dio();
     // dio.options.connectTimeout = 60000; // 60s
@@ -1540,6 +1542,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final headers = <String, String>{
       'Content-Type': 'application/json',
+      'Content-Length': body.length.toString(),
       // 'Accept': 'application/json',
     };
     postHeaders.forEach((key, value) {
@@ -1552,22 +1555,23 @@ class _MyHomePageState extends State<MyHomePage> {
           postEndpoint,
           headers: headers,
           encoding: Encoding.getByName("utf-8"),
-          body: collection.toJSON(),
+          body: body,
         )
         .timeout(const Duration(seconds: 60));
 
     // return res.statusCode;
   }
 
+  // _pushTracks converts the tracks to a GeoJSON feature collection.
+  // It then POSTs the collection to the server.
   Future<int> _pushTracks(List<AppPoint> tracks) async {
     print("=====> ... Pushing tracks: " + tracks.length.toString());
     // return 666;
-    if (tracks.length == 0) return 0;
 
-    GeoJSONFeatureCollection pushable = new GeoJSONFeatureCollection([]);
+    final GeoJSONFeatureCollection pushable = new GeoJSONFeatureCollection([]);
 
     for (var t in tracks) {
-      GeoJSONFeature feat = t.toGeoJSONFeature(
+      final GeoJSONFeature feat = t.toGeoJSONFeature(
         uuid: _deviceUUID,
         name: _deviceName,
         version: _deviceAppVersion,
@@ -1698,7 +1702,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _isPushing = false;
     });
 
-    if (resCode == 200) {
+    if (resCode == HttpStatus.ok) {
       setState(() {
         _appErrorStatus = "";
         _pointsSinceError = 0;
@@ -1854,7 +1858,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _pushEvery = pushevery;
     });
 
-    var shouldPush = pushevery > 10 && countStored % pushevery == 0;
+    var shouldPush = countStored >= pushevery && countStored % pushevery == 0;
     var atHome = distanceFromHome(location) < 10;
 
     shouldPush = shouldPush || (atHome && _countStored > 500 && _pointsSinceError > 100);
