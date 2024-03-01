@@ -1897,7 +1897,10 @@ class _MyHomePageState extends State<MyHomePage> {
     prefs.sharedPrefs.getDouble(prefs.kTurboModeInterval)) {
       var loc = await bg.BackgroundGeolocation
           .getCurrentPosition();
-      _handleStreamLocationUpdate(loc);
+      // My theory is that this will automatically call the event listener,
+      // and if I pass the response to the handler then I'll have duplicate
+      // tracks, which I'm seeing.
+      // _handleStreamLocationUpdate(loc);
     }
   }
 
