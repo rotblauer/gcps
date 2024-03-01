@@ -375,11 +375,11 @@ class AppPoint {
     );
   }
 
-  Future<GeoJSONFeature> toGeoJSONFeature({
+  GeoJSONFeature toGeoJSONFeature({
     String uuid = "",
     String name = "",
     String version = "",
-  }) async {
+  }) {
     var feat = GeoJSONFeature(GeoJSONPoint([longitude, latitude]), properties: {
       /*
         	props["UUID"] = trackPointCurrent.Uuid

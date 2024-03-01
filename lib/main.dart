@@ -26,7 +26,7 @@ import 'package:ip_geolocation_api/ip_geolocation_api.dart';
 // import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:path/path.dart' show basename, join;
 import 'package:path_provider/path_provider.dart';
-import 'package:sensors/sensors.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 // import 'package:flutter_android_volume_keydown/flutter_android_volume_keydown.dart';
 // import 'package:intl/intl.dart';
 
@@ -1564,15 +1564,17 @@ class _MyHomePageState extends State<MyHomePage> {
     // return 666;
     if (tracks.length == 0) return 0;
 
-    final GeoJSONFeatureCollection pushable = GeoJSONFeatureCollection([]);
+    GeoJSONFeatureCollection pushable = new GeoJSONFeatureCollection([]);
+
     for (var t in tracks) {
-      GeoJSONFeature feat = await t.toGeoJSONFeature(
+      GeoJSONFeature feat = t.toGeoJSONFeature(
         uuid: _deviceUUID,
         name: _deviceName,
         version: _deviceAppVersion,
       );
       pushable.features.add(feat);
     }
+
     print("=====> ... Pushing tracks: " +
         tracks.length.toString() +
         "/" +

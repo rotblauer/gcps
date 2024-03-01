@@ -49,7 +49,7 @@ dependencies:
   # mapbox_gl: ^0.9.0
   just_debounce_it:
   enviro_sensors: ^1.0.1
-  sensors: ^2.0.0
+  sensors_plus: ^4.0.2
   geojson_vi: ^2.2.1
 #  timeago: ^3.1.0
 #  intl: ^0.17.0
