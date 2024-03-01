@@ -1528,9 +1528,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // }
 
   Future<http.Response> postTracks(GeoJSONFeatureCollection collection) {
-    print("collection.length: " + collection.features.length.toString());
+    print("postTracks collection.features.length: " + collection.features.length.toString());
     final body = collection.toJSON();
-
     print(body);
 
     // Dio dio = new Dio();
@@ -1550,9 +1549,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     // print("body.length: " + body.length.toString());
     // print(jsonEncode(body));
+    print("posting tracks -> " + postEndpoint + " len: " + body.length.toString());
     return http
         .post(
-          postEndpoint,
+          Uri.parse(postEndpoint),
           headers: headers,
           encoding: Encoding.getByName("utf-8"),
           body: body,
@@ -1568,27 +1568,28 @@ class _MyHomePageState extends State<MyHomePage> {
     print("=====> ... Pushing tracks: " + tracks.length.toString());
     // return 666;
 
-    final GeoJSONFeatureCollection pushable = new GeoJSONFeatureCollection([]);
 
+    final List<GeoJSONFeature> list = [];
     for (var t in tracks) {
       final GeoJSONFeature feat = t.toGeoJSONFeature(
         uuid: _deviceUUID,
         name: _deviceName,
         version: _deviceAppVersion,
       );
-      pushable.features.add(feat);
+      list.add(feat);
     }
+    final GeoJSONFeatureCollection collection = new GeoJSONFeatureCollection(list);
 
     print("=====> ... Pushing tracks: " +
         tracks.length.toString() +
         "/" +
-        pushable.features.length.toString());
+        collection.features.length.toString());
 
     // print(jsonEncode(pushable));
 
     int resCode = 666;
     try {
-      final res = await postTracks(pushable);
+      final res = await postTracks(collection);
       resCode = res.statusCode;
     } catch (err) {
       setState(() {
@@ -1616,6 +1617,11 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
       tracks.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+      if (tracks.length == 0) {
+        print("No tracks to push.");
+        break;
+      }
 
       // DEBUGGING
       // for (var i = 0; i < tracks.length; i++) {
@@ -1714,7 +1720,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   _buildSnackBar(Text('Push successful'), backgroundColor: Colors.green),
       // );
-    } else if (resCode == 9696) {
+    } else if (resCode == 666) {
     } else {
       setState(() {
         // _appErrorStatus = 'Push failed. Status code: ' + resCode.toString();
@@ -2053,13 +2059,13 @@ class _MyHomePageState extends State<MyHomePage> {
                           setState(() {
                             _isManuallyRequestingLocation = true;
                           });
-                          try {
-                            var loc = await bg.BackgroundGeolocation
+                          // try {
+                            bg.BackgroundGeolocation
                                 .getCurrentPosition();
-                            _handleStreamLocationUpdate(loc);
-                          } catch (err) {
-                            _handleStreamLocationError(err);
-                          }
+                            // _handleStreamLocationUpdate(loc);
+                          // } catch (err) {
+                            // _handleStreamLocationError(err);
+                          // }
                           setState(() {
                             _isManuallyRequestingLocation = false;
                           });

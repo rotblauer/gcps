@@ -479,7 +479,7 @@ class AppPoint {
     String name = "",
     String version = "",
   }) {
-    var feat = new GeoJSONFeature(GeoJSONPoint([longitude, latitude]), properties: {
+    var feat = new GeoJSONFeature(new GeoJSONPoint([longitude, latitude]), properties: {
       'UUID': uuid,
       'Name': name,
       'Time': time.toUtc().toIso8601String(),
