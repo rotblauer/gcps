@@ -519,7 +519,7 @@ class AppPoint {
       // Add the snap to the cat track.
       var encoded = base64Encode(File(image_file_path).readAsBytesSync());
       // print('ENCODED image as base64: ${encoded}');
-      feat.properties['imgb64'] = encoded;
+      feat.properties['imgB64'] = encoded;
     }
 
     return feat;
