@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 
 // Network settings
 const String kAllowPushWithMobile = "allowPushWithMobile"; //
@@ -275,6 +276,81 @@ Widget _buildSliderTile({
   );
 }
 
+/*
+TextFormField(
+  controller: _controller,
+  keyboardType: TextInputType.number,
+  inputFormatters: <TextInputFormatter>[
+   // for below version 2 use this
+ FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+// for version 2 and greater youcan also use this
+ FilteringTextInputFormatter.digitsOnly
+
+  ],
+  decoration: InputDecoration(
+    labelText: "whatever you want",
+    hintText: "whatever you want",
+    icon: Icon(Icons.phone_iphone)
+  )
+)
+ */
+
+
+Widget _buildNumberInputTile({
+  BuildContext context,
+  Widget leading,
+  String title,
+  String subtitle,
+  String label,
+  String hint,
+  double min,
+  double max,
+  double value,
+  void Function(double value) onChanged,
+  String customTrailing,
+}) {
+  return ListTile(
+    leading: leading,
+    title: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(padding: EdgeInsets.only(top: 6), child: Text(title)),
+        Text(
+          subtitle,
+          style: Theme.of(context).textTheme.caption,
+        )
+      ],
+    ),
+    subtitle: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Text(min.toInt().toString() + "  "),
+      Expanded(
+        child: TextField(
+            onSubmitted: (String value) {
+              onChanged(double.parse(value));
+            },
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              // for below version 2 use this
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+// for version 2 and greater youcan also use this
+              FilteringTextInputFormatter.digitsOnly
+
+            ],
+            decoration: InputDecoration(
+                labelText: label,
+                hintText: hint,
+                // icon: Icon(Icons.keyboard)
+            )
+        )
+
+      ),
+      Text(max.toInt().toString()),
+    ]),
+    trailing: Text(customTrailing ?? '${value.toInt()}',
+        style: settingsThemeText(context).headline5),
+  );
+}
+
 class MySettingsScreen extends StatefulWidget {
   final String deviceUUID;
   final String deviceName;
@@ -389,14 +465,15 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 sharedPrefs.setBool(kTurboMode, value);
               }),
 
-          _buildSliderTile(
+          _buildNumberInputTile(
               context: context,
-              leading: Icon(Icons.fast_forward_outlined),
+              leading: Icon(Icons.timer),
               title: 'Turbo mode: track interval',
               subtitle: 'Minimum seconds between turbo mode points.',
+              label: 'Seconds',
+              hint: '',
               min: 1,
-              max: 60,
-              divisions: 30,
+              max: 3600,
               value: _kTurboModeInterval,
               onChanged: (value) {
                 setState(() {
@@ -405,14 +482,14 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 sharedPrefs.setDouble(kTurboModeInterval, value);
               }),
 
-          _buildSliderTile(
+          _buildNumberInputTile(
               context: context,
               leading: Icon(Icons.timelapse_rounded),
               title: 'Push interval',
               subtitle: 'How often to maybe push points.',
-              min: 60,
-              max: 3600,
-              divisions: 30,
+              min: 1,
+              max: 86400,
+              hint: _kPushInterval.floor().toString(),
               value: _kPushInterval,
               onChanged: (value) {
                 setState(() {
@@ -421,14 +498,14 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 sharedPrefs.setDouble(kPushInterval, value);
               }),
 
-          _buildSliderTile(
+          _buildNumberInputTile(
               context: context,
               leading: Icon(Icons.file_upload),
               title: 'Push batch size',
               subtitle: 'Max points in each upload request.',
-              min: 60,
+              min: 10,
               max: 3600,
-              divisions: 30,
+              hint: _kPushBatchSize.floor().toString(),
               value: _kPushBatchSize,
               onChanged: (value) {
                 value = value.floorToDouble();
@@ -450,15 +527,15 @@ class _SettingsScreen extends State<MySettingsScreen> {
             ],
           ),
 
-          _buildSliderTile(
+          _buildNumberInputTile(
               context: context,
               leading: Icon(Icons.my_location_outlined),
               title: 'Distance filter',
               subtitle:
                   'Δ meters triggering a location update.\nZero causes time updates.',
               min: 0,
-              max: 100,
-              divisions: 33,
+              max: 10000,
+              hint: _kLocationUpdateDistanceFilter.floor().toString(),
               value: _kLocationUpdateDistanceFilter,
               onChanged: (value) {
                 value = value.floorToDouble();
@@ -486,7 +563,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 });
               }),
 
-          _buildSliderTile(
+          _buildNumberInputTile(
               context: context,
               leading: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -498,8 +575,8 @@ class _SettingsScreen extends State<MySettingsScreen> {
               subtitle:
                   'Δ seconds triggering a location update.\nZero causes distance updates.\nActual results may be imprecise.',
               min: 0,
-              max: 60,
-              divisions: 60,
+              max: 3600,
+              hint: _kLocationUpdateInterval.floor().toString(),
               value: _kLocationUpdateInterval,
               onChanged: (value) {
                 value = value.floorToDouble();
@@ -577,14 +654,14 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 }),
 
           if (!_kLocationDisableStopDetection)
-            _buildSliderTile(
+            _buildNumberInputTile(
                 context: context,
                 leading: Icon(Icons.airline_seat_legroom_extra_outlined),
                 title: 'Stop timeout',
                 subtitle: 'Minutes of stillness before cat naps.',
                 min: 1,
                 max: 30,
-                divisions: 29,
+                hint: _kLocationUpdateStopTimeout.floor().toString(),
                 value: _kLocationUpdateStopTimeout,
                 onChanged: (value) {
                   value = value.ceilToDouble();
