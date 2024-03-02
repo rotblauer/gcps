@@ -2057,7 +2057,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               },
                         child: Container(
                           padding: EdgeInsets.only(left: 8.0, right: 4),
-                          child: buildConnectStatusIcon(_connectionStatus, size: 32),
+                          child: buildConnectStatusIcon(_connectionStatus, size: 48),
                         ),
                       ),
                       InkWell(
