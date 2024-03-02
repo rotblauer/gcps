@@ -1603,6 +1603,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _pushTracksBatching() async {
+    if (_isPushing) {
+      print("=====> Already pushing");
+      return;
+    }
     print("=====> Attempting push");
     setState(() {
       _isPushing = true;
@@ -1866,7 +1870,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _pushEvery = pushevery;
     });
 
-    var shouldPush = countStored >= pushevery && countStored % pushevery == 0;
+    var shouldPush = !_isPushing && countStored >= pushevery && countStored % pushevery == 0;
     var atHome = distanceFromHome(location) < 10;
 
     shouldPush = shouldPush || (atHome && _countStored > 500 && _pointsSinceError > 100);
