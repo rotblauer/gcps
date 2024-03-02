@@ -188,10 +188,12 @@ Icon buildConnectStatusIcon(String status, {Color color, double size}) {
     return Icon(
       Icons.signal_cellular_alt,
       color: color ?? MyTheme.colorScheme.onSurface,
+      size: size,
     );
   return Icon(
     Icons.do_disturb_alt_outlined,
     color: color ?? MyTheme.colorScheme.onError,
+    size: size,
   );
 }
 
@@ -1334,7 +1336,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
     bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
-      print('[motionchange] - ${location.toString()}');
+      print('[motionchange]');
       _handleStreamLocationUpdate(location);
     });
 
@@ -2051,7 +2053,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               },
                         child: Container(
                           padding: EdgeInsets.only(left: 8.0, right: 4),
-                          child: buildConnectStatusIcon(_connectionStatus),
+                          child: buildConnectStatusIcon(_connectionStatus, size: 32),
                         ),
                       ),
                       InkWell(
@@ -2201,13 +2203,13 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: Row(
                             children: [
                               Icon(Icons.storage,
-                                  color: MyTheme.accentColor, size: 16),
+                                  color: MyTheme.accentColor, size: 24),
                               Container(
                                 width: 4,
                               ),
                               Text(
                                 countAbbrev(_countStored),
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(color: Colors.white, fontSize: 24),
                               )
                             ],
                           ),
@@ -2317,6 +2319,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               Icon(
                                 Icons.settings,
                                 color: MyTheme.colorScheme.onSurface,
+                                size: 32,
                               ),
                             ],
                           ),
