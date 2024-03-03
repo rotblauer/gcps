@@ -8,10 +8,13 @@ import 'package:connectivity/connectivity.dart';
 import 'package:device_info/device_info.dart';
 import 'package:enviro_sensors/enviro_sensors.dart';
 import 'package:flutter/material.dart';
+
 // import 'package:english_words/english_words.dart' as ew;
 import 'package:flutter/services.dart';
+
 // import 'package:geolocator/geolocator.dart';
 import 'package:flutter/widgets.dart';
+
 // import 'package:workmanager/workmanager.dart';
 // import 'package:gallery_saver/gallery_saver.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -20,16 +23,18 @@ import 'package:flutter_background_geolocation/flutter_background_geolocation.da
 import 'package:gcps/haversine.dart/lib/src/haversine_base.dart';
 import 'package:geojson_vi/geojson_vi.dart';
 import 'package:http/http.dart' as http;
+
 // import 'package:dio/dio.dart';
 import 'package:image/image.dart' as img;
 import 'package:ip_geolocation_api/ip_geolocation_api.dart';
+
 // import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:path/path.dart' show basename, join;
 import 'package:path_provider/path_provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+
 // import 'package:flutter_android_volume_keydown/flutter_android_volume_keydown.dart';
 // import 'package:intl/intl.dart';
-
 
 import 'config.dart';
 import 'prefs.dart' as prefs;
@@ -56,10 +61,11 @@ void main() async {
 
 double distanceFromHome(bg.Location location) {
   return Haversine.fromDegrees(
-      latitude1: 45.5710383,
-      longitude1: -111.6902772,
-      latitude2: location.coords.latitude,
-      longitude2: location.coords.longitude).distance();
+          latitude1: 45.5710383,
+          longitude1: -111.6902772,
+          latitude2: location.coords.latitude,
+          longitude2: location.coords.longitude)
+      .distance();
 }
 
 void _handleStreamLocationSave(bg.Location location) async {
@@ -166,8 +172,7 @@ void headlessTask(bg.HeadlessEvent headlessEvent) async {
 String prettyDistance(double distance) {
   return distance < 1000
       ? (distance ~/ 1).toString() + 'm'
-      : ((distance / 1000).toPrecision(2)).toString() +
-      'km';
+      : ((distance / 1000).toPrecision(2)).toString() + 'km';
 }
 
 Icon buildConnectStatusIcon(String status, {Color color, double size}) {
@@ -1349,9 +1354,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     bg.BackgroundGeolocation.onHeartbeat((bg.HeartbeatEvent event) {
-      bg.BackgroundGeolocation.getCurrentPosition().then((location) {
-        _handleStreamLocationUpdate(location);
-      });
+      bg.BackgroundGeolocation.getCurrentPosition();
+      // Acquiring the current position will trigger the onLocation event handler.
     });
 
     bg.BackgroundGeolocation.onEnabledChange((bool value) {
@@ -1360,9 +1364,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _bgGeolocationIsEnabled = value;
       });
       if (value) {
-        bg.BackgroundGeolocation.getCurrentPosition().then((location) {
-          _handleStreamLocationUpdate(location);
-        });
+        bg.BackgroundGeolocation.getCurrentPosition();
       }
     });
 
@@ -1390,6 +1392,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       desiredAccuracy: prefs.prefLocationDesiredAccuracy(
           prefs.sharedPrefs.getString(prefs.kLocationGarneringDesiredAccuracy)),
+      desiredOdometerAccuracy: 10,
 
       // This OVERRIDES the locationUpdateInterval, which otherwise
       // wants to do some sort-of-configurable dynamic things.
@@ -1408,9 +1411,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
       //
       isMoving: prefs.sharedPrefs.getBool(prefs.kLocationDeviceInMotion),
-      stopTimeout: prefs.sharedPrefs
-          .getDouble(prefs.kLocationUpdateStopTimeout)
-          .floor(), // minutes... right? seconds is default
+      stopTimeout:
+          prefs.sharedPrefs.getDouble(prefs.kLocationUpdateStopTimeout).floor(),
+      // minutes... right? seconds is default
 
       // We must know what we're doing.
       disableStopDetection:
@@ -1419,13 +1422,21 @@ class _MyHomePageState extends State<MyHomePage> {
       pausesLocationUpdatesAutomatically:
           !prefs.sharedPrefs.getBool(prefs.kLocationDisableStopDetection),
 
+      // // iOS only
+      // stationaryRadius: prefs.sharedPrefs
+      //     .getDouble(prefs.kLocationUpdateStationaryRadius),
+
       // But we probably don't really know what we're doing.
       // preventSuspend: true,
 
+      persistMode: bg.Config.PERSIST_MODE_NONE,
       disableAutoSyncOnCellular: true,
-      maxRecordsToPersist: 3600,
-      activityRecognitionInterval: 1000, // default=10000=10s
-      minimumActivityRecognitionConfidence: 25, // default: 75
+      // maxRecordsToPersist: 3600,
+
+      activityRecognitionInterval: 5000,
+      // default=10000=10s
+      minimumActivityRecognitionConfidence: 1,
+      // default: 75
       allowIdenticalLocations: true,
 
       // I can't believe they let you do this.
@@ -1437,7 +1448,6 @@ class _MyHomePageState extends State<MyHomePage> {
       // Buggers.
       debug: false,
       logLevel: bg.Config.LOG_LEVEL_ERROR,
-      persistMode: bg.Config.PERSIST_MODE_NONE,
 
       backgroundPermissionRationale: bg.PermissionRationale(
         message: "Cats love it",
@@ -1530,7 +1540,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // }
 
   Future<http.Response> postTracks(GeoJSONFeatureCollection collection) {
-    print("postTracks collection.features.length: " + collection.features.length.toString());
+    print("postTracks collection.features.length: " +
+        collection.features.length.toString());
     final body = collection.toJSON();
     print(body);
 
@@ -1551,7 +1562,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     // print("body.length: " + body.length.toString());
     // print(jsonEncode(body));
-    print("posting tracks -> " + postEndpoint + " len: " + body.length.toString());
+    print("posting tracks -> " +
+        postEndpoint +
+        " len: " +
+        body.length.toString());
     return http
         .post(
           Uri.parse(postEndpoint),
@@ -1570,7 +1584,6 @@ class _MyHomePageState extends State<MyHomePage> {
     print("=====> ... Pushing tracks: " + tracks.length.toString());
     // return 666;
 
-
     final List<GeoJSONFeature> list = [];
     for (var t in tracks) {
       final GeoJSONFeature feat = t.toGeoJSONFeature(
@@ -1580,7 +1593,8 @@ class _MyHomePageState extends State<MyHomePage> {
       );
       list.add(feat);
     }
-    final GeoJSONFeatureCollection collection = new GeoJSONFeatureCollection(list);
+    final GeoJSONFeatureCollection collection =
+        new GeoJSONFeatureCollection(list);
 
     print("=====> ... Pushing tracks: " +
         tracks.length.toString() +
@@ -1617,9 +1631,8 @@ class _MyHomePageState extends State<MyHomePage> {
     for (var count = await countTracks();
         count > 10;
         count = await countTracks()) {
-
       var tracks = await firstTracksWithLimit(
-          (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt(),
+        (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt(),
       );
 
       tracks.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -1647,7 +1660,8 @@ class _MyHomePageState extends State<MyHomePage> {
         // Awkwardly placed but whatever.
         // Update the persistent-state display.
 
-        print('Labeling UPLOADED tracks in range: [${tracks[0].timestamp}, ${tracks[tracks.length - 1].timestamp}]');
+        print(
+            'Labeling UPLOADED tracks in range: [${tracks[0].timestamp}, ${tracks[tracks.length - 1].timestamp}]');
         setTracksUploadedByTimeRange(
             tracks[0].timestamp,
             tracks[tracks.length - 1].timestamp,
@@ -1741,7 +1755,6 @@ class _MyHomePageState extends State<MyHomePage> {
       //   _buildSnackBar(Text('Push failed. Status code: ' + resCode.toString()),
       //       backgroundColor: Colors.red),
       // );
-
     }
   }
 
@@ -1870,10 +1883,12 @@ class _MyHomePageState extends State<MyHomePage> {
       _pushEvery = pushevery;
     });
 
-    var shouldPush = !_isPushing && countStored >= pushevery && countStored % pushevery == 0;
+    var shouldPush =
+        !_isPushing && countStored >= pushevery && countStored % pushevery == 0;
     var atHome = distanceFromHome(location) < 10;
 
-    shouldPush = shouldPush || (atHome && _countStored > 500 && _pointsSinceError > 100);
+    shouldPush =
+        shouldPush || (atHome && _countStored > 500 && _pointsSinceError > 100);
 
     if (!shouldPush) {
       return;
@@ -1905,10 +1920,10 @@ class _MyHomePageState extends State<MyHomePage> {
     if (glocation.coords.latitude == 42 && glocation.coords.longitude == -69) {
       return;
     }
-    if (prefs.sharedPrefs.getBool(prefs.kTurboMode) && _secondsSinceLastPoint >
-    prefs.sharedPrefs.getDouble(prefs.kTurboModeInterval)) {
-      var loc = await bg.BackgroundGeolocation
-          .getCurrentPosition();
+    if (prefs.sharedPrefs.getBool(prefs.kTurboMode) &&
+        _secondsSinceLastPoint >
+            prefs.sharedPrefs.getDouble(prefs.kTurboModeInterval)) {
+      bg.BackgroundGeolocation.getCurrentPosition(samples: 1, maximumAge: 1000);
       // My theory is that this will automatically call the event listener,
       // and if I pass the response to the handler then I'll have duplicate
       // tracks, which I'm seeing.
@@ -2057,7 +2072,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               },
                         child: Container(
                           padding: EdgeInsets.only(left: 8.0, right: 4),
-                          child: buildConnectStatusIcon(_connectionStatus, size: 48),
+                          child: buildConnectStatusIcon(_connectionStatus,
+                              size: 48),
                         ),
                       ),
                       InkWell(
@@ -2066,11 +2082,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             _isManuallyRequestingLocation = true;
                           });
                           // try {
-                            bg.BackgroundGeolocation
-                                .getCurrentPosition();
-                            // _handleStreamLocationUpdate(loc);
+                          bg.BackgroundGeolocation.getCurrentPosition();
+                          // _handleStreamLocationUpdate(loc);
                           // } catch (err) {
-                            // _handleStreamLocationError(err);
+                          // _handleStreamLocationError(err);
                           // }
                           setState(() {
                             _isManuallyRequestingLocation = false;
@@ -2213,7 +2228,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                               Text(
                                 countAbbrev(_countStored),
-                                style: TextStyle(color: Colors.white, fontSize: 24),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 24),
                               )
                             ],
                           ),
@@ -2353,12 +2369,8 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text(
-                'lon: ${glocation.coords.longitude.toPrecision(5)}'
-              ),
-              Text(
-                  'lat: ${glocation.coords.latitude.toPrecision(5)}'
-              ),
+              Text('lon: ${glocation.coords.longitude.toPrecision(5)}'),
+              Text('lat: ${glocation.coords.latitude.toPrecision(5)}'),
               // Text(
               //     'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
               // Text(
@@ -2462,7 +2474,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   keyname: "accuracy", value: glocation.coords.accuracy),
               InfoDisplay(
                 keyname: "elevation",
-                value: '${glocation.coords.altitude} (${(glocation.coords.altitude * 3.28084).toInt()}ft)' ,
+                value:
+                    '${glocation.coords.altitude} (${(glocation.coords.altitude * 3.28084).toInt()}ft)',
                 options: {
                   'third': Text(glocation.coords.altitudeAccuracy
                       ?.toPrecision(1)
@@ -2572,14 +2585,14 @@ class _MyHomePageState extends State<MyHomePage> {
     FloatingActionButtonLocation fabLocation =
         FloatingActionButtonLocation.centerFloat;
 
-      // _portraitModeOnly();
+    // _portraitModeOnly();
 
-      // if (!_isPortraitMode) {
-      //   setState(() {
-      //     _isPortraitMode = true;
-      //   });
-      // }
-      myWidget = _exampleStuff;
+    // if (!_isPortraitMode) {
+    //   setState(() {
+    //     _isPortraitMode = true;
+    //   });
+    // }
+    myWidget = _exampleStuff;
 
     // myWidget = _exampleStuff;
     // This method is rerun every time setState is called, for instance as done
@@ -2638,6 +2651,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   Future<void> _setupControllerFuture;
   Directory _tmpDir;
   Future<void> _getTmpDirFuture;
+
   // StreamSubscription _volumeButtonSubscription;
 
   Future<void> _setupController() async {
@@ -2661,7 +2675,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       // Get a specific camera from the list of available cameras.
       widget.camera,
       // Define the resolution to use.
-      ResolutionPreset.max,  /// The highest resolution available.
+      ResolutionPreset.max,
+
+      /// The highest resolution available.
       enableAudio: false,
     );
 
@@ -2695,7 +2711,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   savePictureWithOrientation(String pictureSavePath) async {
-    final img.Image capturedImage = img.decodeImage(await File(pictureSavePath).readAsBytes());
+    final img.Image capturedImage =
+        img.decodeImage(await File(pictureSavePath).readAsBytes());
     final img.Image orientedImage = img.bakeOrientation(capturedImage);
     await File(pictureSavePath).writeAsBytes(img.encodeJpg(orientedImage));
   }
@@ -3201,6 +3218,7 @@ class TrackListScreen extends StatelessWidget {
 // A widget that displays the picture taken by the user.
 class MyCatSnapsScreen extends StatelessWidget {
   final void Function() onExit;
+
   const MyCatSnapsScreen({Key key, this.onExit}) : super(key: key);
 
   exit(BuildContext context) {

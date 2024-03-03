@@ -2,6 +2,13 @@
 
 <!-- <img src="./assets/icon/catdroid-icon.png" width='20%' height='20%' style="border-radius: 50%" align='right'/> -->
 
+## Developer:
+
+- DO NOT RUN `flutter upgrade` unless you are prepared to fix the resulting problems.
+- DO NOT RUN `flutter pub upgrade` unless you are prepared to fix the resulting problems.
+
+- Use Android Studio to run the app on an Android device.
+
 ### TODO
 
 - [ ] distance tool; start, stop, haversine!
