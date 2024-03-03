@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
+import 'package:gcps/track.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 
@@ -28,7 +29,9 @@ const String kLocationDeviceInMotion = 'kLocationDeviceInMotion';
 const String kTurboMode = 'kTurboMode';
 const String kTurboModeInterval = 'kTurboModeInterval';
 
-// App Display settings
+// App settings
+const String kHomeLocationLatitude = 'homeLocationLatitude';
+const String kHomeLocationLongitude = 'homeLocationLongitude';
 
 class SharedPrefs {
   static SharedPreferences _sharedPrefs;
@@ -62,6 +65,12 @@ class SharedPrefs {
       case kTurboModeInterval:
         return _sharedPrefs.get(kTurboModeInterval) ?? 1;
         break;
+      case kHomeLocationLatitude:
+        return _sharedPrefs.get(kHomeLocationLatitude) ?? 45.5710383;
+        break;
+      case kHomeLocationLongitude:
+        return _sharedPrefs.get(kHomeLocationLongitude) ?? -111.6902772;
+        break;
       default:
         print('!!!! I AM IMPOSSIBILITY');
         return 0;
@@ -87,6 +96,10 @@ class SharedPrefs {
       case kLocationGarneringElasticityMultiplier:
         break;
       case kTurboModeInterval:
+        break;
+      case kHomeLocationLatitude:
+        break;
+      case kHomeLocationLongitude:
         break;
       default:
         print('!!!! I AM IMPOSSIBILITY');
@@ -211,6 +224,39 @@ String prefLocationDesiredAccuracySliderDoubleToString(double value) {
 TextTheme settingsThemeText(context) {
   return Theme.of(context).textTheme.apply(bodyColor: Colors.tealAccent);
 }
+
+Widget _buildButtonTile({
+  BuildContext context,
+  Widget leading,
+  Widget buttonChild,
+  String title,
+  String subtitle,
+  void Function(bool) onPressed,
+}) {
+  return ListTile(
+    leading: leading,
+    title: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: 6),
+          child: Text(title),
+        ),
+        Text(
+          subtitle,
+          style: Theme.of(context).textTheme.caption,
+        )
+      ],
+    ),
+    trailing: ElevatedButton(
+      onPressed: () {
+        onPressed(true);
+      },
+      child: buttonChild ?? Text('Press me'),
+    ),
+  );
+}
+
 
 Widget _buildSwitchTile({
   BuildContext context,
@@ -452,6 +498,9 @@ class _SettingsScreen extends State<MySettingsScreen> {
       sharedPrefs.getDouble(kLocationUpdateStopTimeout);
   // double _kLocationGarneringElasticityMultiplier =
   //     sharedPrefs.getDouble(kLocationGarneringElasticityMultiplier);
+
+  double _kHomeLocationLatitude = sharedPrefs.getDouble(kHomeLocationLatitude);
+  double _kHomeLocationLongitude = sharedPrefs.getDouble(kHomeLocationLongitude);
   String _kLocationGarneringDesiredAccuracy =
       sharedPrefs.getString(kLocationGarneringDesiredAccuracy);
   String _kPushUrl = sharedPrefs.getString(kPushUrl);
@@ -772,6 +821,26 @@ class _SettingsScreen extends State<MySettingsScreen> {
                   bg.BackgroundGeolocation.setConfig(st);
                 });
               }),
+
+          _buildButtonTile(
+              context: context,
+              leading: Icon(Icons.home),
+              buttonChild: Text('Here'),
+              title: 'Home location',
+              subtitle: 'Set the home location for the cat.\n[ ${_kHomeLocationLongitude} , ${_kHomeLocationLatitude} ]',
+              onPressed: (bool value) {
+                bg.BackgroundGeolocation.getCurrentPosition(samples: 3, desiredAccuracy: 10)
+                    .then((value) => {
+                  sharedPrefs.setDouble(kHomeLocationLatitude, value.coords.latitude.toPrecision(6)),
+                  sharedPrefs.setDouble(kHomeLocationLongitude, value.coords.longitude.toPrecision(6)),
+                  setState(() {
+                    _kHomeLocationLatitude = value.coords.latitude;
+                    _kHomeLocationLongitude = value.coords.longitude;
+                  }),
+
+                });
+              }),
+
 
           // SettingsContainer(
           //     child: Row(

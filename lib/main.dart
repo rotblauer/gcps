@@ -61,8 +61,8 @@ void main() async {
 
 double distanceFromHome(bg.Location location) {
   return Haversine.fromDegrees(
-          latitude1: 45.5710383,
-          longitude1: -111.6902772,
+          latitude1: prefs.sharedPrefs.getDouble(prefs.kHomeLocationLatitude),
+          longitude1: prefs.sharedPrefs.getDouble(prefs.kHomeLocationLongitude),
           latitude2: location.coords.latitude,
           longitude2: location.coords.longitude)
       .distance();
@@ -2342,7 +2342,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               Icon(
                                 Icons.settings,
                                 color: MyTheme.colorScheme.onSurface,
-                                size: 32,
+                                size: 48,
                               ),
                             ],
                           ),
@@ -2362,8 +2362,9 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
+              Text('[${glocation.coords.longitude.toPrecision(6)}, ${glocation.coords.latitude.toPrecision(6)}]'),
               Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
-              // Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
+              Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
               // Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
               // Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
               Text('⌂: ${prettyDistance(distanceFromHome(glocation))}'),
@@ -2372,8 +2373,6 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('lon: ${glocation.coords.longitude.toPrecision(5)}'),
-              Text('lat: ${glocation.coords.latitude.toPrecision(5)}'),
               // Text(
               //     'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
               // Text(
