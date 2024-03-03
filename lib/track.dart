@@ -479,7 +479,7 @@ class AppPoint {
     String name = "",
     String version = "",
   }) {
-    var feat = new GeoJSONFeature(new GeoJSONPoint([longitude, latitude]), properties: {
+    var feat = GeoJSONFeature(GeoJSONPoint([longitude, latitude]), properties: {
       'UUID': uuid,
       'Name': name,
       'Time': time.toUtc().toIso8601String(),
@@ -677,6 +677,17 @@ Future<int> countTracks({bool excludeUploaded: true}) async {
   return Sqflite.firstIntValue(await db.rawQuery(q));
 }
 
+Future<int> countTracksBefore(int before, {bool excludeUploaded: true}) async {
+  final Database db = await database();
+  var q = 'SELECT COUNT(*) FROM $_cTableName';
+  if (excludeUploaded) {
+    q += ' WHERE uploaded IS NULL AND timestamp < $before';
+  } else {
+    q += ' WHERE timestamp < $before';
+  }
+  return Sqflite.firstIntValue(await db.rawQuery(q));
+}
+
 Future<int> countSnaps() async {
   final Database db = await database();
   return Sqflite.firstIntValue(await db.rawQuery(
@@ -705,7 +716,7 @@ Future<int> lastId() async {
 }
 
 Future<List<AppPoint>> firstTracksWithLimit(int limit,
-    {bool excludeUploaded: true}) async {
+    {int before: 0, bool excludeUploaded: true}) async {
   final Database db = await database();
 
   String where;
@@ -713,6 +724,18 @@ Future<List<AppPoint>> firstTracksWithLimit(int limit,
   if (excludeUploaded) {
     where = 'uploaded IS NULL';
     whereargs = [];
+  }
+  if (before > 0) {
+    if (where == "") {
+      where = 'timestamp < ?';
+    } else {
+      where += ' AND timestamp < ?';
+    }
+    if (whereargs == null) {
+      whereargs = [before];
+    } else {
+      whereargs.add(before);
+    }
   }
 
   final List<Map<String, dynamic>> maps = await db.query('$_cTableName',

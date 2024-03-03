@@ -1083,7 +1083,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _countStored = 0;
   int _countSnaps = 0;
   int _countPushed = 0;
-  int _lastPushAt = 0; // unix seconds
+  // initialize _lastPushAt at to the current time in unix seconds.
+  int _lastPushAt = DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1;
 
   // Future<void> initPrefs() async {
   //   var v = await SharedPreferencesHelper().getPushBatchSize();
@@ -1596,8 +1597,7 @@ class _MyHomePageState extends State<MyHomePage> {
       );
       list.add(feat);
     }
-    final GeoJSONFeatureCollection collection =
-        new GeoJSONFeatureCollection(list);
+    final GeoJSONFeatureCollection collection = GeoJSONFeatureCollection(list);
 
     print("=====> ... Pushing tracks: " +
         tracks.length.toString() +
@@ -1632,11 +1632,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // All conditions passed, attempt to push all stored points.
     int resCode = 0;
-    for (var count = await countTracks();
+    for (var count = await countTracksBefore(_lastPushAt);
         count > 0;
-        count = await countTracks()) {
+        count = await countTracksBefore(_lastPushAt)) {
       var tracks = await firstTracksWithLimit(
         (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt(),
+        before: _lastPushAt,
       );
 
       tracks.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -2365,7 +2366,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('[${glocation.coords.longitude.toPrecision(6)}, ${glocation.coords.latitude.toPrecision(6)}]'),
+              Text('[ ${glocation.coords.longitude.toPrecision(6)} , ${glocation.coords.latitude.toPrecision(6)} ]', style: TextStyle(fontSize: 16)),
               Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
               Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
               // Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
