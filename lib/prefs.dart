@@ -6,11 +6,14 @@ import 'package:flutter_background_geolocation/flutter_background_geolocation.da
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 
+import 'config.dart';
+
 // Network settings
 const String kAllowPushWithMobile = "allowPushWithMobile"; //
 const String kAllowPushWithWifi = "allowPushWithWifi"; //
 const String kPushInterval = "pushIntervalNumber"; //
 const String kPushBatchSize = "pushBatchSize"; //
+const String kPushUrl = "pushUrl"; //
 
 // BackgroundLocation settings
 const String kLocationUpdateInterval = "locationUpdateInterval"; //
@@ -131,6 +134,8 @@ class SharedPrefs {
 
   String getString(String key) {
     switch (key) {
+      case kPushUrl:
+        return _sharedPrefs.get(kPushUrl) ?? postEndpoint;
       case kLocationGarneringDesiredAccuracy:
         return _sharedPrefs.get(kLocationGarneringDesiredAccuracy) ??
             'NAVIGATION';
@@ -139,6 +144,8 @@ class SharedPrefs {
 
   setString(String key, String value) {
     switch (key) {
+      case kPushUrl:
+        return _sharedPrefs.setString(kPushUrl, value);
       case kLocationGarneringDesiredAccuracy:
         return _sharedPrefs.setString(kLocationGarneringDesiredAccuracy, value);
     }
@@ -331,7 +338,7 @@ Widget _buildNumberInputTile({
             keyboardType: TextInputType.number,
             inputFormatters: <TextInputFormatter>[
               // for below version 2 use this
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+              // FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
 // for version 2 and greater youcan also use this
               FilteringTextInputFormatter.digitsOnly
 
@@ -348,6 +355,51 @@ Widget _buildNumberInputTile({
     ]),
     trailing: Text(customTrailing ?? '${value.toInt()}',
         style: settingsThemeText(context).headline5),
+  );
+}
+
+Widget _buildStringInputTile({
+  BuildContext context,
+  Widget leading,
+  String title,
+  String subtitle,
+  String label,
+  String hint,
+  String value,
+  void Function(String value) onChanged,
+  String customTrailing,
+}) {
+  return ListTile(
+    leading: leading,
+    title: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(padding: EdgeInsets.only(top: 6), child: Text(title)),
+        Text(
+          subtitle,
+          style: Theme.of(context).textTheme.caption,
+        )
+      ],
+    ),
+    subtitle: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Expanded(
+          child: TextField(
+              onSubmitted: (String value) {
+                onChanged(value);
+              },
+              keyboardType: TextInputType.url,
+              inputFormatters: <TextInputFormatter>[],
+              decoration: InputDecoration(
+                labelText: label,
+                hintText: hint,
+                // icon: Icon(Icons.keyboard)
+              )
+          )
+
+      ),
+    ]),
+    // trailing: Text(customTrailing ?? 'value',
+    //     style: settingsThemeText(context).headline5),
   );
 }
 
@@ -402,6 +454,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
   //     sharedPrefs.getDouble(kLocationGarneringElasticityMultiplier);
   String _kLocationGarneringDesiredAccuracy =
       sharedPrefs.getString(kLocationGarneringDesiredAccuracy);
+  String _kPushUrl = sharedPrefs.getString(kPushUrl);
 
   @override
   Widget build(BuildContext context) {
@@ -465,22 +518,23 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 sharedPrefs.setBool(kTurboMode, value);
               }),
 
-          _buildNumberInputTile(
-              context: context,
-              leading: Icon(Icons.timer),
-              title: 'Turbo mode: track interval',
-              subtitle: 'Minimum seconds between turbo mode points.',
-              label: 'Seconds',
-              hint: '',
-              min: 1,
-              max: 3600,
-              value: _kTurboModeInterval,
-              onChanged: (value) {
-                setState(() {
-                  _kTurboModeInterval = value.floorToDouble();
-                });
-                sharedPrefs.setDouble(kTurboModeInterval, value);
-              }),
+          if (_kTurboMode)
+            _buildNumberInputTile(
+                context: context,
+                leading: Icon(Icons.timer),
+                title: 'Turbo mode: track interval',
+                subtitle: 'Minimum seconds between turbo mode points.',
+                label: 'Seconds',
+                hint: '',
+                min: 1,
+                max: 3600,
+                value: _kTurboModeInterval,
+                onChanged: (value) {
+                  setState(() {
+                    _kTurboModeInterval = value.floorToDouble();
+                  });
+                  sharedPrefs.setDouble(kTurboModeInterval, value);
+                }),
 
           _buildNumberInputTile(
               context: context,
@@ -513,6 +567,20 @@ class _SettingsScreen extends State<MySettingsScreen> {
                   _kPushBatchSize = value;
                 });
                 sharedPrefs.setDouble(kPushBatchSize, value);
+              }),
+
+          _buildStringInputTile(
+              context: context,
+              leading: Icon(Icons.cloud_upload_outlined),
+              title: 'Push URL',
+              subtitle: 'Where to push the cat tracks.',
+              hint: _kPushUrl,
+              value: _kPushUrl,
+              onChanged: (value) {
+                setState(() {
+                  _kPushUrl = value;
+                });
+                sharedPrefs.setString(kPushUrl, value);
               }),
 
           // Location settings
@@ -1030,6 +1098,8 @@ class _SettingsScreen extends State<MySettingsScreen> {
           //         }),
           //   ],
           // ),
+
+
 
           // App metadata
           //

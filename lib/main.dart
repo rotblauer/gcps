@@ -1560,15 +1560,18 @@ class _MyHomePageState extends State<MyHomePage> {
     postHeaders.forEach((key, value) {
       headers[key] = value;
     });
+
+    final targetURL = prefs.sharedPrefs.getString(prefs.kPushUrl);
+
     // print("body.length: " + body.length.toString());
     // print(jsonEncode(body));
     print("posting tracks -> " +
-        postEndpoint +
+        targetURL +
         " len: " +
         body.length.toString());
     return http
         .post(
-          Uri.parse(postEndpoint),
+          Uri.parse(targetURL),
           headers: headers,
           encoding: Encoding.getByName("utf-8"),
           body: body,
