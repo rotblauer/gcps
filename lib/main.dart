@@ -1083,7 +1083,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _countStored = 0;
   int _countSnaps = 0;
   int _countPushed = 0;
-  int _pushEvery = 100;
+  int _lastPushAt = 0; // unix seconds
 
   // Future<void> initPrefs() async {
   //   var v = await SharedPreferencesHelper().getPushBatchSize();
@@ -1627,6 +1627,7 @@ class _MyHomePageState extends State<MyHomePage> {
     print("=====> Attempting push");
     setState(() {
       _isPushing = true;
+      _lastPushAt = (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1);
     });
 
     // All conditions passed, attempt to push all stored points.
@@ -1879,19 +1880,14 @@ class _MyHomePageState extends State<MyHomePage> {
       _pointsSinceError++;
     });
 
-    // If we're not at a push mod, we're done.
+    if (_isPushing) {
+      return;
+    }
+
     var pushevery = (prefs.sharedPrefs.getDouble(prefs.kPushInterval)).toInt();
-
-    setState(() {
-      _pushEvery = pushevery;
-    });
-
-    var shouldPush =
-        !_isPushing && countStored >= pushevery && countStored % pushevery == 0;
-    var atHome = distanceFromHome(location) < 10;
-
-    shouldPush =
-        shouldPush || (atHome && _countStored > pushevery && _pointsSinceError > 100);
+    var pushBecauseOfCount = pushevery > 0 && countStored >= pushevery && countStored % pushevery == 0;
+    var pushBecauseAtHome = distanceFromHome(location) < 10 && pushevery > 0 && _countStored > pushevery && _pointsSinceError > 100;
+    var shouldPush = pushBecauseOfCount || pushBecauseAtHome;
 
     if (!shouldPush) {
       return;
@@ -1932,6 +1928,13 @@ class _MyHomePageState extends State<MyHomePage> {
       // tracks, which I'm seeing.
       // _handleStreamLocationUpdate(loc);
     }
+
+    var pushintervalSeconds = (prefs.sharedPrefs.getDouble(prefs.kPushIntervalSeconds)).toInt();
+    if (pushintervalSeconds == 0) return;
+    var secondsSinceLastPush = (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1) - _lastPushAt;
+    if (secondsSinceLastPush > pushintervalSeconds) {
+      _pushTracksBatching();
+    }
   }
 
   void eachSecond() {
@@ -1941,8 +1944,8 @@ class _MyHomePageState extends State<MyHomePage> {
           1000;
       setState(() {
         _secondsSinceLastPoint = s;
-        eachSecondGetLocation();
       });
+      eachSecondGetLocation();
     });
   }
 

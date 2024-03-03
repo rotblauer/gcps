@@ -12,7 +12,8 @@ import 'config.dart';
 // Network settings
 const String kAllowPushWithMobile = "allowPushWithMobile"; //
 const String kAllowPushWithWifi = "allowPushWithWifi"; //
-const String kPushInterval = "pushIntervalNumber"; //
+const String kPushInterval = "pushIntervalNumber"; // in TRACKS count
+const String kPushIntervalSeconds = "pushIntervalSeconds"; //
 const String kPushBatchSize = "pushBatchSize"; //
 const String kPushUrl = "pushUrl"; //
 
@@ -46,6 +47,9 @@ class SharedPrefs {
     switch (key) {
       case kPushInterval:
         return _sharedPrefs.get(kPushInterval) ?? 100;
+        break;
+      case kPushIntervalSeconds:
+        return _sharedPrefs.get(kPushIntervalSeconds) ?? 0;
         break;
       case kPushBatchSize:
         return _sharedPrefs.get(kPushBatchSize) ?? 100;
@@ -81,6 +85,8 @@ class SharedPrefs {
     // Validations.
     switch (key) {
       case kPushInterval:
+        break;
+      case kPushIntervalSeconds:
         break;
       case kPushBatchSize:
         if (value > 3600) value = 3600;
@@ -489,6 +495,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
   bool _kTurboMode = sharedPrefs.getBool(kTurboMode);
   double _kTurboModeInterval = sharedPrefs.getDouble(kTurboModeInterval);
   double _kPushInterval = sharedPrefs.getDouble(kPushInterval);
+  double _kPushIntervalSeconds = sharedPrefs.getDouble(kPushIntervalSeconds);
   double _kPushBatchSize = sharedPrefs.getDouble(kPushBatchSize);
   double _kLocationUpdateInterval =
       sharedPrefs.getDouble(kLocationUpdateInterval);
@@ -558,7 +565,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
               context: context,
               leading: Icon(Icons.fast_forward),
               title: 'Turbo mode',
-              subtitle: 'Collect points at least every second.',
+              subtitle: 'Collect points every N seconds.',
               value: _kTurboMode,
               onChanged: (bool value) {
                 setState(() {
@@ -588,9 +595,9 @@ class _SettingsScreen extends State<MySettingsScreen> {
           _buildNumberInputTile(
               context: context,
               leading: Icon(Icons.timelapse_rounded),
-              title: 'Push interval',
-              subtitle: 'How often to maybe push points.',
-              min: 1,
+              title: 'Push interval - tracks',
+              subtitle: 'Trigger push when track count mod N == 0.',
+              min: 0,
               max: 86400,
               hint: _kPushInterval.floor().toString(),
               value: _kPushInterval,
@@ -603,10 +610,27 @@ class _SettingsScreen extends State<MySettingsScreen> {
 
           _buildNumberInputTile(
               context: context,
+              leading: Icon(Icons.timelapse_rounded),
+              title: 'Push interval - seconds',
+              subtitle: 'Trigger push when interval since last push > N && N != 0.',
+              label: 'Seconds',
+              min: 0,
+              max: 86400,
+              hint: _kPushIntervalSeconds.floor().toString(),
+              value: _kPushIntervalSeconds,
+              onChanged: (value) {
+                setState(() {
+                  _kPushIntervalSeconds = value.floorToDouble();
+                });
+                sharedPrefs.setDouble(kPushIntervalSeconds, value);
+              }),
+
+          _buildNumberInputTile(
+              context: context,
               leading: Icon(Icons.file_upload),
               title: 'Push batch size',
               subtitle: 'Max points in each upload request.',
-              min: 10,
+              min: 1,
               max: 3600,
               hint: _kPushBatchSize.floor().toString(),
               value: _kPushBatchSize,
