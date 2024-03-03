@@ -827,7 +827,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
               leading: Icon(Icons.home),
               buttonChild: Text('Here'),
               title: 'Home location',
-              subtitle: 'Set the home location for the cat.\n[ ${_kHomeLocationLongitude} , ${_kHomeLocationLatitude} ]',
+              subtitle: 'Tracks will auto-upload when near home.\n[ ${_kHomeLocationLongitude} , ${_kHomeLocationLatitude} ]',
               onPressed: (bool value) {
                 bg.BackgroundGeolocation.getCurrentPosition(samples: 3, desiredAccuracy: 10)
                     .then((value) => {

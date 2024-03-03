@@ -1632,7 +1632,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // All conditions passed, attempt to push all stored points.
     int resCode = 0;
     for (var count = await countTracks();
-        count > 10;
+        count > 0;
         count = await countTracks()) {
       var tracks = await firstTracksWithLimit(
         (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt(),
@@ -1738,7 +1738,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
 
       // delete from background geolocation database
-      bg.BackgroundGeolocation.sync();
+      // bg.BackgroundGeolocation.sync();
 
       // ScaffoldMessenger.of(context).showSnackBar(
       //   _buildSnackBar(Text('Push successful'), backgroundColor: Colors.green),
@@ -1891,7 +1891,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var atHome = distanceFromHome(location) < 10;
 
     shouldPush =
-        shouldPush || (atHome && _countStored > 500 && _pointsSinceError > 100);
+        shouldPush || (atHome && _countStored > pushevery && _pointsSinceError > 100);
 
     if (!shouldPush) {
       return;
