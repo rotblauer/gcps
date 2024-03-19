@@ -1881,19 +1881,12 @@ class _MyHomePageState extends State<MyHomePage> {
       _pointsSinceError++;
     });
 
+    // If we are currently pushing, we should not push.
     if (_isPushing) {
       return;
     }
 
-    var pushevery = (prefs.sharedPrefs.getDouble(prefs.kPushInterval)).toInt();
-    var pushBecauseOfCount = pushevery > 0 && countStored >= pushevery && countStored % pushevery == 0;
-    var pushBecauseAtHome = distanceFromHome(location) < 10 && pushevery > 0 && _countStored > pushevery && _pointsSinceError > 100;
-    var shouldPush = pushBecauseOfCount || pushBecauseAtHome;
-
-    if (!shouldPush) {
-      return;
-    }
-
+    // If we have no connection, we cannot push.
     if (_connectionResult == null ||
         _connectionResult == ConnectivityResult.none) return;
 
@@ -1903,9 +1896,43 @@ class _MyHomePageState extends State<MyHomePage> {
     var allowWifi = prefs.sharedPrefs.getBool(prefs.kAllowPushWithWifi);
     var allowMobile = prefs.sharedPrefs.getBool(prefs.kAllowPushWithMobile);
 
-    if ((connectedWifi && allowWifi) || (connectedMobile && allowMobile)) {
-      await _pushTracksBatching();
+    var pushCapable = (connectedWifi && allowWifi) || (connectedMobile && allowMobile);
+
+    // There are no conditions under which we should push.
+    if (!pushCapable) {
+      return;
     }
+
+    // If the push recently errored (eg host down), we should not attempt repeated pushes
+    // within some reasonable interval. Avoid crash-looping.
+    var didRecentlyError = _pointsSinceError <= 10;
+    if (didRecentlyError) {
+      return;
+    }
+
+    // Push every N points.
+    var pushEveryN = (prefs.sharedPrefs.getDouble(prefs.kPushInterval)).toInt();
+    var pushBecauseOfCount = pushEveryN > 0 && countStored >= pushEveryN && countStored % pushEveryN == 0;
+
+    // Push on return home.
+    var pushBecauseAtHome = distanceFromHome(location) < 10 && pushEveryN > 0 && _countStored > pushEveryN;
+
+    // Push every N seconds.
+    var pushBecauseTimeInterval = false;
+    var pushintervalSeconds = (prefs.sharedPrefs.getDouble(prefs.kPushIntervalSeconds)).toInt();
+    if (pushintervalSeconds > 0) {
+      var secondsSinceLastPush = (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1) - _lastPushAt;
+      pushBecauseTimeInterval = secondsSinceLastPush >= pushintervalSeconds;
+    }
+
+    // ANY of these conditions met?
+    var shouldPush = pushBecauseOfCount || pushBecauseAtHome || pushBecauseTimeInterval;
+
+    if (!shouldPush) {
+      return;
+    }
+
+    await _pushTracksBatching();
   }
 
   // runs every 1 second
@@ -1930,12 +1957,12 @@ class _MyHomePageState extends State<MyHomePage> {
       // _handleStreamLocationUpdate(loc);
     }
 
-    var pushintervalSeconds = (prefs.sharedPrefs.getDouble(prefs.kPushIntervalSeconds)).toInt();
-    if (pushintervalSeconds == 0) return;
-    var secondsSinceLastPush = (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1) - _lastPushAt;
-    if (secondsSinceLastPush > pushintervalSeconds) {
-      _pushTracksBatching();
-    }
+    // var pushintervalSeconds = (prefs.sharedPrefs.getDouble(prefs.kPushIntervalSeconds)).toInt();
+    // if (pushintervalSeconds == 0) return;
+    // var secondsSinceLastPush = (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1) - _lastPushAt;
+    // if (secondsSinceLastPush > pushintervalSeconds) {
+    //   _pushTracksBatching();
+    // }
   }
 
   void eachSecond() {
