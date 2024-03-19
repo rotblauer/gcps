@@ -2045,6 +2045,137 @@ class _MyHomePageState extends State<MyHomePage> {
           // Status row!
           ,
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InkWell(
+                onTap: () async {
+                  setState(() {
+                    _isManuallyRequestingLocation = true;
+                  });
+                  // try {
+                  bg.BackgroundGeolocation.getCurrentPosition();
+                  // _handleStreamLocationUpdate(loc);
+                  // } catch (err) {
+                  // _handleStreamLocationError(err);
+                  // }
+                  setState(() {
+                    _isManuallyRequestingLocation = false;
+                  });
+                },
+                onLongPress: () async {
+                  var targetState = !glocation.isMoving;
+                  bg.BackgroundGeolocation.changePace(targetState);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    _buildSnackBar(
+                        Text(targetState
+                            ? 'Cat is moving.'
+                            : 'Cat is napping.'),
+                        backgroundColor:
+                        targetState ? Colors.green : Colors.red),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 4.0),
+                      child: buildActivityIcon(
+                          context, glocation.activity.type, null),
+                    ),
+
+                    //
+                    Visibility(
+                      visible: !glocation.isMoving,
+                      child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 4.0),
+                          // margin: EdgeInsets.only(left: 6),
+                          // height: 16,
+                          // width: 16,
+                          child: Icon(
+                            Icons.trip_origin,
+                            color: Colors.red[700],
+                            size: 24,
+                          )),
+                    ),
+                    // ^^
+
+                    Visibility(
+                      visible: glocation.isMoving,
+                      child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 4.0),
+                          height: 16,
+                          width: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.deepOrange,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: CircularProgressIndicator(
+                              value: 1 -
+                                  ((DateTime.now().millisecondsSinceEpoch /
+                                      1000) -
+                                      DateTime.parse(glocation
+                                          .timestamp)
+                                          .millisecondsSinceEpoch /
+                                          1000)
+                                      .toDouble() /
+                                      (prefs.sharedPrefs.getDouble(prefs
+                                          .kLocationUpdateStopTimeout) *
+                                          60),
+                              strokeWidth: 3,
+                              backgroundColor: Colors.deepOrange)),
+                    ),
+                    Visibility(
+                      visible: true,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 4),
+                        padding: EdgeInsets.only(
+                            left: 4, right: 4, bottom: 4),
+                        decoration: BoxDecoration(
+                            border: Border(
+                                bottom: BorderSide(
+                                    color:
+                                    colorForDurationSinceLastPoint(
+                                        _secondsSinceLastPoint),
+                                    width: 2))),
+                        child: Row(
+                          children: [
+                            Icon(Icons.timelapse,
+                                color: colorForDurationSinceLastPoint(
+                                    _secondsSinceLastPoint),
+                                size: 16),
+                            Container(
+                              width: 4,
+                            ),
+                            Text(
+                              '-' +
+                                  secondsToPrettyDuration(
+                                      _secondsSinceLastPoint.toDouble(),
+                                      true),
+                              style: TextStyle(
+                                  color: colorForDurationSinceLastPoint(
+                                      _secondsSinceLastPoint)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: _isManuallyRequestingLocation,
+                      child: Container(
+                        padding: EdgeInsets.only(left: 4.0),
+                        height: 4,
+                        width: 24,
+                        child: LinearProgressIndicator(
+                          minHeight: 2,
+                          backgroundColor: Colors.deepOrange,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
@@ -2110,131 +2241,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               size: 48),
                         ),
                       ),
-                      InkWell(
-                        onTap: () async {
-                          setState(() {
-                            _isManuallyRequestingLocation = true;
-                          });
-                          // try {
-                          bg.BackgroundGeolocation.getCurrentPosition();
-                          // _handleStreamLocationUpdate(loc);
-                          // } catch (err) {
-                          // _handleStreamLocationError(err);
-                          // }
-                          setState(() {
-                            _isManuallyRequestingLocation = false;
-                          });
-                        },
-                        onLongPress: () async {
-                          var targetState = !glocation.isMoving;
-                          bg.BackgroundGeolocation.changePace(targetState);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            _buildSnackBar(
-                                Text(targetState
-                                    ? 'Cat is moving.'
-                                    : 'Cat is napping.'),
-                                backgroundColor:
-                                    targetState ? Colors.green : Colors.red),
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.symmetric(horizontal: 4.0),
-                              child: buildActivityIcon(
-                                  context, glocation.activity.type, null),
-                            ),
 
-                            //
-                            Visibility(
-                              visible: !glocation.isMoving,
-                              child: Container(
-                                  margin: EdgeInsets.symmetric(horizontal: 4.0),
-                                  // margin: EdgeInsets.only(left: 6),
-                                  // height: 16,
-                                  // width: 16,
-                                  child: Icon(
-                                    Icons.trip_origin,
-                                    color: Colors.red[700],
-                                  )),
-                            ),
-                            // ^^
-
-                            Visibility(
-                              visible: glocation.isMoving,
-                              child: Container(
-                                  margin: EdgeInsets.symmetric(horizontal: 4.0),
-                                  height: 16,
-                                  width: 16,
-                                  decoration: BoxDecoration(
-                                    color: Colors.deepOrange,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: CircularProgressIndicator(
-                                      value: 1 -
-                                          ((DateTime.now().millisecondsSinceEpoch /
-                                                          1000) -
-                                                      DateTime.parse(glocation
-                                                                  .timestamp)
-                                                              .millisecondsSinceEpoch /
-                                                          1000)
-                                                  .toDouble() /
-                                              (prefs.sharedPrefs.getDouble(prefs
-                                                      .kLocationUpdateStopTimeout) *
-                                                  60),
-                                      strokeWidth: 3,
-                                      backgroundColor: Colors.deepOrange)),
-                            ),
-                            Visibility(
-                              visible: true,
-                              child: Container(
-                                margin: EdgeInsets.symmetric(horizontal: 4),
-                                padding: EdgeInsets.only(
-                                    left: 4, right: 4, bottom: 4),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            color:
-                                                colorForDurationSinceLastPoint(
-                                                    _secondsSinceLastPoint),
-                                            width: 2))),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.timelapse,
-                                        color: colorForDurationSinceLastPoint(
-                                            _secondsSinceLastPoint),
-                                        size: 16),
-                                    Container(
-                                      width: 4,
-                                    ),
-                                    Text(
-                                      '-' +
-                                          secondsToPrettyDuration(
-                                              _secondsSinceLastPoint.toDouble(),
-                                              true),
-                                      style: TextStyle(
-                                          color: colorForDurationSinceLastPoint(
-                                              _secondsSinceLastPoint)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Visibility(
-                              visible: _isManuallyRequestingLocation,
-                              child: Container(
-                                padding: EdgeInsets.only(left: 4.0),
-                                height: 4,
-                                width: 24,
-                                child: LinearProgressIndicator(
-                                  minHeight: 2,
-                                  backgroundColor: Colors.deepOrange,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
 
@@ -2394,16 +2401,16 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Text('[ ${glocation.coords.longitude.toPrecision(6)} , ${glocation.coords.latitude.toPrecision(6)} ]', style: TextStyle(fontSize: 16)),
-              Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
-              Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
-              // Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
-              // Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
-              Text('⌂: ${prettyDistance(distanceFromHome(glocation))}'),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
+              Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
+              Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
+              // Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
+              // Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
+              Text('⌂: ${prettyDistance(distanceFromHome(glocation))}'),
               // Text(
               //     'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
               // Text(
