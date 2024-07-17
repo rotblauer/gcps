@@ -1630,7 +1630,9 @@ class _MyHomePageState extends State<MyHomePage> {
       _lastPushAt = (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1);
     });
 
-    // All conditions passed, attempt to push all stored points.
+    // Attempt to push all stored points using a loop.
+    // Each loop set is returned from a database query.
+    //
     int resCode = 0;
     for (var count = await countTracksBefore(_lastPushAt);
         count > 0;
@@ -1640,12 +1642,12 @@ class _MyHomePageState extends State<MyHomePage> {
         before: _lastPushAt,
       );
 
-      tracks.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-
       if (tracks.length == 0) {
         print("No tracks to push.");
         break;
       }
+
+      tracks.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
       // DEBUGGING
       // for (var i = 0; i < tracks.length; i++) {
@@ -1656,7 +1658,14 @@ class _MyHomePageState extends State<MyHomePage> {
       // THIS IS THE PUSH.
       resCode = await _pushTracks(tracks);
 
-      if (resCode == HttpStatus.ok) {
+      if (resCode != HttpStatus.ok) {
+        print("✘ PUSH FAILED, status: " + resCode.toString());
+
+        // This breaks the tracks loop.
+        //
+        break;
+
+      } else {
         // Push yielded success, delete the tracks we just pushed.
         // Note that the delete condition used assumes tracks are ordered
         // earliest -> latest.
@@ -1685,7 +1694,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ......
 
 
-        NOTE that UNLIKE normal tracks, SNAPS get delete IMMEDIATELY once they've
+        NOTE that UNLIKE normal tracks, SNAPS get deleted IMMEDIATELY once they've
         been uploaded.
 
         .....
@@ -1698,11 +1707,6 @@ class _MyHomePageState extends State<MyHomePage> {
           // File(element.image_file_path).deleteSync();
           deleteSnap(element);
         });
-
-        // .....
-      } else {
-        print("✘ PUSH FAILED, status: " + resCode.toString());
-        break;
       }
     }
 
@@ -1756,10 +1760,6 @@ class _MyHomePageState extends State<MyHomePage> {
         _buildSnackBar(Text(_appErrorStatus),
             backgroundColor: MyTheme.errorColor),
       );
-
-      //   _buildSnackBar(Text('Push failed. Status code: ' + resCode.toString()),
-      //       backgroundColor: Colors.red),
-      // );
     }
   }
 
@@ -1888,7 +1888,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // If we have no connection, we cannot push.
     if (_connectionResult == null ||
-        _connectionResult == ConnectivityResult.none) return;
+        _connectionResult == ConnectivityResult.none) {
+        return;
+    }
 
     var connectedWifi = _connectionResult == ConnectivityResult.wifi;
     var connectedMobile = _connectionResult == ConnectivityResult.mobile;
