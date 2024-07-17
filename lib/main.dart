@@ -1083,6 +1083,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _countStored = 0;
   int _countSnaps = 0;
   int _countPushed = 0;
+
   // initialize _lastPushAt at to the current time in unix seconds.
   int _lastPushAt = DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1;
 
@@ -1544,7 +1545,7 @@ class _MyHomePageState extends State<MyHomePage> {
     print("postTracks collection.features.length: " +
         collection.features.length.toString());
     final body = collection.toJSON();
-    print(body);
+    // print(body);
 
     // Dio dio = new Dio();
     // dio.options.connectTimeout = 60000; // 60s
@@ -1566,10 +1567,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // print("body.length: " + body.length.toString());
     // print(jsonEncode(body));
-    print("posting tracks -> " +
-        targetURL +
-        " len: " +
-        body.length.toString());
+    print("posting tracks -> " + targetURL + " len: " + body.length.toString());
     return http
         .post(
           Uri.parse(targetURL),
@@ -1646,14 +1644,7 @@ class _MyHomePageState extends State<MyHomePage> {
         print("No tracks to push.");
         break;
       }
-
       tracks.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-
-      // DEBUGGING
-      // for (var i = 0; i < tracks.length; i++) {
-      //   var trackel = tracks.elementAt(i);
-      //   print('+ ${trackel.toString()} (u?=${trackel.isUploaded()})');
-      // }
 
       // THIS IS THE PUSH.
       resCode = await _pushTracks(tracks);
@@ -1664,33 +1655,32 @@ class _MyHomePageState extends State<MyHomePage> {
         // This breaks the tracks loop.
         //
         break;
+      }
 
-      } else {
-        // Push yielded success, delete the tracks we just pushed.
-        // Note that the delete condition used assumes tracks are ordered
-        // earliest -> latest.
-        print("🗸 PUSH OK");
+      // Push yielded success, delete the tracks we just pushed.
+      // Note that the delete condition used assumes tracks are ordered
+      // earliest -> latest.
+      print("🗸 PUSH OK");
 
-        // Awkwardly placed but whatever.
-        // Update the persistent-state display.
+      // Awkwardly placed but whatever.
+      // Update the persistent-state display.
+      print(
+          'Labeling UPLOADED tracks in range: [${tracks[0].timestamp}, ${tracks[tracks.length - 1].timestamp}]');
+      setTracksUploadedByTimeRange(
+          tracks[0].timestamp,
+          tracks[tracks.length - 1].timestamp,
+          (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1));
+      // deleteTracksBeforeInclusive(tracks[tracks.length - 1].timestamp);
 
-        print(
-            'Labeling UPLOADED tracks in range: [${tracks[0].timestamp}, ${tracks[tracks.length - 1].timestamp}]');
-        setTracksUploadedByTimeRange(
-            tracks[0].timestamp,
-            tracks[tracks.length - 1].timestamp,
-            (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1));
-        // deleteTracksBeforeInclusive(tracks[tracks.length - 1].timestamp);
+      var cp = await countPushed();
+      setState(() {
+        _countStored = count;
+        _countPushed = cp;
+      });
 
-        var cp = await countPushed();
-        setState(() {
-          _countStored = count;
-          _countPushed = cp;
-        });
-
-        ///
-        // delete (clean up) cat snaps files
-        /*
+      ///
+      // delete (clean up) cat snaps files
+      /*
         ......
 
 
@@ -1699,28 +1689,28 @@ class _MyHomePageState extends State<MyHomePage> {
 
         .....
          */
-        tracks.where((element) {
-          return element.image_file_path != null &&
-              element.image_file_path != '';
-        }).forEach((element) {
-          print('Deleting cat snap image file: ${element.image_file_path}');
-          // File(element.image_file_path).deleteSync();
-          deleteSnap(element);
-        });
-      }
+      tracks.where((element) {
+        return element.image_file_path != null && element.image_file_path != '';
+      }).forEach((element) {
+        print('Deleting cat snap image file: ${element.image_file_path}');
+        // File(element.image_file_path).deleteSync();
+        deleteSnap(element);
+      });
     }
 
+    // Here we are no longer looping the tracks for push.
+
+    // Delete uploaded tracks if ALL pushes were successful.
+    // The resCode will be negative if the/any push failed, and the loop will have broken.
+    // If ALL pushes succeeded, the resCode will be 200.
     if (resCode == HttpStatus.ok) {
-      ///
-      //
       // UPLOADED tracks OLDER than 7 days get deleted.
       // Tracks which have not been uploaded will not be deleted.
-      //
       await deleteOldUploadedTracks(age: 7 * 24 * 60 * 60);
-      // development:
-      // await deleteOldUploadedTracks(age: 60);
     }
 
+    // Get the counts of tracks for updating the UI.
+    // This is done whether the pushes succeeded or failed.
     var count = await countTracks();
     int snapCount;
     if (count == 0) {
@@ -1729,7 +1719,6 @@ class _MyHomePageState extends State<MyHomePage> {
       snapCount = await countSnaps();
     }
 
-    // Awkwardly placed but whatever.
     // Update the persistent-state display.
     setState(() {
       _countStored = count;
@@ -1889,7 +1878,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // If we have no connection, we cannot push.
     if (_connectionResult == null ||
         _connectionResult == ConnectivityResult.none) {
-        return;
+      return;
     }
 
     var connectedWifi = _connectionResult == ConnectivityResult.wifi;
@@ -1898,7 +1887,8 @@ class _MyHomePageState extends State<MyHomePage> {
     var allowWifi = prefs.sharedPrefs.getBool(prefs.kAllowPushWithWifi);
     var allowMobile = prefs.sharedPrefs.getBool(prefs.kAllowPushWithMobile);
 
-    var pushCapable = (connectedWifi && allowWifi) || (connectedMobile && allowMobile);
+    var pushCapable =
+        (connectedWifi && allowWifi) || (connectedMobile && allowMobile);
 
     // There are no conditions under which we should push.
     if (!pushCapable) {
@@ -1914,21 +1904,35 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Push every N points.
     var pushEveryN = (prefs.sharedPrefs.getDouble(prefs.kPushInterval)).toInt();
-    var pushBecauseOfCount = pushEveryN > 0 && countStored >= pushEveryN && countStored % pushEveryN == 0;
+    var pushBecauseOfCount = pushEveryN > 0 &&
+        countStored >= pushEveryN &&
+        countStored % pushEveryN == 0;
 
     // Push on return home.
-    var pushBecauseAtHome = distanceFromHome(location) < 10 && pushEveryN > 0 && _countStored > pushEveryN;
+    var pushBecauseAtHome = distanceFromHome(location) < 10 &&
+        pushEveryN > 0 &&
+        _countStored > pushEveryN;
+
+    // The push-on-return-home should only attempt push when it seems
+    // that we've "settled" at home.
+    pushBecauseAtHome = pushBecauseAtHome &&
+        location.activity.type == "still" &&
+        location.coords.speed < 0.5 &&
+        location.coords.speedAccuracy < 1;
 
     // Push every N seconds.
     var pushBecauseTimeInterval = false;
-    var pushintervalSeconds = (prefs.sharedPrefs.getDouble(prefs.kPushIntervalSeconds)).toInt();
+    var pushintervalSeconds =
+        (prefs.sharedPrefs.getDouble(prefs.kPushIntervalSeconds)).toInt();
     if (pushintervalSeconds > 0) {
-      var secondsSinceLastPush = (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1) - _lastPushAt;
+      var secondsSinceLastPush =
+          (DateTime.now().millisecondsSinceEpoch / 1000 ~/ 1) - _lastPushAt;
       pushBecauseTimeInterval = secondsSinceLastPush >= pushintervalSeconds;
     }
 
     // ANY of these conditions met?
-    var shouldPush = pushBecauseOfCount || pushBecauseAtHome || pushBecauseTimeInterval;
+    var shouldPush =
+        pushBecauseOfCount || pushBecauseAtHome || pushBecauseTimeInterval;
 
     if (!shouldPush) {
       return;
@@ -1949,14 +1953,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (glocation.coords.latitude == 42 && glocation.coords.longitude == -69) {
       return;
     }
+    var turboModeInterval =
+        prefs.sharedPrefs.getDouble(prefs.kTurboModeInterval);
     if (prefs.sharedPrefs.getBool(prefs.kTurboMode) &&
-        _secondsSinceLastPoint >
-            prefs.sharedPrefs.getDouble(prefs.kTurboModeInterval)) {
-      bg.BackgroundGeolocation.getCurrentPosition(samples: 1, maximumAge: 1000);
-      // My theory is that this will automatically call the event listener,
-      // and if I pass the response to the handler then I'll have duplicate
-      // tracks, which I'm seeing.
-      // _handleStreamLocationUpdate(loc);
+        _secondsSinceLastPoint > turboModeInterval) {
+      bg.BackgroundGeolocation.getCurrentPosition(
+          samples: 1, maximumAge: 1000, timeout: turboModeInterval.toInt());
+      // The getCurrentPosition function will automatically call the event listener/s.
+      // If we pass the response to the handler (_handleStreamLocationUpdate) here,
+      // we'll see duplicate track handling.
     }
 
     // var pushintervalSeconds = (prefs.sharedPrefs.getDouble(prefs.kPushIntervalSeconds)).toInt();
@@ -2069,11 +2074,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   bg.BackgroundGeolocation.changePace(targetState);
                   ScaffoldMessenger.of(context).showSnackBar(
                     _buildSnackBar(
-                        Text(targetState
-                            ? 'Cat is moving.'
-                            : 'Cat is napping.'),
+                        Text(
+                            targetState ? 'Cat is moving.' : 'Cat is napping.'),
                         backgroundColor:
-                        targetState ? Colors.green : Colors.red),
+                            targetState ? Colors.green : Colors.red),
                   );
                 },
                 child: Row(
@@ -2113,14 +2117,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: CircularProgressIndicator(
                               value: 1 -
                                   ((DateTime.now().millisecondsSinceEpoch /
-                                      1000) -
-                                      DateTime.parse(glocation
-                                          .timestamp)
-                                          .millisecondsSinceEpoch /
-                                          1000)
-                                      .toDouble() /
+                                                  1000) -
+                                              DateTime.parse(
+                                                          glocation.timestamp)
+                                                      .millisecondsSinceEpoch /
+                                                  1000)
+                                          .toDouble() /
                                       (prefs.sharedPrefs.getDouble(prefs
-                                          .kLocationUpdateStopTimeout) *
+                                              .kLocationUpdateStopTimeout) *
                                           60),
                               strokeWidth: 3,
                               backgroundColor: Colors.deepOrange)),
@@ -2129,13 +2133,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       visible: true,
                       child: Container(
                         margin: EdgeInsets.symmetric(horizontal: 4),
-                        padding: EdgeInsets.only(
-                            left: 4, right: 4, bottom: 4),
+                        padding: EdgeInsets.only(left: 4, right: 4, bottom: 4),
                         decoration: BoxDecoration(
                             border: Border(
                                 bottom: BorderSide(
-                                    color:
-                                    colorForDurationSinceLastPoint(
+                                    color: colorForDurationSinceLastPoint(
                                         _secondsSinceLastPoint),
                                     width: 2))),
                         child: Row(
@@ -2150,8 +2152,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             Text(
                               '-' +
                                   secondsToPrettyDuration(
-                                      _secondsSinceLastPoint.toDouble(),
-                                      true),
+                                      _secondsSinceLastPoint.toDouble(), true),
                               style: TextStyle(
                                   color: colorForDurationSinceLastPoint(
                                       _secondsSinceLastPoint)),
@@ -2243,7 +2244,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               size: 48),
                         ),
                       ),
-
                     ],
                   ),
 
@@ -2402,7 +2402,9 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('[ ${glocation.coords.longitude.toPrecision(6)} , ${glocation.coords.latitude.toPrecision(6)} ]', style: TextStyle(fontSize: 16)),
+              Text(
+                  '[ ${glocation.coords.longitude.toPrecision(6)} , ${glocation.coords.latitude.toPrecision(6)} ]',
+                  style: TextStyle(fontSize: 16)),
             ],
           ),
           Row(
