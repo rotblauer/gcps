@@ -1519,11 +1519,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
-    _connectionResult = result;
     switch (result) {
       case ConnectivityResult.wifi:
       case ConnectivityResult.mobile:
       case ConnectivityResult.none:
+        _connectionResult = result;
         setState(() => _connectionStatus = result.toString());
         break;
       default:
