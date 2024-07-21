@@ -2087,11 +2087,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 child: Row(
                   children: [
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 4.0),
-                      child: buildActivityIcon(
-                          context, glocation.activity.type, null),
-                    ),
+                    // Container(
+                    //   margin: EdgeInsets.symmetric(horizontal: 4.0),
+                    //   child: buildActivityIcon(
+                    //       context, glocation.activity.type, null),
+                    // ),
 
                     //
                     Visibility(
@@ -2505,6 +2505,11 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 4.0),
+                child: buildActivityIcon(
+                    context, glocation.activity.type, 32),
+              ),
               InfoDisplay(
                 keyname: "km/h",
                 value: (glocation.coords.speed == null ||
@@ -2513,7 +2518,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     : (glocation.coords.speed * 3.6).toPrecision(1),
                 options: {
                   'third': Text(glocation.coords.speedAccuracy != -1
-                      ? glocation.coords.speedAccuracy.toString()
+                      ? '+/- ' + glocation.coords.speedAccuracy.toString()
                       : '')
                 },
               ),
@@ -2521,7 +2526,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 keyname: "heading",
                 value: degreeToCardinalDirection(glocation.coords.heading),
                 options: {
-                  'third': Text(glocation.coords.headingAccuracy
+                  'third': Text('+/- ' + glocation.coords.headingAccuracy
                       ?.toPrecision(1)
                       ?.toString())
                 },
@@ -2538,7 +2543,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 value:
                     '${glocation.coords.altitude} (${(glocation.coords.altitude * 3.28084).toInt()}ft)',
                 options: {
-                  'third': Text(glocation.coords.altitudeAccuracy
+                  'third': Text('+/- ' + glocation.coords.altitudeAccuracy
                       ?.toPrecision(1)
                       .toString())
                 },
