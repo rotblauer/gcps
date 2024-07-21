@@ -1915,10 +1915,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // The push-on-return-home should only attempt push when it seems
     // that we've "settled" at home.
+    //
+    // I attempted to use
+    //  && location.coords.speed < 0.5 &&
+    //  && location.coords.speedAccuracy < 1;
+    // but found that speed is not consistently 0 when the phone is sitting on the desk.
+    // So instead I'm trying using the gyroscope to detect when the phone is not moving.
     pushBecauseAtHome = pushBecauseAtHome &&
         location.activity.type == "still" &&
-        location.coords.speed < 0.5 &&
-        location.coords.speedAccuracy < 1;
+        _gyroscope_x?.toPrecision(2) + _gyroscope_y?.toPrecision(2) + _gyroscope_z?.toPrecision(2) == 0;
 
     // Push every N seconds.
     var pushBecauseTimeInterval = false;
@@ -2423,6 +2428,18 @@ class _MyHomePageState extends State<MyHomePage> {
               //     'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
             ],
           ),
+
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //   children: [
+          //     Text(
+          //         'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
+          //     Text(
+          //         'ux: ${_user_accelerometer_x?.toPrecision(2)},${_user_accelerometer_y?.toPrecision(2)},${_user_accelerometer_z?.toPrecision(2)}'),
+          //     Text(
+          //         'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
+          //   ],
+          // ),
 
           // Paint a map!
           Row(
