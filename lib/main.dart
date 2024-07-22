@@ -1923,7 +1923,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // So instead I'm trying using the gyroscope to detect when the phone is not moving.
     pushBecauseAtHome = pushBecauseAtHome &&
         location.activity.type == "still" &&
-        _gyroscope_x?.toPrecision(2) + _gyroscope_y?.toPrecision(2) + _gyroscope_z?.toPrecision(2) == 0;
+        _gyroscope_x?.abs() + _gyroscope_y?.abs() + _gyroscope_z?.abs() < 0.01;
 
     // Push every N seconds.
     var pushBecauseTimeInterval = false;
@@ -2415,7 +2415,15 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
+              Text(
+                (_gyroscope_x == null || _gyroscope_y == null || _gyroscope_z == null) ||
+                (_gyroscope_x?.isNaN || _gyroscope_y?.isNaN || _gyroscope_z?.isNaN ) ||
+                    (_gyroscope_x?.abs() + _gyroscope_y?.abs() + _gyroscope_z?.abs() < 0.01 )
+                // emoji for vibration mode
+                    ? '📳 🟥'
+                    : '📳 🟢',
+              ),
+              // Text('p: ${_latest_pressure?.reading?.toPrecision(0)} hPa'),
               Text('l: ${_latest_lightmeter?.reading?.toPrecision(0)} lx'),
               // Text('t: ${_latest_ambientTemp?.reading?.toPrecision(0)} C'),
               // Text('h: ${_latest_humidity?.reading?.toPrecision(0)} %'),
@@ -2429,17 +2437,18 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
 
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //   children: [
-          //     Text(
-          //         'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
-          //     Text(
-          //         'ux: ${_user_accelerometer_x?.toPrecision(2)},${_user_accelerometer_y?.toPrecision(2)},${_user_accelerometer_z?.toPrecision(2)}'),
-          //     Text(
-          //         'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
-          //   ],
-          // ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+
+              // Text(
+              //     'x: ${_accelerometer_x?.toPrecision(2)},${_accelerometer_y?.toPrecision(2)},${_accelerometer_z?.toPrecision(2)}'),
+              // Text(
+              //     'ux: ${_user_accelerometer_x?.toPrecision(2)},${_user_accelerometer_y?.toPrecision(2)},${_user_accelerometer_z?.toPrecision(2)}'),
+              // Text(
+              //     'g: ${_gyroscope_x?.toPrecision(2)},${_gyroscope_y?.toPrecision(2)},${_gyroscope_z?.toPrecision(2)}'),
+            ],
+          ),
 
           // Paint a map!
           Row(
