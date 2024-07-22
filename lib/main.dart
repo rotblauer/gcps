@@ -1027,12 +1027,12 @@ class _MyHomePageState extends State<MyHomePage> {
   // StreamSubscription<Position> positionStream;
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
-  StreamSubscription<BarometerEvent> _pressureStream;
+  // StreamSubscription<BarometerEvent> _pressureStream;
   StreamSubscription<LightmeterEvent> _lightmeterStream;
   StreamSubscription<AmbientTempEvent> _ambientTempStream;
   StreamSubscription<HumidityEvent> _humidityStream;
 
-  BarometerEvent _latest_pressure;
+  // BarometerEvent _latest_pressure;
   LightmeterEvent _latest_lightmeter;
   AmbientTempEvent _latest_ambientTemp;
   HumidityEvent _latest_humidity;
@@ -1170,18 +1170,18 @@ class _MyHomePageState extends State<MyHomePage> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     // double barometerReading;
-    StreamSubscription<BarometerEvent> pressureStreamSub;
+    // StreamSubscription<BarometerEvent> pressureStreamSub;
     StreamSubscription<LightmeterEvent> lightmeterStreamSub;
     StreamSubscription<AmbientTempEvent> ambientTempStreamSub;
     StreamSubscription<HumidityEvent> humidityStreamSub;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       // pressureStream = barometerEvents.asBroadcastStream();
-      pressureStreamSub = barometerEvents.listen((event) {
-        setState(() {
-          _latest_pressure = event;
-        });
-      });
+      // pressureStreamSub = barometerEvents.listen((event) {
+      //   setState(() {
+      //     _latest_pressure = event;
+      //   });
+      // });
       // lightmeterStream = lightmeterEvents.asBroadcastStream();
       lightmeterStreamSub = lightmeterEvents.listen((event) {
         setState(() {
@@ -1209,7 +1209,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
     if (!mounted) return;
-    _pressureStream = pressureStreamSub;
+    // _pressureStream = pressureStreamSub;
     _lightmeterStream = lightmeterStreamSub;
     _ambientTempStream = ambientTempStreamSub;
     _humidityStream = humidityStreamSub;
@@ -1836,7 +1836,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var ap = AppPoint.fromLocationProvider(location);
     ap.distance = _distanceTracker.distance;
     ap.tripStarted = _tripStarted;
-    ap.barometer = _latest_pressure?.reading;
+    // ap.barometer = _latest_pressure?.reading;
     ap.lightmeter = _latest_lightmeter?.reading;
     ap.ambient_temp = _latest_ambientTemp?.reading;
     ap.humidity = _latest_humidity?.reading;
