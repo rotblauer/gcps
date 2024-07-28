@@ -1343,6 +1343,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
     bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
+      // if (location.isMoving) ...
       print('[motionchange]');
       _handleStreamLocationUpdate(location);
     });
@@ -1356,7 +1357,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     bg.BackgroundGeolocation.onHeartbeat((bg.HeartbeatEvent event) {
-      bg.BackgroundGeolocation.getCurrentPosition();
+      bg.BackgroundGeolocation.getCurrentPosition(samples: 1);
       // Acquiring the current position will trigger the onLocation event handler.
     });
 
@@ -1370,9 +1371,33 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
 
-    bg.BackgroundGeolocation.onGeofence((bg.GeofenceEvent event) {
-      _handleStreamLocationUpdate(event.location);
+    // bg.BackgroundGeolocation.onConnectivityChange((bg.ConnectivityChangeEvent event) {
+    //   print('[connectivityChange]');
+    //   _handleStreamLocationUpdate(glocation);
+    // });
+
+    bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
+      print('[onProviderChange: ${event}');
+
+      switch(event. status) {
+        case bg.ProviderChangeEvent. AUTHORIZATION_STATUS_DENIED:
+        // Android & iOS
+          print('- Location authorization denied');
+          break;
+        case bg.ProviderChangeEvent. AUTHORIZATION_STATUS_ALWAYS:
+        // Android & iOS
+          print('- Location always granted');
+          break;
+        case bg.ProviderChangeEvent. AUTHORIZATION_STATUS_WHEN_IN_USE:
+        // iOS only
+          print('- Location WhenInUse granted');
+          break;
+      }
     });
+
+    // bg.BackgroundGeolocation.onGeofence((bg.GeofenceEvent event) {
+    //   _handleStreamLocationUpdate(event.location);
+    // });
 
     // bg.BackgroundGeolocation.onGeofence((bg.GeofenceEvent event) {
     //   _handleStreamLocationUpdate(event.location);
@@ -1468,10 +1493,6 @@ class _MyHomePageState extends State<MyHomePage> {
           print('[start] success - ${state}');
         });
         // bg.BackgroundGeolocation.setOdometer(0);
-      } else {
-        bg.BackgroundGeolocation.start().then((bg.State state) {
-          print('[start] success (already) - ${state}');
-        });
       }
     }).catchError((err) {
       print('[start] error - ${err.toString()}');
