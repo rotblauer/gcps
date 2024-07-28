@@ -1046,6 +1046,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double _gyroscope_x;
   double _gyroscope_y;
   double _gyroscope_z;
+  bool _gyroscopically_stable = false;
 
   // DateFormat myClockFormat = new DateFormat('hh:mm');
 
@@ -1251,6 +1252,8 @@ class _MyHomePageState extends State<MyHomePage> {
         _gyroscope_x = event?.x;
         _gyroscope_y = event?.y;
         _gyroscope_z = event?.z;
+        _gyroscopically_stable = event != null &&
+            (_gyroscope_x?.abs() + _gyroscope_y?.abs() + _gyroscope_z?.abs() < 0.01 );
       });
     });
 // [GyroscopeEvent (x: 0.0, y: 0.0, z: 0.0)]
@@ -1943,8 +1946,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // but found that speed is not consistently 0 when the phone is sitting on the desk.
     // So instead I'm trying using the gyroscope to detect when the phone is not moving.
     pushBecauseAtHome = pushBecauseAtHome &&
-        location.activity.type == "still" &&
-        _gyroscope_x?.abs() + _gyroscope_y?.abs() + _gyroscope_z?.abs() < 0.01;
+        location.activity.type == "still" && _gyroscopically_stable;
 
     // Push every N seconds.
     var pushBecauseTimeInterval = false;
@@ -2437,9 +2439,7 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Text(
-                (_gyroscope_x == null || _gyroscope_y == null || _gyroscope_z == null) ||
-                (_gyroscope_x?.isNaN || _gyroscope_y?.isNaN || _gyroscope_z?.isNaN ) ||
-                    (_gyroscope_x?.abs() + _gyroscope_y?.abs() + _gyroscope_z?.abs() < 0.01 )
+                _gyroscopically_stable
                 // emoji for vibration mode
                     ? '📳 🟥'
                     : '📳 🟢',

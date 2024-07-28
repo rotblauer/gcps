@@ -560,38 +560,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 });
                 sharedPrefs.setBool(kAllowPushWithMobile, value);
               }),
-
-          _buildSwitchTile(
-              context: context,
-              leading: Icon(Icons.fast_forward),
-              title: 'Turbo mode',
-              subtitle: 'Collect points every N seconds.',
-              value: _kTurboMode,
-              onChanged: (bool value) {
-                setState(() {
-                  _kTurboMode = value;
-                });
-                sharedPrefs.setBool(kTurboMode, value);
-              }),
-
-          if (_kTurboMode)
-            _buildNumberInputTile(
-                context: context,
-                leading: Icon(Icons.timer),
-                title: 'Turbo mode: track interval',
-                subtitle: 'Minimum seconds between turbo mode points.',
-                label: 'Seconds',
-                hint: '',
-                min: 1,
-                max: 3600,
-                value: _kTurboModeInterval,
-                onChanged: (value) {
-                  setState(() {
-                    _kTurboModeInterval = value.floorToDouble();
-                  });
-                  sharedPrefs.setDouble(kTurboModeInterval, value);
-                }),
-
+          
           _buildNumberInputTile(
               context: context,
               leading: Icon(Icons.timelapse_rounded),
@@ -667,6 +636,37 @@ class _SettingsScreen extends State<MySettingsScreen> {
               ),
             ],
           ),
+
+          _buildSwitchTile(
+              context: context,
+              leading: Icon(Icons.fast_forward),
+              title: 'Turbo mode',
+              subtitle: 'Collect points every N seconds.',
+              value: _kTurboMode,
+              onChanged: (bool value) {
+                setState(() {
+                  _kTurboMode = value;
+                });
+                sharedPrefs.setBool(kTurboMode, value);
+              }),
+
+          if (_kTurboMode)
+            _buildNumberInputTile(
+                context: context,
+                leading: Icon(Icons.timer),
+                title: 'Turbo mode: track interval',
+                subtitle: 'Minimum seconds between turbo mode points.',
+                label: 'Seconds',
+                hint: '',
+                min: 1,
+                max: 3600,
+                value: _kTurboModeInterval,
+                onChanged: (value) {
+                  setState(() {
+                    _kTurboModeInterval = value.floorToDouble();
+                  });
+                  sharedPrefs.setDouble(kTurboModeInterval, value);
+                }),
 
           _buildNumberInputTile(
               context: context,
