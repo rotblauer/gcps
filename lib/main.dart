@@ -1659,6 +1659,12 @@ class _MyHomePageState extends State<MyHomePage> {
     for (var count = await countTracksBefore(_lastPushAt);
         count > 0;
         count = await countTracksBefore(_lastPushAt)) {
+
+      if (!_isNetworkWellConnected()) {
+        print("✘ PUSH breaking, no network connection.");
+        break;
+      }
+
       var tracks = await firstTracksWithLimit(
         (prefs.sharedPrefs.getDouble(prefs.kPushBatchSize)).toInt(),
         before: _lastPushAt,
@@ -1806,6 +1812,31 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  bool _isNetworkWellConnected() {
+    // If we have no connection, we cannot push.
+    if (_connectionResult == null ||
+        _connectionResult == ConnectivityResult.none) {
+      return false;
+    }
+
+    if (prefs.sharedPrefs.getBool(prefs.kAllowPushOnlyGyroscopicallyStable) == true) {
+      if (!_gyroscopically_stable) {
+        return false;
+      }
+    }
+
+    var connectedWifi = _connectionResult == ConnectivityResult.wifi;
+    var connectedMobile = _connectionResult == ConnectivityResult.mobile;
+
+    var allowWifi = prefs.sharedPrefs.getBool(prefs.kAllowPushWithWifi);
+    var allowMobile = prefs.sharedPrefs.getBool(prefs.kAllowPushWithMobile);
+
+    var pushCapable =
+        (connectedWifi && allowWifi) || (connectedMobile && allowMobile);
+
+    return pushCapable;
+  }
+
   void _handleStreamLocationUpdate(bg.Location location) async {
     // Short circuit if position is null or timestamp is null.
     if (location == null ||
@@ -1899,23 +1930,8 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    // If we have no connection, we cannot push.
-    if (_connectionResult == null ||
-        _connectionResult == ConnectivityResult.none) {
-      return;
-    }
-
-    var connectedWifi = _connectionResult == ConnectivityResult.wifi;
-    var connectedMobile = _connectionResult == ConnectivityResult.mobile;
-
-    var allowWifi = prefs.sharedPrefs.getBool(prefs.kAllowPushWithWifi);
-    var allowMobile = prefs.sharedPrefs.getBool(prefs.kAllowPushWithMobile);
-
-    var pushCapable =
-        (connectedWifi && allowWifi) || (connectedMobile && allowMobile);
-
     // There are no conditions under which we should push.
-    if (!pushCapable) {
+    if (!_isNetworkWellConnected()) {
       return;
     }
 
@@ -1946,7 +1962,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // but found that speed is not consistently 0 when the phone is sitting on the desk.
     // So instead I'm trying using the gyroscope to detect when the phone is not moving.
     pushBecauseAtHome = pushBecauseAtHome &&
-        location.activity.type == "still" && _gyroscopically_stable;
+        location.activity.type == "still";
 
     // Push every N seconds.
     var pushBecauseTimeInterval = false;

@@ -12,6 +12,7 @@ import 'config.dart';
 // Network settings
 const String kAllowPushWithMobile = "allowPushWithMobile"; //
 const String kAllowPushWithWifi = "allowPushWithWifi"; //
+const String kAllowPushOnlyGyroscopicallyStable = "allowPushOnlyGyroscopicallyStable"; //
 const String kPushInterval = "pushIntervalNumber"; // in TRACKS count
 const String kPushIntervalSeconds = "pushIntervalSeconds"; //
 const String kPushBatchSize = "pushBatchSize"; //
@@ -120,6 +121,8 @@ class SharedPrefs {
         return _sharedPrefs.getBool(kAllowPushWithMobile) ?? true;
       case kAllowPushWithWifi:
         return _sharedPrefs.getBool(kAllowPushWithWifi) ?? true;
+      case kAllowPushOnlyGyroscopicallyStable:
+        return _sharedPrefs.getBool(kAllowPushOnlyGyroscopicallyStable) ?? false;
       case kLocationDisableStopDetection:
         return _sharedPrefs.getBool(kLocationDisableStopDetection) ?? false;
       case kLocationDeviceInMotion:
@@ -137,6 +140,8 @@ class SharedPrefs {
       case kAllowPushWithMobile:
         break;
       case kAllowPushWithWifi:
+        break;
+      case kAllowPushOnlyGyroscopicallyStable:
         break;
       case kLocationDisableStopDetection:
         break;
@@ -489,6 +494,7 @@ class _SettingsScreen extends State<MySettingsScreen> {
 
   bool _kAllowPushWithMobile = sharedPrefs.getBool(kAllowPushWithMobile);
   bool _kAllowPushWithWifi = sharedPrefs.getBool(kAllowPushWithWifi);
+  bool _kAllowPushOnlyGyroscopicallyStable = sharedPrefs.getBool(kAllowPushOnlyGyroscopicallyStable);
   bool _kLocationDisableStopDetection =
       sharedPrefs.getBool(kLocationDisableStopDetection);
   bool _kLocationDeviceInMotion = sharedPrefs.getBool(kLocationDeviceInMotion);
@@ -560,7 +566,20 @@ class _SettingsScreen extends State<MySettingsScreen> {
                 });
                 sharedPrefs.setBool(kAllowPushWithMobile, value);
               }),
-          
+
+          _buildSwitchTile(
+              context: context,
+              leading: Icon(Icons.vibration_outlined),
+              title: 'Push requires gyroscopic stability',
+              subtitle: 'Only push when device is stable.',
+              value: _kAllowPushOnlyGyroscopicallyStable,
+              onChanged: (bool value) {
+                setState(() {
+                  _kAllowPushOnlyGyroscopicallyStable = value;
+                });
+                sharedPrefs.setBool(kAllowPushOnlyGyroscopicallyStable, value);
+              }),
+
           _buildNumberInputTile(
               context: context,
               leading: Icon(Icons.timelapse_rounded),
