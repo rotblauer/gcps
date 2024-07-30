@@ -1248,12 +1248,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
     gyroscopeEvents.listen((GyroscopeEvent event) {
       // print(event);
+      if (event == null) return;
       setState(() {
         _gyroscope_x = event?.x;
         _gyroscope_y = event?.y;
         _gyroscope_z = event?.z;
-        _gyroscopically_stable = event != null &&
-            (_gyroscope_x?.abs() + _gyroscope_y?.abs() + _gyroscope_z?.abs() < 0.01 );
+        _gyroscopically_stable = (_gyroscope_x?.abs() + _gyroscope_y?.abs() + _gyroscope_z?.abs()) < 0.01 ;
       });
     });
 // [GyroscopeEvent (x: 0.0, y: 0.0, z: 0.0)]
@@ -1819,10 +1819,8 @@ class _MyHomePageState extends State<MyHomePage> {
       return false;
     }
 
-    if (prefs.sharedPrefs.getBool(prefs.kAllowPushOnlyGyroscopicallyStable) == true) {
-      if (!_gyroscopically_stable) {
+    if (prefs.sharedPrefs.getBool(prefs.kAllowPushOnlyGyroscopicallyStable) && !_gyroscopically_stable) {
         return false;
-      }
     }
 
     var connectedWifi = _connectionResult == ConnectivityResult.wifi;
