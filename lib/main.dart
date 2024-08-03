@@ -1985,22 +1985,35 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // runs every 1 second
   int _secondsSinceLastPoint = 0;
-
+  bool _turboRunning = false;
   Future<void> eachSecondGetLocation() async {
     /*
         'coords': {
       'latitude': 42.0,
       'longitude': -69.0,
      */
+    // Short circuit if we have not yet obtained any GPS location.
     if (glocation.coords.latitude == 42 && glocation.coords.longitude == -69) {
       return;
     }
+
+    // Short circuit if this function is already running.
+    if (_turboRunning) return;
+
+    // Short circuit if turbo mode is not enabled.
+    var turboModeOn = prefs.sharedPrefs.getBool(prefs.kTurboMode);
+    if (!turboModeOn) return;
+
     var turboModeInterval =
         prefs.sharedPrefs.getDouble(prefs.kTurboModeInterval);
-    if (prefs.sharedPrefs.getBool(prefs.kTurboMode) &&
-        _secondsSinceLastPoint > turboModeInterval) {
+    if (_secondsSinceLastPoint > turboModeInterval) {
+      _turboRunning = true;
       bg.BackgroundGeolocation.getCurrentPosition(
-          samples: 1, maximumAge: 1000, timeout: turboModeInterval.toInt(), persist: false);
+          samples: 1,
+          maximumAge: turboModeInterval.toInt() * 1000 /* milliseconds */,
+          timeout: turboModeInterval.toInt() /* seconds */,
+          persist: false).whenComplete(() => {_turboRunning = false});
+
       // The getCurrentPosition function will automatically call the event listener/s.
       // If we pass the response to the handler (_handleStreamLocationUpdate) here,
       // we'll see duplicate track handling.
