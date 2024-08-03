@@ -2000,7 +2000,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (prefs.sharedPrefs.getBool(prefs.kTurboMode) &&
         _secondsSinceLastPoint > turboModeInterval) {
       bg.BackgroundGeolocation.getCurrentPosition(
-          samples: 1, maximumAge: 1000, timeout: turboModeInterval.toInt());
+          samples: 1, maximumAge: 1000, timeout: turboModeInterval.toInt(), persist: false);
       // The getCurrentPosition function will automatically call the event listener/s.
       // If we pass the response to the handler (_handleStreamLocationUpdate) here,
       // we'll see duplicate track handling.
