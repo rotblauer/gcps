@@ -679,8 +679,8 @@ Future<String> _getName() async {
     }
     var out =
         '${androidDeviceInfo.board}-${androidDeviceInfo.model.split(" ")[0]}-${androidDeviceInfo.androidId.substring(0, 4)}'; // unique ID on Android
-    if (out.contains("sofia-moto")) {
-      return "sofia-moto-fdb7";
+    if (out.contains("-moto-")) {
+      return "ranga-moto-act3";
     } else if (out.contains("bsp-moto")) {
       return "moto-i-2";
     }
@@ -1641,7 +1641,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return resCode;
   }
 
-  Future<void> _pushTracksBatching() async {
+  Future<void> _pushTracksBatching(bool force) async {
     if (_isPushing) {
       print("=====> Already pushing");
       return;
@@ -1660,7 +1660,7 @@ class _MyHomePageState extends State<MyHomePage> {
         count > 0;
         count = await countTracksBefore(_lastPushAt)) {
 
-      if (!_isNetworkWellConnected()) {
+      if (!_isNetworkWellConnected(force)) {
         print("✘ PUSH breaking, no network connection.");
         break;
       }
@@ -1812,14 +1812,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  bool _isNetworkWellConnected() {
+  bool _isNetworkWellConnected(bool overrideGyro) {
     // If we have no connection, we cannot push.
     if (_connectionResult == null ||
         _connectionResult == ConnectivityResult.none) {
       return false;
     }
 
-    if (prefs.sharedPrefs.getBool(prefs.kAllowPushOnlyGyroscopicallyStable) && !_gyroscopically_stable) {
+    if (!overrideGyro && prefs.sharedPrefs.getBool(prefs.kAllowPushOnlyGyroscopicallyStable) && !_gyroscopically_stable) {
         return false;
     }
 
@@ -1929,7 +1929,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     // There are no conditions under which we should push.
-    if (!_isNetworkWellConnected()) {
+    if (!_isNetworkWellConnected(false)) {
       return;
     }
 
@@ -1980,7 +1980,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    await _pushTracksBatching();
+    await _pushTracksBatching(false);
   }
 
   // runs every 1 second
@@ -2271,7 +2271,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Widget continueButton = ElevatedButton(
                                   child: Text("Yes, upload"),
                                   onPressed: () async {
-                                    this._pushTracksBatching();
+                                    this._pushTracksBatching(true);
                                     Navigator.of(context, rootNavigator: true)
                                         .pop('dialog');
                                   },
