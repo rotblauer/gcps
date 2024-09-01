@@ -1812,22 +1812,30 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  bool _isNetworkWellConnected(bool overrideGyro) {
+  // _isNetworkWellConnected determines if we have a network connection
+  // and if we are allowed to push based on the user's settings.
+  // If force is true, we will push regardless of the user's settings.
+  bool _isNetworkWellConnected(bool force) {
     // If we have no connection, we cannot push.
     if (_connectionResult == null ||
         _connectionResult == ConnectivityResult.none) {
       return false;
     }
 
-    if (!overrideGyro && prefs.sharedPrefs.getBool(prefs.kAllowPushOnlyGyroscopicallyStable) && !_gyroscopically_stable) {
-        return false;
+    // Not forced, and we are moving.
+    if (!force && !_gyroscopically_stable) {
+      if (prefs.sharedPrefs.getBool(prefs.kAllowPushOnlyGyroscopicallyStable)) return false;
     }
 
     var connectedWifi = _connectionResult == ConnectivityResult.wifi;
     var connectedMobile = _connectionResult == ConnectivityResult.mobile;
 
-    var allowWifi = prefs.sharedPrefs.getBool(prefs.kAllowPushWithWifi);
-    var allowMobile = prefs.sharedPrefs.getBool(prefs.kAllowPushWithMobile);
+    var allowWifi = true;
+    var allowMobile = true;
+    if (!force) {
+      allowWifi = prefs.sharedPrefs.getBool(prefs.kAllowPushWithWifi);
+      allowMobile = prefs.sharedPrefs.getBool(prefs.kAllowPushWithMobile);
+    }
 
     var pushCapable =
         (connectedWifi && allowWifi) || (connectedMobile && allowMobile);
